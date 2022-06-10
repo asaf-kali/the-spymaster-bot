@@ -7,6 +7,7 @@ LINE_LENGTH=120
 install-run:
 	pip install --upgrade pip
 	pip install -r requirements.txt
+	pip install the-spymaster-api.tar.gz
 
 install-test:
 	@make install-run --no-print-directory
@@ -16,7 +17,7 @@ install-dev:
 	@make install-test --no-print-directory
 	pre-commit install
 
-install: install-dev test
+install: install-dev test lint
 
 # Test
 
