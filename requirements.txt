@@ -1,0 +1,13 @@
+# Telegram bot
+python-telegram-bot~=13.11
+dynaconf~=3.1
+
+# HTTP
+requests~=2.27
+pydantic~=1.9
+
+# Other
+boto3~=1.24
+
+# Monitor
+sentry-sdk==1.5.10

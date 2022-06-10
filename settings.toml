@@ -1,0 +1,28 @@
+[default]
+env_verbose_name = "Not set"
+base_backend_url = "http://127.0.0.1:8000"
+
+# Logging
+indented_json = 0
+logging_formatter = "json"
+root_log_level = "INFO"
+bot_log_level = "INFO"
+
+[local]
+env_verbose_name = "Local"
+logging_formatter = "simple"
+bot_log_level = "DEBUG"
+
+[dev]
+base_backend_url = "https://ps84epd323.execute-api.us-east-1.amazonaws.com/dev"
+env_verbose_name = "Dev"
+
+[stage]
+env_verbose_name = "Staging"
+
+[prod]
+env_verbose_name = "Production"
+
+[rsbpi]
+env_verbose_name = "Raspberry Pi"
+base_backend_url = "http://192.168.1.240:8000"

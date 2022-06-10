@@ -1,0 +1,15 @@
+[tool.pytest.ini_options]
+addopts = "-s --disable-pytest-warnings"
+
+[tool.coverage.run]
+source = ["bot"]
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+skip = ["__init__.py"]
+profile = "black"
+
+[tool.mypy]
+ignore_missing_imports = true
