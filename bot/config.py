@@ -28,24 +28,10 @@ class Config(LazyConfig):
     def base_backend_url(self) -> str:
         return self.get("BASE_BACKEND_URL")
 
+    @property
+    def bot_log_level(self) -> str:
+        return self.get("BOT_LOG_LEVEL")
+
 
 def get_config() -> Config:
     return Config()
-
-
-# handlers:
-#         "bot_file": {
-#             "class": "logging.handlers.TimedRotatingFileHandler",
-#             "filename": os.path.join(LOGGING_DIR, "bot.log"),
-#             "formatter": "json",
-#             "level": "DEBUG",
-#             "when": "midnight",
-#             "backupCount": 28,
-#         },
-# "telegram_bot": {
-#     "handlers": ["console_out", "console_err", "bot_file"],
-#     "level": config.bot_log_level,
-#     "propagate": False,
-# },
-# loggers:
-#         "telegram": {"level": "INFO"},
