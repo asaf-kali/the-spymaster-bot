@@ -1,6 +1,7 @@
 PYTHON_TEST_COMMAND=pytest -s
 DEL_COMMAND=gio trash
 LINE_LENGTH=120
+TERRAFORM_PLAN_FILE=deploy.tfplan
 
 # Install
 
@@ -53,3 +54,15 @@ run:
 
 kill:
 	killall python || true
+
+# Deploy
+
+plan:
+	terraform plan -var 'telegram_token=123' -out $(TERRAFORM_PLAN_FILE)
+
+apply:
+	terraform apply $(TERRAFORM_PLAN_FILE)
+
+deploy:
+	@make plan --no-print-directory
+	@make apply --no-print-directory
