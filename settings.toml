@@ -14,8 +14,8 @@ std_formatter = "simple"
 bot_log_level = "DEBUG"
 
 [dev]
-base_backend_url = "https://ps84epd323.execute-api.us-east-1.amazonaws.com/dev"
 env_verbose_name = "Dev"
+base_backend_url = "https://ps84epd323.execute-api.us-east-1.amazonaws.com/dev"
 
 [stage]
 env_verbose_name = "Staging"
