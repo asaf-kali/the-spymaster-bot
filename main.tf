@@ -40,6 +40,10 @@ variable "env" {
 
 # Secrets
 
+resource "random_id" "random_path" {
+  byte_length = 32
+}
+
 resource "aws_kms_key" "bot_kms_key" {
   description = "KMS key for bot service on ${var.env} environment"
 }
@@ -49,10 +53,17 @@ resource "aws_kms_alias" "bot_kms_key_alias" {
   target_key_id = aws_kms_key.bot_kms_key.id
 }
 
-resource "aws_ssm_parameter" "bot_token" {
-  name   = "${local.project_name}-token"
+resource "aws_ssm_parameter" "telegram_token" {
+  name   = "${local.project_name}-telegram-token"
   type   = "SecureString"
   value  = var.telegram_token
+  key_id = aws_kms_key.bot_kms_key.arn
+}
+
+resource "aws_ssm_parameter" "lambda_auth_token" {
+  name   = "${local.project_name}-auth-token"
+  type   = "SecureString"
+  value  = random_id.random_path.hex
   key_id = aws_kms_key.bot_kms_key.arn
 }
 
@@ -70,12 +81,11 @@ resource "aws_lambda_function" "bot_handler_lambda" {
   handler       = "lambda_handler.handle"
   runtime       = "python3.9"
   filename      = data.archive_file.bot_lambda_code.output_path
-  environment {
-    variables = {
-      API_PREFIX = aws_apigatewayv2_api.api.api_endpoint
-      PATH_KEY   = random_id.random_path.hex
-    }
-  }
+}
+
+resource "aws_lambda_function_url" "bot_handler_lambda_url" {
+  function_name      = aws_lambda_function.bot_handler_lambda.function_name
+  authorization_type = "NONE"
 }
 
 data "aws_iam_policy_document" "lambda_assume_policy_doc" {
@@ -111,11 +121,15 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
             "Effect" : "Allow",
             "Action" : [
               "ssm:GetParameter",
-              "ssm:GetParameterHistory",
-              "ssm:GetParameters",
-              "ssm:GetParametersByPath",
             ],
-            "Resource" : aws_ssm_parameter.bot_token.arn
+            "Resource" : aws_ssm_parameter.telegram_token.arn
+          },
+          {
+            "Effect" : "Allow",
+            "Action" : [
+              "ssm:GetParameter",
+            ],
+            "Resource" : aws_ssm_parameter.lambda_auth_token.arn
           },
           # {
           #   "Effect" : "Allow",
@@ -130,55 +144,8 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
   }
 }
 
-resource "aws_lambda_permission" "apigw" {
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.bot_handler_lambda.arn
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
-}
-
-# API Gateway
-
-resource "random_id" "random_path" {
-  byte_length = 32
-}
-
-resource "aws_apigatewayv2_api" "api" {
-  name          = "${local.project_base_name}-api"
-  protocol_type = "HTTP"
-}
-
-resource "aws_apigatewayv2_integration" "api" {
-  api_id                 = aws_apigatewayv2_api.api.id
-  integration_type       = "AWS_PROXY"
-  integration_method     = "POST"
-  integration_uri        = aws_lambda_function.bot_handler_lambda.invoke_arn
-  payload_format_version = "2.0"
-}
-
-resource "aws_apigatewayv2_route" "api_route" {
-  api_id    = aws_apigatewayv2_api.api.id
-  route_key = "ANY /${random_id.random_path.hex}/{proxy+}"
-  target    = "integrations/${aws_apigatewayv2_integration.api.id}"
-}
-
-# Check if this is actually needed
-resource "aws_apigatewayv2_stage" "api_stage" {
-  api_id      = aws_apigatewayv2_api.api.id
-  name        = "${local.project_name}-api"
-  auto_deploy = true
-}
-
 # Outputs
 
-output "api_endpoint" {
-  value = aws_apigatewayv2_api.api.api_endpoint
-}
-
-output "random_path" {
-  value = random_id.random_path.hex
-}
-
-output "trigger_endpoint" {
-  value = "${aws_apigatewayv2_api.api.api_endpoint}/${aws_apigatewayv2_stage.api_stage.name}/${random_id.random_path.hex}/"
+output "bot_trigger_url" {
+  value = aws_lambda_function_url.bot_handler_lambda_url.function_url
 }
