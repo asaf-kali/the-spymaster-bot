@@ -144,6 +144,21 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
   }
 }
 
+# Dynamo DB
+
+resource "aws_dynamodb_table" "state_table" {
+  name           = "${local.project_name}-state-table"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 20
+  write_capacity = 20
+  hash_key       = "session_id"
+
+  attribute {
+    name = "session_id"
+    type = "S"
+  }
+}
+
 # Outputs
 
 output "bot_trigger_url" {
