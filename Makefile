@@ -2,6 +2,7 @@ PYTHON_TEST_COMMAND=pytest -s
 DEL_COMMAND=gio trash
 LINE_LENGTH=120
 TERRAFORM_PLAN_FILE=deploy.tfplan
+LAMBDA_ZIP_FILE=the-spymaster-bot.zip
 
 # Install
 
@@ -62,6 +63,7 @@ plan:
 
 apply:
 	terraform apply $(TERRAFORM_PLAN_FILE)
+	$(DEL_COMMAND) $(LAMBDA_ZIP_FILE)
 
 deploy:
 	@make plan --no-print-directory

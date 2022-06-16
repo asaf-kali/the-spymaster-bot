@@ -76,11 +76,12 @@ data "archive_file" "bot_lambda_code" {
 }
 
 resource "aws_lambda_function" "bot_handler_lambda" {
-  function_name = "${local.project_name}-lambda"
-  role          = aws_iam_role.bot_lambda_exec_role.arn
-  handler       = "lambda_handler.handle"
-  runtime       = "python3.9"
-  filename      = data.archive_file.bot_lambda_code.output_path
+  function_name    = "${local.project_name}-lambda"
+  role             = aws_iam_role.bot_lambda_exec_role.arn
+  handler          = "lambda_handler.handle"
+  runtime          = "python3.9"
+  filename         = data.archive_file.bot_lambda_code.output_path
+  source_code_hash = filebase64sha256(data.archive_file.bot_lambda_code.output_path)
 }
 
 resource "aws_lambda_function_url" "bot_handler_lambda_url" {
