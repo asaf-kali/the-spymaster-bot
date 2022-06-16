@@ -10,8 +10,8 @@ from bot.the_spymaster_bot import TheSpymasterBot
 def main():
     config = get_config()
     configure_logging(config=config)
-    bot = TheSpymasterBot(base_backend=config.base_backend_url)
-    bot.listen()
+    bot = TheSpymasterBot(telegram_token=config.telegram_token, base_backend=config.base_backend_url)
+    bot.poll()
 
 
 def configure_logging(config: Config):

@@ -5,6 +5,7 @@ from telegram.ext import (
     CallbackContext,
     CommandHandler,
     ConversationHandler,
+    Dispatcher,
     Filters,
     MessageHandler,
     Updater,
@@ -12,7 +13,6 @@ from telegram.ext import (
 from the_spymaster_api import TheSpymasterClient
 from the_spymaster_util import get_logger
 
-from bot.config import get_config
 from bot.handlers import (
     ConfigDifficultyHandler,
     ConfigLanguageHandler,
@@ -36,9 +36,15 @@ log = get_logger(__name__)
 
 
 class TheSpymasterBot:
-    def __init__(self, base_backend: str = None):
+    def __init__(self, telegram_token: str, base_backend: str = None):
         self.sessions: Dict[SessionId, Session] = {}
         self.client = TheSpymasterClient(base_backend=base_backend)
+        self.updater = Updater(telegram_token)
+        self._construct_updater()
+
+    @property
+    def dispatcher(self) -> Dispatcher:
+        return self.updater.dispatcher
 
     def set_session(self, session_id: SessionId, session: Optional[Session]):
         if not session:
@@ -54,11 +60,8 @@ class TheSpymasterBot:
     def generate_callback(self, handler_type: Type[EventHandler]) -> Callable[[Update, CallbackContext], Any]:
         return handler_type.generate_callback(bot=self)
 
-    def listen(self) -> None:
-        log.info("Starting bot...")
-        config = get_config()
-        updater = Updater(config.telegram_token)
-        dispatcher = updater.dispatcher
+    def _construct_updater(self):
+        log.info("Setting up bot...")
 
         start_handler = CommandHandler("start", self.generate_callback(StartEventHandler), run_async=True)
         custom_handler = CommandHandler("custom", self.generate_callback(CustomHandler), run_async=True)
@@ -82,7 +85,7 @@ class TheSpymasterBot:
         load_models_handler = CommandHandler("load_models", self.generate_callback(LoadModelsHandler), run_async=True)
         testing_handler = CommandHandler("test", self.generate_callback(TestingHandler), run_async=True)
         process_message_handler = MessageHandler(
-            Filters.text & ~Filters.command, self.generate_callback(ProcessMessageHandler), run_async=True
+            Filters.text & ~Filters.command, self.generate_callback(ProcessMessageHandler)
         )
 
         conv_handler = ConversationHandler(
@@ -107,8 +110,9 @@ class TheSpymasterBot:
             allow_reentry=True,
         )
 
-        dispatcher.add_handler(conv_handler)
-        dispatcher.add_handler(process_message_handler)
+        self.dispatcher.add_handler(conv_handler)
+        self.dispatcher.add_handler(process_message_handler)
 
-        updater.start_polling()
-        updater.idle()
+    def poll(self) -> None:
+        self.updater.start_polling()
+        self.updater.idle()
