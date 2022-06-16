@@ -6,11 +6,12 @@ from the_spymaster_util import LazyConfig
 class Config(LazyConfig):
     def load(self, override_files: List[str] = None):
         super().load(override_files)
-        secret_name = f"the-spymaster-{self.env_name}-secrets"
-        try:
-            self.load_kms_secrets(secret_name)
-        except Exception:  # noqa
-            pass
+        parameters = [f"{self.service_prefix}-telegram-token", f"{self.service_prefix}-auth-token"]
+        self.load_ssm_parameters(parameters)
+
+    @property
+    def service_prefix(self):
+        return f"the-spymaster-bot-{self.env_name}"
 
     @property
     def env_verbose_name(self) -> str:

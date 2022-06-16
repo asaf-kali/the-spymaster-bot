@@ -60,6 +60,13 @@ class TheSpymasterBot:
     def generate_callback(self, handler_type: Type[EventHandler]) -> Callable[[Update, CallbackContext], Any]:
         return handler_type.generate_callback(bot=self)
 
+    def process_update(self, update: dict):
+        parsed_update = self.parse_update(update)
+        return self.dispatcher.process_update(parsed_update)
+
+    def parse_update(self, update: dict) -> Optional[Update]:
+        return Update.de_json(update, bot=self.updater.bot)
+
     def _construct_updater(self):
         log.info("Setting up bot...")
 

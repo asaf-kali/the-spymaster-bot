@@ -5,7 +5,7 @@ base_backend_url = "http://127.0.0.1:8000"
 # Logging
 indent_json = false
 std_formatter = "json"
-root_log_level = "INFO"
+root_log_level = "DEBUG"
 bot_log_level = "INFO"
 
 [local]
