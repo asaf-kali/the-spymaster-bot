@@ -20,6 +20,7 @@ install-test:
 install-dev:
 	@make install-test --no-print-directory
 	pre-commit install
+	mypy --install-types
 
 install: install-dev test lint
 

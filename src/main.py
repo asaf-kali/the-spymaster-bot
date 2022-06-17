@@ -1,3 +1,4 @@
+import logging
 from logging.config import dictConfig
 
 from the_spymaster_util.logging import get_dict_config
@@ -16,23 +17,13 @@ def main():
 def configure_logging(config: Config = None):
     loggers = {
         "bot": {
-            "handlers": ["console_out", "console_err"],  # , "bot_file"
-            "level": config.bot_log_level if config else "INFO",
+            "handlers": ["console_out", "console_err"],
+            "level": config.bot_log_level if config else "DEBUG",
             "propagate": False,
         },
         "telegram": {"level": "INFO"},
         "botocore": {"level": "WARNING"},
         "urllib3": {"level": "WARNING"},
-    }
-    handlers = {  # type: ignore
-        # "bot_file": {
-        #     "class": "logging.handlers.TimedRotatingFileHandler",
-        #     "filename": os.path.join(".", "bot.log"),
-        #     "formatter": "json",
-        #     "level": "DEBUG",
-        #     "when": "midnight",
-        #     "backupCount": 28,
-        # }
     }
     kwargs = (
         dict(
@@ -45,10 +36,11 @@ def configure_logging(config: Config = None):
     )
     log_config = get_dict_config(
         **kwargs,
-        extra_handlers=handlers,
         extra_loggers=loggers,
     )
     dictConfig(log_config)
+    log = logging.getLogger(__name__)
+    log.debug("Logging configured.")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,10 @@
+import logging
 from typing import List
 
+from cachetools.func import ttl_cache
 from the_spymaster_util import LazyConfig
+
+log = logging.getLogger(__name__)
 
 
 class Config(LazyConfig):
@@ -8,6 +12,7 @@ class Config(LazyConfig):
         super().load(override_files)
         parameters = [f"{self.service_prefix}-telegram-token", f"{self.service_prefix}-auth-token"]
         self.load_ssm_parameters(parameters)
+        log.info("Config loaded")
 
     @property
     def service_prefix(self):
@@ -34,5 +39,6 @@ class Config(LazyConfig):
         return self.get("BOT_LOG_LEVEL")
 
 
+@ttl_cache(maxsize=1, ttl=600)
 def get_config() -> Config:
     return Config()

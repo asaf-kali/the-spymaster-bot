@@ -1,17 +1,16 @@
-# Telegram bot
-python-telegram-bot~=13.11
-dynaconf~=3.1
-
-# Core
+# Service core
 codenames~=1.1
-the-spymaster-util==1.7.2
+the-spymaster-util==1.7.3
 the-spymaster-api==1.0.0
 
-# HTTP
-requests~=2.27
-pydantic~=1.9
+# Telegram bot
+python-telegram-bot~=13.11
 
-# Other
+# Utils
+requests~=2.27
+dynaconf~=3.1
+pydantic~=1.9
+cachetools~=4.2
 boto3~=1.24
 
 # Monitor
