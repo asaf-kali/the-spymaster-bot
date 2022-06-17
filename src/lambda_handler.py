@@ -17,9 +17,25 @@ log.info("Bootstrap complete.")
 
 
 def handle(event: dict, context=None):
-    log.info("Received event", extra={"event": event})
-    update_data = json.loads(event["body"])
-    bot.process_update(update_data)
+    try:
+        log.info("Received event", extra={"event": event})
+        body = event.get("body")
+        if not body:
+            log.info("No body in event, ignoring")
+            return create_response(400, data={"message": "No body in event"})
+        try:
+            update_data = json.loads(body)
+        except json.JSONDecodeError as e:
+            log.warning("Error decoding JSON")
+            return create_response(400, data={"message": "Error decoding JSON", "error": str(e)})
+        bot.process_update(update_data)
+    except:  # noqa
+        log.exception("Error handling event")
+        return create_response(500, data={"message": "Error handling event"})
+
+
+def create_response(status_code: int, data: dict):
+    return {"statusCode": status_code, "body": json.dumps(data)}
 
 
 def example_event():
