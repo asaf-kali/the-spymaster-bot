@@ -58,6 +58,9 @@ kill:
 build-layer:
 	sudo ./scripts/build_layer.sh
 
+update:
+	cd tf_service; make deploy;
+
 deploy:
 	@make build-layer --no-print-directory
-	cd tf_service; make deploy;
+	@make update --no-print-directory
