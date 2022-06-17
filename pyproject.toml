@@ -6,11 +6,16 @@ source = ["bot"]
 
 [tool.black]
 line-length = 120
+exclude = '''
+/(
+    \.deployment
+)/
+'''
 
 [tool.isort]
 profile = "black"
-skip = ["__init__.py"]
+skip = ["__init__.py", ".deployment/"]
 
 [tool.mypy]
 ignore_missing_imports = true
-exclude = ["local/"]
+exclude = ["local/", ".deployment/"]

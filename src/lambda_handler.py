@@ -3,8 +3,8 @@ import json
 from the_spymaster_util import get_logger
 
 from bot.config import get_config
-from bot.main import configure_logging
 from bot.the_spymaster_bot import TheSpymasterBot
+from main import configure_logging
 
 configure_logging()
 log = get_logger(__name__)
@@ -22,7 +22,7 @@ def handle(event: dict, context=None):
     bot.process_update(update_data)
 
 
-def main():
+def example_event():
     telegram_update = {
         "update_id": 617241324,
         "message": {
@@ -47,4 +47,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    example_event()

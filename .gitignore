@@ -10,6 +10,7 @@ local.toml
 language_data
 *.zip
 *.tfplan
+.deployment/
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,linux,pycharm
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,linux,pycharm
