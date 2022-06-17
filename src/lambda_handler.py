@@ -35,6 +35,7 @@ def handle(event: dict, context=None):
     except Exception as e:
         log.exception("Error handling event")
         sentry_sdk.capture_exception(e)
+        sentry_sdk.flush(timeout=5)
         return create_response(500, data={"message": "Error handling event"})
 
 
