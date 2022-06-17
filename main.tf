@@ -17,9 +17,11 @@ data "aws_caller_identity" "current" {}
 
 locals {
   project_base_name = "the-spymaster-bot"
+  aws_account       = "096386908883"
   project_name      = "${local.project_base_name}-${var.env}"
   aws_region        = "us-east-1"
   lambda_zip_name   = "the-spymaster-bot.zip"
+  layer_zip_name    = "the-spymaster-bot-layer.zip"
   account_id        = data.aws_caller_identity.current.account_id
 }
 
@@ -69,9 +71,22 @@ resource "aws_ssm_parameter" "lambda_auth_token" {
 
 # Lambda handler
 
+data "archive_file" "lambda_layer_code" {
+  type        = "zip"
+  source_dir  = "${path.module}/.deployment/layer-dependencies/"
+  output_path = local.layer_zip_name
+}
+
+resource "aws_lambda_layer_version" "bot_dependencies_layer" {
+  filename         = data.archive_file.lambda_layer_code.output_path
+  layer_name       = "${local.project_name}-layer"
+  source_code_hash = filebase64sha256(data.archive_file.lambda_layer_code.output_path)
+  skip_destroy     = true
+}
+
 data "archive_file" "bot_lambda_code" {
   type        = "zip"
-  source_dir  = "${path.module}/bot/"
+  source_dir  = "${path.module}/src"
   output_path = local.lambda_zip_name
 }
 
@@ -82,6 +97,14 @@ resource "aws_lambda_function" "bot_handler_lambda" {
   runtime          = "python3.9"
   filename         = data.archive_file.bot_lambda_code.output_path
   source_code_hash = filebase64sha256(data.archive_file.bot_lambda_code.output_path)
+  layers           = [
+    aws_lambda_layer_version.bot_dependencies_layer.arn
+  ]
+  environment {
+    variables = {
+      ENV_FOR_DYNACONF = var.env
+    }
+  }
 }
 
 resource "aws_lambda_function_url" "bot_handler_lambda_url" {
@@ -122,15 +145,9 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
             "Effect" : "Allow",
             "Action" : [
               "ssm:GetParameter",
+              "ssm:GetParameters",
             ],
-            "Resource" : aws_ssm_parameter.telegram_token.arn
-          },
-          {
-            "Effect" : "Allow",
-            "Action" : [
-              "ssm:GetParameter",
-            ],
-            "Resource" : aws_ssm_parameter.lambda_auth_token.arn
+            "Resource" : "arn:aws:ssm:us-east-1:${local.aws_account}:parameter/${local.project_name}-*"
           },
           # {
           #   "Effect" : "Allow",

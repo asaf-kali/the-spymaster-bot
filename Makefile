@@ -2,7 +2,9 @@ PYTHON_TEST_COMMAND=pytest -s
 DEL_COMMAND=gio trash
 LINE_LENGTH=120
 TERRAFORM_PLAN_FILE=deploy.tfplan
+DEPLOYMENT_DIR=.deployment
 LAMBDA_ZIP_FILE=the-spymaster-bot.zip
+LAYER_ZIP_FILE=the-spymaster-bot-layer.zip
 
 # Install
 
@@ -41,7 +43,7 @@ lint-check:
 	black . --check
 	isort . --check
 	mypy .
-	flake8 . --max-line-length=$(LINE_LENGTH) --ignore=E203,W503,E402 --exclude=local
+	flake8 . --max-line-length=$(LINE_LENGTH) --ignore=E203,W503,E402 --exclude=local,.deployment
 
 lint: lint-only
 	pre-commit run --all-files
@@ -57,13 +59,17 @@ kill:
 
 # Deploy
 
+build-layer:
+	sudo ./scripts/build_layer.sh
+
 plan:
 	terraform plan -var 'telegram_token=123' -out $(TERRAFORM_PLAN_FILE)
 
 apply:
 	terraform apply $(TERRAFORM_PLAN_FILE)
-	$(DEL_COMMAND) $(LAMBDA_ZIP_FILE)
 
 deploy:
+	@make build-layer --no-print-directory
 	@make plan --no-print-directory
 	@make apply --no-print-directory
+	$(DEL_COMMAND) $(LAMBDA_ZIP_FILE) $(LAYER_ZIP_FILE)
