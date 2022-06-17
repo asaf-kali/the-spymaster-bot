@@ -1,3 +1,5 @@
+# Terraform
+
 terraform {
   required_providers {
     aws = {
@@ -14,8 +16,8 @@ provider "aws" {
 # Parameters
 
 locals {
-  project_base_name = "the-spymaster-bot"
-  project_name      = "${local.project_base_name}-${var.env}"
+  project_name = "the-spymaster-bot"
+  service_name = "${local.project_name}-${var.env}"
 }
 
 variable "aws_region" {
@@ -32,12 +34,12 @@ variable "env" {
   }
 }
 
-variable "telegram_token" {
+variable "sentry_dsn" {
   type      = string
   sensitive = true
 }
 
-variable "sentry_dsn" {
+variable "telegram_token" {
   type      = string
   sensitive = true
 }
@@ -49,21 +51,21 @@ resource "aws_kms_key" "bot_kms_key" {
 }
 
 resource "aws_kms_alias" "bot_kms_key_alias" {
-  name          = "alias/${local.project_name}-key"
+  name          = "alias/${local.service_name}-key"
   target_key_id = aws_kms_key.bot_kms_key.id
 }
 
-resource "aws_ssm_parameter" "telegram_token" {
-  name   = "${local.project_name}-telegram-token"
+resource "aws_ssm_parameter" "sentry_dsn" {
+  name   = "${local.service_name}-sentry-dsn"
   type   = "SecureString"
-  value  = var.telegram_token
+  value  = var.sentry_dsn
   key_id = aws_kms_key.bot_kms_key.arn
 }
 
-resource "aws_ssm_parameter" "sentry_dsn" {
-  name   = "${local.project_name}-sentry-dsn"
+resource "aws_ssm_parameter" "telegram_token" {
+  name   = "${local.service_name}-telegram-token"
   type   = "SecureString"
-  value  = var.sentry_dsn
+  value  = var.telegram_token
   key_id = aws_kms_key.bot_kms_key.arn
 }
 
@@ -72,14 +74,3 @@ resource "aws_ssm_parameter" "sentry_dsn" {
 output "bot_kms_key_arn" {
   value = aws_kms_key.bot_kms_key.arn
 }
-
-#resource "random_id" "random_path" {
-#  byte_length = 32
-#}
-
-#resource "aws_ssm_parameter" "lambda_auth_token" {
-#  name   = "${local.project_name}-auth-token"
-#  type   = "SecureString"
-#  value  = random_id.random_path.hex
-#  key_id = aws_kms_key.bot_kms_key.arn
-#}
