@@ -1,3 +1,4 @@
+DEL_COMMAND=gio trash
 TERRAFORM_PLAN_FILE=deploy.tfplan
 LAMBDA_ZIP_FILE=the-spymaster-bot.zip
 LAYER_ZIP_FILE=the-spymaster-bot-layer.zip
