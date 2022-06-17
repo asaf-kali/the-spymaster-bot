@@ -9,7 +9,6 @@ LAMBDA_ZIP_FILE=the-spymaster-bot.zip
 install-run:
 	pip install --upgrade pip
 	pip install -r requirements.txt
-	pip install the-spymaster-api.tar.gz
 
 install-test:
 	@make install-run --no-print-directory
