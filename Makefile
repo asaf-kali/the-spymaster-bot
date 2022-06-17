@@ -1,11 +1,6 @@
 PYTHON_TEST_COMMAND=pytest -s
 DEL_COMMAND=gio trash
 LINE_LENGTH=120
-TERRAFORM_PLAN_FILE=deploy.tfplan
-DEPLOYMENT_DIR=.deployment
-LAMBDA_ZIP_FILE=the-spymaster-bot.zip
-LAYER_ZIP_FILE=the-spymaster-bot-layer.zip
-TELEGRAM_TOKEN=123
 
 # Install
 
@@ -64,14 +59,6 @@ kill:
 build-layer:
 	sudo ./scripts/build_layer.sh
 
-plan:
-	terraform plan -var 'telegram_token=$(TELEGRAM_TOKEN)' -out $(TERRAFORM_PLAN_FILE)
-
-apply:
-	terraform apply $(TERRAFORM_PLAN_FILE)
-
 deploy:
 	@make build-layer --no-print-directory
-	@make plan --no-print-directory
-	@make apply --no-print-directory
-	$(DEL_COMMAND) $(LAMBDA_ZIP_FILE) $(LAYER_ZIP_FILE)
+	cd tf_service; make deploy;

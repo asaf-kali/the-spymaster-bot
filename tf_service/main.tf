@@ -23,11 +23,8 @@ locals {
   lambda_zip_name   = "the-spymaster-bot.zip"
   layer_zip_name    = "the-spymaster-bot-layer.zip"
   account_id        = data.aws_caller_identity.current.account_id
-}
-
-variable "telegram_token" {
-  type      = string
-  sensitive = true
+  bot_kms_arn       = var.bot_kms_env_map[var.env]
+  project_root      = "${path.module}/../"
 }
 
 variable "env" {
@@ -40,40 +37,18 @@ variable "env" {
   }
 }
 
-# Secrets
-
-resource "random_id" "random_path" {
-  byte_length = 32
-}
-
-resource "aws_kms_key" "bot_kms_key" {
-  description = "KMS key for bot service on ${var.env} environment"
-}
-
-resource "aws_kms_alias" "bot_kms_key_alias" {
-  name          = "alias/${local.project_name}-key"
-  target_key_id = aws_kms_key.bot_kms_key.id
-}
-
-resource "aws_ssm_parameter" "telegram_token" {
-  name   = "${local.project_name}-telegram-token"
-  type   = "SecureString"
-  value  = var.telegram_token
-  key_id = aws_kms_key.bot_kms_key.arn
-}
-
-resource "aws_ssm_parameter" "lambda_auth_token" {
-  name   = "${local.project_name}-auth-token"
-  type   = "SecureString"
-  value  = random_id.random_path.hex
-  key_id = aws_kms_key.bot_kms_key.arn
+variable "bot_kms_env_map" {
+  type    = map(string)
+  default = {
+    "dev" : "arn:aws:kms:us-east-1:096386908883:key/4d0d382c-dcfa-4f44-b990-c66f468dc5dd",
+  }
 }
 
 # Lambda handler
 
 data "archive_file" "lambda_layer_code" {
   type        = "zip"
-  source_dir  = "${path.module}/.deployment/layer-dependencies/"
+  source_dir  = "${local.project_root}/.deployment/layer-dependencies/"
   output_path = local.layer_zip_name
 }
 
@@ -86,7 +61,7 @@ resource "aws_lambda_layer_version" "bot_dependencies_layer" {
 
 data "archive_file" "bot_lambda_code" {
   type        = "zip"
-  source_dir  = "${path.module}/src"
+  source_dir  = "${local.project_root}/src"
   output_path = local.lambda_zip_name
 }
 
@@ -154,7 +129,7 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
             "Action" : [
               "kms:Decrypt",
             ],
-            "Resource" : aws_kms_key.bot_kms_key.arn
+            "Resource" : local.bot_kms_arn
           },
         ]
       }
