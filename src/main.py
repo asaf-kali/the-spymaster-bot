@@ -1,6 +1,8 @@
 import logging
 from logging.config import dictConfig
 
+import sentry_sdk
+from sentry_sdk.integrations.logging import LoggingIntegration
 from the_spymaster_util.logging import get_dict_config
 
 from bot.config import Config, get_config
@@ -41,6 +43,21 @@ def configure_logging(config: Config = None):
     dictConfig(log_config)
     log = logging.getLogger(__name__)
     log.debug("Logging configured.")
+
+
+def configure_sentry(config: Config):
+    sentry_sdk.init(  # type: ignore
+        dsn=config.sentry_dsn,
+        integrations=[LoggingIntegration(event_level=None)],
+        environment=config.env_verbose_name,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=1.0,
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=True,
+    )
 
 
 if __name__ == "__main__":
