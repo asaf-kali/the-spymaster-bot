@@ -4,7 +4,7 @@ dynaconf~=3.1
 
 # Core
 codenames~=1.1
-the-spymaster-util==1.7.1
+the-spymaster-util==1.7.2
 the-spymaster-api==1.0.0
 
 # HTTP

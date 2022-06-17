@@ -5,6 +5,7 @@ TERRAFORM_PLAN_FILE=deploy.tfplan
 DEPLOYMENT_DIR=.deployment
 LAMBDA_ZIP_FILE=the-spymaster-bot.zip
 LAYER_ZIP_FILE=the-spymaster-bot-layer.zip
+TELEGRAM_TOKEN=123
 
 # Install
 
@@ -63,7 +64,7 @@ build-layer:
 	sudo ./scripts/build_layer.sh
 
 plan:
-	terraform plan -var 'telegram_token=123' -out $(TERRAFORM_PLAN_FILE)
+	terraform plan -var 'telegram_token=$(TELEGRAM_TOKEN)' -out $(TERRAFORM_PLAN_FILE)
 
 apply:
 	terraform apply $(TERRAFORM_PLAN_FILE)
