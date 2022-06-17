@@ -110,7 +110,7 @@ class EventHandler:
         def callback(update: Update, context: CallbackContext) -> Any:
             instance = cls(bot=bot, update=update, context=context)
             try:
-                log.set_context(telegram_user_id=instance.user_id, game_id=instance.game_id)
+                log.update_context(telegram_user_id=instance.user_id, game_id=instance.game_id)
             except Exception as e:
                 log.warning(f"Failed to update context: {e}")
             try:

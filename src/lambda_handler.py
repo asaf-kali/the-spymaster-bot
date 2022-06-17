@@ -20,6 +20,7 @@ log.info("Bootstrap complete.")
 
 def handle(event: dict, context=None):
     try:
+        log.reset_context()
         log.info("Received event", extra={"event": event})
         body = event.get("body")
         if not body:
