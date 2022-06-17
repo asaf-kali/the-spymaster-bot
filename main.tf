@@ -149,13 +149,13 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
             ],
             "Resource" : "arn:aws:ssm:us-east-1:${local.aws_account}:parameter/${local.project_name}-*"
           },
-          # {
-          #   "Effect" : "Allow",
-          #   "Action" : [
-          #     "kms:Decrypt",
-          #   ],
-          #   "Resource" : aws_kms_key.bot_kms_key.arn
-          # },
+          {
+            "Effect" : "Allow",
+            "Action" : [
+              "kms:Decrypt",
+            ],
+            "Resource" : aws_kms_key.bot_kms_key.arn
+          },
         ]
       }
     )

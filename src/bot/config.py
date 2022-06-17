@@ -23,7 +23,7 @@ class Config(LazyConfig):
 
     @property
     def telegram_token(self) -> str:
-        return self.get("TELEGRAM_TOKEN")
+        return self.get(f"{self.service_prefix}-telegram-token")
 
     @property
     def base_backend_url(self) -> str:
