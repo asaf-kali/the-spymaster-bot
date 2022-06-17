@@ -1,3 +1,5 @@
+# Terraform
+
 terraform {
   required_providers {
     aws = {
@@ -8,7 +10,7 @@ terraform {
 }
 
 provider "aws" {
-  region = local.aws_region
+  region = var.aws_region
 }
 
 # Parameters
@@ -16,15 +18,20 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 locals {
-  project_base_name = "the-spymaster-bot"
-  aws_account       = "096386908883"
-  project_name      = "${local.project_base_name}-${var.env}"
-  aws_region        = "us-east-1"
-  lambda_zip_name   = "the-spymaster-bot.zip"
-  layer_zip_name    = "the-spymaster-bot-layer.zip"
-  account_id        = data.aws_caller_identity.current.account_id
-  bot_kms_arn       = var.bot_kms_env_map[var.env]
-  project_root      = "${path.module}/../"
+  project_name    = "the-spymaster-bot"
+  service_name    = "${local.project_name}-${var.env}"
+  aws_account_id  = data.aws_caller_identity.current.account_id
+  project_root    = "${path.module}/../"
+  lambda_zip_name = "the-spymaster-bot.zip"
+  layer_zip_name  = "the-spymaster-bot-layer.zip"
+  bot_kms_env_map = {
+    "dev" : "arn:aws:kms:us-east-1:096386908883:key/4d0d382c-dcfa-4f44-b990-c66f468dc5dd",
+  }
+  bot_kms_arn = local.bot_kms_env_map[var.env]
+}
+
+variable "aws_region" {
+  default = "us-east-1"
 }
 
 variable "env" {
@@ -37,14 +44,7 @@ variable "env" {
   }
 }
 
-variable "bot_kms_env_map" {
-  type    = map(string)
-  default = {
-    "dev" : "arn:aws:kms:us-east-1:096386908883:key/4d0d382c-dcfa-4f44-b990-c66f468dc5dd",
-  }
-}
-
-# Lambda handler
+# Layer
 
 data "archive_file" "lambda_layer_code" {
   type        = "zip"
@@ -54,10 +54,12 @@ data "archive_file" "lambda_layer_code" {
 
 resource "aws_lambda_layer_version" "bot_dependencies_layer" {
   filename         = data.archive_file.lambda_layer_code.output_path
-  layer_name       = "${local.project_name}-layer"
+  layer_name       = "${local.service_name}-layer"
   source_code_hash = filebase64sha256(data.archive_file.lambda_layer_code.output_path)
   skip_destroy     = true
 }
+
+# Lambda
 
 data "archive_file" "bot_lambda_code" {
   type        = "zip"
@@ -66,7 +68,7 @@ data "archive_file" "bot_lambda_code" {
 }
 
 resource "aws_lambda_function" "bot_handler_lambda" {
-  function_name    = "${local.project_name}-lambda"
+  function_name    = "${local.service_name}-lambda"
   role             = aws_iam_role.bot_lambda_exec_role.arn
   handler          = "lambda_handler.handle"
   runtime          = "python3.9"
@@ -99,10 +101,10 @@ data "aws_iam_policy_document" "lambda_assume_policy_doc" {
 }
 
 resource "aws_iam_role" "bot_lambda_exec_role" {
-  name               = "${local.project_name}-lambda-exec-role"
+  name               = "${local.service_name}-lambda-exec-role"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_policy_doc.json
   inline_policy {
-    name   = "${local.project_name}-lambda-exec-role-policy"
+    name   = "${local.service_name}-lambda-exec-role-policy"
     policy = jsonencode(
       {
         "Version" : "2012-10-17",
@@ -122,7 +124,7 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
               "ssm:GetParameter",
               "ssm:GetParameters",
             ],
-            "Resource" : "arn:aws:ssm:us-east-1:${local.aws_account}:parameter/${local.project_name}-*"
+            "Resource" : "arn:aws:ssm:us-east-1:${local.aws_account_id}:parameter/${local.service_name}-*"
           },
           {
             "Effect" : "Allow",
@@ -140,7 +142,7 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
 # Dynamo DB
 
 resource "aws_dynamodb_table" "state_table" {
-  name           = "${local.project_name}-state-table"
+  name           = "${local.service_name}-state-table"
   billing_mode   = "PROVISIONED"
   read_capacity  = 20
   write_capacity = 20
