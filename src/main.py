@@ -2,6 +2,7 @@ import logging
 from logging.config import dictConfig
 
 import sentry_sdk
+from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from the_spymaster_util.logging import get_dict_config
 
@@ -41,7 +42,7 @@ def configure_logging(config: Config = None):
 def configure_sentry(config: Config):
     sentry_sdk.init(  # type: ignore
         dsn=config.sentry_dsn,
-        integrations=[LoggingIntegration(event_level=None)],
+        integrations=[LoggingIntegration(event_level=None), AwsLambdaIntegration()],
         environment=config.env_verbose_name,
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
