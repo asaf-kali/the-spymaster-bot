@@ -9,13 +9,6 @@ from bot.config import Config, get_config
 from bot.the_spymaster_bot import TheSpymasterBot
 
 
-def main():
-    config = get_config()
-    configure_logging(config=config)
-    bot = TheSpymasterBot(telegram_token=config.telegram_token, base_backend=config.base_backend_url)
-    bot.poll()
-
-
 def configure_logging(config: Config = None):
     loggers = {
         "bot": {
@@ -58,6 +51,15 @@ def configure_sentry(config: Config):
         # django.contrib.auth) you may enable sending PII data.
         send_default_pii=True,
     )
+
+
+def main():
+    configure_logging()
+    config = get_config()
+    config.load(extra_files=["../secrets.toml"])
+    configure_logging(config=config)
+    bot = TheSpymasterBot(telegram_token=config.telegram_token, base_backend=config.base_backend_url)
+    bot.poll()
 
 
 if __name__ == "__main__":

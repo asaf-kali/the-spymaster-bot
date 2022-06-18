@@ -8,8 +8,8 @@ log = logging.getLogger(__name__)
 
 
 class Config(LazyConfig):
-    def load(self, override_files: List[str] = None):
-        super().load(override_files)
+    def load(self, extra_files: List[str] = None):
+        super().load(extra_files)
         parameters = [f"{self.service_prefix}-telegram-token", f"{self.service_prefix}-sentry-dsn"]
         self.load_ssm_parameters(parameters)
         log.info("Config loaded")
@@ -24,11 +24,11 @@ class Config(LazyConfig):
 
     @property
     def sentry_dsn(self) -> str:
-        return self.get(f"{self.service_prefix}-sentry-dsn")
+        return self.get(f"{self.service_prefix}-sentry-dsn") or self.get("SENTRY_DSN")
 
     @property
     def telegram_token(self) -> str:
-        return self.get(f"{self.service_prefix}-telegram-token")
+        return self.get(f"{self.service_prefix}-telegram-token") or self.get("TELEGRAM_TOKEN")
 
     @property
     def base_backend_url(self) -> str:
