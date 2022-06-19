@@ -13,6 +13,7 @@ from telegram.ext import (
 from the_spymaster_api import TheSpymasterClient
 from the_spymaster_util import get_logger
 
+from bot.dynamo_db_persistence import DynamoDbPersistence
 from bot.handlers import (
     ConfigDifficultyHandler,
     ConfigLanguageHandler,
@@ -36,10 +37,11 @@ log = get_logger(__name__)
 
 
 class TheSpymasterBot:
-    def __init__(self, telegram_token: str, base_backend: str = None):
+    def __init__(self, telegram_token: str, base_backend: str = None, dynamo_persistence: bool = False):
         self.sessions: Dict[SessionId, Session] = {}
         self.client = TheSpymasterClient(base_backend=base_backend)
-        self.updater = Updater(telegram_token)
+        persistence = DynamoDbPersistence() if dynamo_persistence else None
+        self.updater = Updater(token=telegram_token, persistence=persistence)
         self._construct_updater()
 
     @property
@@ -88,6 +90,7 @@ class TheSpymasterBot:
         )
 
         conv_handler = ConversationHandler(
+            name="main",
             entry_points=[
                 start_handler,
                 custom_handler,
@@ -107,6 +110,7 @@ class TheSpymasterBot:
             },
             fallbacks=[fallback_handler],
             allow_reentry=True,
+            persistent=True,
         )
 
         self.dispatcher.add_handler(conv_handler)
