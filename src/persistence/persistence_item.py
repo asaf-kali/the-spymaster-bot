@@ -15,12 +15,11 @@ config = get_config()
 class PersistenceItem(Model):
     class Meta:
         table_name = config.persistence_db_table_name
-        allow_extra = True
 
     item_id = UnicodeAttribute(hash_key=True)
     item_type = UnicodeAttribute(null=True)
-    updated_ts = NumberAttribute(range_key=True)
-    item_data = JSONAttribute()
+    updated_ts = NumberAttribute()
+    item_data = JSONAttribute(null=True)
 
     def save(
         self, condition: Optional[Condition] = None, settings: OperationSettings = OperationSettings.default
@@ -29,12 +28,18 @@ class PersistenceItem(Model):
         return super().save(condition=condition, settings=settings)
 
 
+class SessionItem(PersistenceItem):
+    def save(
+        self, condition: Optional[Condition] = None, settings: OperationSettings = OperationSettings.default
+    ) -> Dict[str, Any]:
+        self.item_type = "session"
+        return super().save(condition=condition, settings=settings)
+
+
 def main():
     session = Session(game_id=1, last_keyboard_message=2)
-    session_item = PersistenceItem(
+    session_item = SessionItem(
         item_id=f"session::test::{session.game_id}",
-        item_type="session",
-        updated_ts=time.time(),
         item_data=session.dict(),
     )
     session_item.save()
