@@ -31,6 +31,10 @@ class Config(LazyConfig):
         return self.get(f"{self.service_prefix}-telegram-token") or self.get("TELEGRAM_TOKEN")
 
     @property
+    def persistence_db_table_name(self) -> str:
+        return f"{self.service_prefix}-persistence-table"
+
+    @property
     def base_backend_url(self) -> str:
         return self.get("BASE_BACKEND_URL")
 

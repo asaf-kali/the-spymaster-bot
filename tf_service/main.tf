@@ -141,15 +141,15 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
 
 # Dynamo DB
 
-resource "aws_dynamodb_table" "state_table" {
-  name           = "${local.service_name}-state-table"
+resource "aws_dynamodb_table" "persistence_table" {
+  name           = "${local.service_name}-persistence-table"
   billing_mode   = "PROVISIONED"
   read_capacity  = 20
   write_capacity = 20
-  hash_key       = "session_id"
+  hash_key       = "item_id"
 
   attribute {
-    name = "session_id"
+    name = "item_id"
     type = "S"
   }
 }

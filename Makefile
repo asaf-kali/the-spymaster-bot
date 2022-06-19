@@ -58,6 +58,12 @@ kill:
 build-layer:
 	sudo ./scripts/build_layer.sh
 
+plan:
+	cd tf_service; make plan;
+
+apply:
+	cd tf_service; make apply;
+
 update:
 	cd tf_service; make deploy;
 
