@@ -13,7 +13,6 @@ from telegram.ext import (
 from the_spymaster_api import TheSpymasterClient
 from the_spymaster_util import get_logger
 
-from bot.dynamo_db_persistence import DynamoDbPersistence
 from bot.handlers import (
     ConfigDifficultyHandler,
     ConfigLanguageHandler,
@@ -32,6 +31,7 @@ from bot.handlers import (
     TestingHandler,
 )
 from bot.models import BotState, Session, SessionId
+from persistence.dynamo_db_persistence import DynamoDbPersistence
 
 log = get_logger(__name__)
 
