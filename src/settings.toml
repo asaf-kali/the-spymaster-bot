@@ -12,6 +12,7 @@ bot_log_level = "INFO"
 env_verbose_name = "Local"
 std_formatter = "simple"
 bot_log_level = "DEBUG"
+persistence_db_table_name = "the-spymaster-bot-dev-persistence-table"
 
 [dev]
 env_verbose_name = "Dev"

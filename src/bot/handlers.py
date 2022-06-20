@@ -40,7 +40,6 @@ from bot.models import (
     BadMessageError,
     BotState,
     Session,
-    SessionId,
 )
 
 if TYPE_CHECKING:
@@ -86,12 +85,9 @@ class EventHandler:
         return self.update.effective_chat.id if self.update.effective_chat else None
 
     @property
-    def session_id(self) -> SessionId:
-        return SessionId(chat_id=self.chat_id)  # type: ignore
-
-    @property
     def session(self) -> Optional[Session]:
-        return self.bot.get_session(session_id=self.session_id)
+        session_data = self.context.chat_data
+        return Session(**session_data) if session_data else None
 
     @property
     def state(self) -> Optional[GameState]:
@@ -122,6 +118,13 @@ class EventHandler:
                 log.reset_context()
 
         return callback
+
+    def set_session(self, session: Optional[Session]):
+        if not self.chat_id:
+            log.warning("Chat id is not set, cannot set session.")
+            return
+        chat_data = session.dict() if session else None
+        self.bot.dispatcher.chat_data[self.chat_id] = chat_data
 
     def handle(self):
         raise NotImplementedError()
@@ -285,7 +288,7 @@ class StartEventHandler(EventHandler):
         request = StartGameRequest(language=session_config.language)
         response = self.client.start_game(request)
         session = Session(game_id=response.game_id, state=response.game_state, config=session_config)
-        self.bot.set_session(session_id=self.session_id, session=session)
+        self.set_session(session=session)
         self.remove_keyboard()
         self.send_markdown(f"Game *#{response.game_id}* is starting! 🥳", put_log=True)
         return self.fast_forward()
@@ -298,8 +301,7 @@ class ProcessMessageHandler(EventHandler):
         self.remove_keyboard()
         session = self.session
         if not session or not session.is_game_active:
-            self.trigger(HelpMessageHandler)
-            return
+            return self.trigger(HelpMessageHandler)
         try:
             command = COMMAND_TO_INDEX.get(text, text)
             card_index = _get_card_index(board=session.state.board, text=command)
@@ -333,7 +335,7 @@ class CustomHandler(EventHandler):
     def handle(self):
         game_config = GameConfig()
         session = Session(config=game_config)
-        self.bot.set_session(session_id=self.session_id, session=session)
+        self.set_session(session=session)
         keyboard = build_language_keyboard()
         self.send_text("🌍 Pick language:", reply_markup=keyboard)
         return BotState.ConfigLanguage
@@ -410,7 +412,7 @@ def parse_model_identifier(language: str, model_name: str) -> ModelIdentifier:
 class GetSessionsHandler(EventHandler):
     def handle(self):
         log.info(f"Getting sessions for user {self.user.full_name}")
-        self.send_text(f"Number of sessions: {len(self.bot.sessions)}")
+        self.send_text("Not implemented yet")
         # sessions_dict = {}
         # for session_id, session in self.bot.sessions.items():
         #     sessions_dict[session_id.chat_id] = session.clean_dict()
@@ -428,7 +430,8 @@ class LoadModelsHandler(EventHandler):
 
 class ConfigSolverHandler(EventHandler):
     def handle(self):
-        pass
+        self.send_text("🤖 Solver is not implemented yet. Please use the default solver.")
+        return BotState.Entry
 
 
 class ContinueHandler(EventHandler):
@@ -452,6 +455,8 @@ class TestingHandler(EventHandler):
         log.info(f"Testing handler with text: {text}")
         if "error" in text:
             raise ValueError(f"This is an error: {text}")
+        self.send_text("Hello")
+        return BotState.ConfigSolver
 
 
 class HelpMessageHandler(EventHandler):

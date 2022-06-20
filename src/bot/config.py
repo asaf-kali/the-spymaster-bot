@@ -32,7 +32,7 @@ class Config(LazyConfig):
 
     @property
     def persistence_db_table_name(self) -> str:
-        return f"{self.service_prefix}-persistence-table"
+        return self.get("persistence_db_table_name") or f"{self.service_prefix}-persistence-table"
 
     @property
     def base_backend_url(self) -> str:

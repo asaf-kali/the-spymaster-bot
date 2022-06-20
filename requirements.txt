@@ -6,10 +6,13 @@ the-spymaster-api==1.0.0
 # Telegram bot
 python-telegram-bot~=13.11
 
-# Utils
-requests~=2.27
+# Models
 dynaconf~=3.1
 pydantic~=1.9
+pynamodb==5.2.1
+
+# Utils
+requests~=2.27
 cachetools~=4.2
 boto3~=1.24
 
