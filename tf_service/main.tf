@@ -133,6 +133,14 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
             ],
             "Resource" : local.bot_kms_arn
           },
+          {
+            "Effect" : "Allow",
+            "Action" : [
+              "dynamodb:GetItem",
+              "dynamodb:PutItem",
+            ],
+            "Resource" : aws_dynamodb_table.persistence_table.arn
+          }
         ]
       }
     )

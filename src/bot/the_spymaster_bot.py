@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional, Type
+from typing import Any, Callable, Optional, Type
 
 from telegram import Update
 from telegram.ext import (
@@ -30,7 +30,7 @@ from bot.handlers import (
     StartEventHandler,
     TestingHandler,
 )
-from bot.models import BotState, Session, SessionId
+from bot.models import BotState
 from persistence.dynamo_db_persistence import DynamoDbPersistence
 
 log = get_logger(__name__)
@@ -38,7 +38,6 @@ log = get_logger(__name__)
 
 class TheSpymasterBot:
     def __init__(self, telegram_token: str, base_backend: str = None, dynamo_persistence: bool = False):
-        self.sessions: Dict[SessionId, Session] = {}
         self.client = TheSpymasterClient(base_backend=base_backend)
         persistence = DynamoDbPersistence() if dynamo_persistence else None
         self.updater = Updater(token=telegram_token, persistence=persistence)
@@ -47,17 +46,6 @@ class TheSpymasterBot:
     @property
     def dispatcher(self) -> Dispatcher:
         return self.updater.dispatcher
-
-    def set_session(self, session_id: SessionId, session: Optional[Session]):
-        if not session:
-            self.sessions.pop(session_id, None)
-            log.update_context(game_id=None)
-        else:
-            log.update_context(game_id=session.game_id)
-        self.sessions[session_id] = session  # type: ignore
-
-    def get_session(self, session_id: SessionId) -> Optional[Session]:
-        return self.sessions.get(session_id)
 
     def generate_callback(self, handler_type: Type[EventHandler]) -> Callable[[Update, CallbackContext], Any]:
         return handler_type.generate_callback(bot=self)
