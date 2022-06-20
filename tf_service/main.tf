@@ -136,6 +136,7 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
           {
             "Effect" : "Allow",
             "Action" : [
+              "dynamodb:DescribeTable",
               "dynamodb:GetItem",
               "dynamodb:PutItem",
             ],
