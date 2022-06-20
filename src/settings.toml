@@ -1,6 +1,7 @@
 [default]
 env_verbose_name = "Not set"
 base_backend_url = "http://127.0.0.1:8000"
+should_load_ssm_parameters = true
 
 # Logging
 indent_json = false
@@ -8,8 +9,13 @@ std_formatter = "json"
 root_log_level = "DEBUG"
 bot_log_level = "INFO"
 
+[test]
+env_verbose_name = "Test"
+should_load_ssm_parameters = false
+
 [local]
 env_verbose_name = "Local"
+should_load_ssm_parameters = false
 std_formatter = "simple"
 bot_log_level = "DEBUG"
 persistence_db_table_name = "the-spymaster-bot-dev-persistence-table"

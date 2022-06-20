@@ -11,7 +11,8 @@ class Config(LazyConfig):
     def load(self, extra_files: List[str] = None):
         super().load(extra_files)
         parameters = [f"{self.service_prefix}-telegram-token", f"{self.service_prefix}-sentry-dsn"]
-        self.load_ssm_parameters(parameters)
+        if self.should_load_ssm_parameters:
+            self.load_ssm_parameters(parameters)
         log.info("Config loaded")
 
     @property
@@ -41,6 +42,10 @@ class Config(LazyConfig):
     @property
     def bot_log_level(self) -> str:
         return self.get("BOT_LOG_LEVEL")
+
+    @property
+    def should_load_ssm_parameters(self) -> bool:
+        return self.get("SHOULD_LOAD_SSM_PARAMETERS")
 
 
 @ttl_cache(maxsize=1, ttl=600)
