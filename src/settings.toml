@@ -12,6 +12,7 @@ bot_log_level = "INFO"
 [test]
 env_verbose_name = "Test"
 should_load_ssm_parameters = false
+std_formatter = "debug"
 
 [local]
 env_verbose_name = "Local"
