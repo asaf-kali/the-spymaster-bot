@@ -124,7 +124,7 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
               "ssm:GetParameter",
               "ssm:GetParameters",
             ],
-            "Resource" : "arn:aws:ssm:us-east-1:${local.aws_account_id}:parameter/${local.service_name}-*"
+            "Resource" : "arn:aws:ssm:${var.aws_region}:${local.aws_account_id}:parameter/${local.service_name}-*"
           },
           {
             "Effect" : "Allow",
