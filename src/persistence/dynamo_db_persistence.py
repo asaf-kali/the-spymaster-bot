@@ -74,6 +74,14 @@ class DynamoStoredConversations(DynamoPersistencyStore, ConversationDict):  # ty
 
 
 class DynamoStoredChatData(DynamoPersistencyStore, ChatDataDict):  # type: ignore
+    def __copy__(self):
+        return self.copy()
+
+    def copy(self):
+        new = self.__class__()
+        new.cache = self.cache
+        return new
+
     def get_item_id(self, key: Any) -> str:
         return get_chat_id(key=key)
 
