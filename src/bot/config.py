@@ -16,8 +16,12 @@ class Config(LazyConfig):
         log.info("Config loaded")
 
     @property
+    def project_name(self) -> str:
+        return "the-spymaster-bot"
+
+    @property
     def service_prefix(self):
-        return f"the-spymaster-bot-{self.env_name}"
+        return f"{self.project_name}-{self.env_name}"
 
     @property
     def env_verbose_name(self) -> str:
