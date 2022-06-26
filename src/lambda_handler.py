@@ -16,7 +16,7 @@ configure_logging(config=config)
 configure_sentry(config=config)
 bot = TheSpymasterBot(
     telegram_token=config.telegram_token,
-    base_backend=config.base_backend_url,
+    base_url=config.base_backend_url,
     dynamo_persistence=True,
 )
 log.info("Bootstrap complete.")

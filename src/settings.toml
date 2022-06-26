@@ -19,11 +19,10 @@ env_verbose_name = "Local"
 should_load_ssm_parameters = false
 std_formatter = "simple"
 bot_log_level = "DEBUG"
-persistence_db_table_name = "the-spymaster-bot-dev-persistence-table"
 
 [dev]
 env_verbose_name = "Dev"
-base_backend_url = "https://ps84epd323.execute-api.us-east-1.amazonaws.com/dev"
+base_backend_url = "https://f6j2fl9tc6.execute-api.us-east-1.amazonaws.com/dev"
 
 [stage]
 env_verbose_name = "Staging"

@@ -3,7 +3,8 @@ from typing import Optional
 
 from codenames.game import PASS_GUESS, QUIT_GAME, CardColor, GameState, WinningReason
 from pydantic import BaseModel
-from the_spymaster_api.structs import GameConfig, ModelIdentifier
+from the_spymaster_api.structs import ModelIdentifier
+from the_spymaster_solvers_client.structs import Difficulty, Solver
 
 BLUE_EMOJI = CardColor.BLUE.emoji
 RED_EMOJI = CardColor.RED.emoji
@@ -48,6 +49,13 @@ class SessionId(BaseModel):
 
     def __hash__(self):
         return hash(self.json())
+
+
+class GameConfig(BaseModel):  # Move to backend api?
+    language: str = "english"
+    difficulty: Difficulty = Difficulty.EASY
+    solver: Solver = Solver.NAIVE
+    model_identifier: Optional[ModelIdentifier] = None
 
 
 class Session(BaseModel):
