@@ -5,6 +5,7 @@ from telegram.ext import (
     CallbackContext,
     CommandHandler,
     ConversationHandler,
+    DictPersistence,
     Dispatcher,
     Filters,
     MessageHandler,
@@ -37,9 +38,9 @@ log = get_logger(__name__)
 
 
 class TheSpymasterBot:
-    def __init__(self, telegram_token: str, base_backend: str = None, dynamo_persistence: bool = False):
-        self.client = TheSpymasterClient(base_backend=base_backend)
-        persistence = DynamoDbPersistence() if dynamo_persistence else None
+    def __init__(self, telegram_token: str, base_url: str = None, dynamo_persistence: bool = False):
+        self.client = TheSpymasterClient(base_url=base_url)
+        persistence = DynamoDbPersistence() if dynamo_persistence else DictPersistence()
         self.updater = Updater(token=telegram_token, persistence=persistence)
         self._construct_updater()
 

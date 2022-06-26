@@ -19,16 +19,14 @@ from telegram.error import BadRequest as TelegramBadRequest
 from telegram.ext import CallbackContext
 from the_spymaster_api import TheSpymasterClient
 from the_spymaster_api.structs import (
-    Difficulty,
     ErrorResponse,
-    GameConfig,
     GetGameStateRequest,
     GuessRequest,
-    LoadModelsRequest,
     ModelIdentifier,
     NextMoveRequest,
     StartGameRequest,
 )
+from the_spymaster_solvers_client.structs import Difficulty, LoadModelsRequest
 from the_spymaster_util import get_logger
 
 from bot.models import (
@@ -39,6 +37,7 @@ from bot.models import (
     WIN_REASON_TO_EMOJI,
     BadMessageError,
     BotState,
+    GameConfig,
     Session,
 )
 

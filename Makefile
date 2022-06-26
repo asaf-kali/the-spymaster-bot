@@ -67,6 +67,4 @@ apply:
 update:
 	cd tf_service; make deploy;
 
-deploy:
-	@make build-layer --no-print-directory
-	@make update --no-print-directory
+deploy: build-layer update
