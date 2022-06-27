@@ -64,6 +64,9 @@ class Session(BaseModel):
     last_keyboard_message: Optional[int]
     config: Optional[GameConfig]
 
+    class Config:
+        frozen = True
+
     @property
     def is_game_active(self) -> bool:
         return self.state is not None and not self.state.is_game_over
