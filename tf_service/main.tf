@@ -74,6 +74,8 @@ resource "aws_lambda_function" "bot_handler_lambda" {
   runtime          = "python3.9"
   filename         = data.archive_file.bot_lambda_code.output_path
   source_code_hash = filebase64sha256(data.archive_file.bot_lambda_code.output_path)
+  timeout          = 60
+  memory_size      = 256
   layers           = [
     aws_lambda_layer_version.bot_dependencies_layer.arn
   ]
