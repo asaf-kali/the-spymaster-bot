@@ -85,7 +85,7 @@ class EventHandler:
 
     @property
     def session(self) -> Optional[Session]:
-        session_data = self.context.chat_data
+        session_data = self.bot.dispatcher.chat_data.get(self.chat_id)  # type: ignore
         return Session(**session_data) if session_data else None
 
     @property
@@ -125,6 +125,17 @@ class EventHandler:
         chat_data = session.dict() if session else None
         self.bot.dispatcher.chat_data[self.chat_id] = chat_data
 
+    def update_session(self, **kwargs) -> Session:
+        old_session = self.session
+        if old_session is None:
+            raise ValueError()
+        new_session = old_session.copy(update=kwargs)
+        self.set_session(new_session)
+        return new_session
+
+    def set_state(self, new_state: GameState) -> Session:
+        return self.update_session(state=new_state)
+
     def handle(self):
         raise NotImplementedError()
 
@@ -143,7 +154,7 @@ class EventHandler:
         session = self.session
         if session is None:
             return None
-        while not session.state.is_game_over and not _is_blue_guesser_turn(session):
+        while not session.state.is_game_over and not self._is_blue_guesser_turn():
             self._next_move()
         self.send_board()
         if session.state.is_game_over:
@@ -163,11 +174,15 @@ class EventHandler:
             )
         except TelegramBadRequest:
             pass
-        self.session.last_keyboard_message = None
+        self.update_session(last_keyboard_message=None)
 
     def send_game_summary(self):
         self._send_hinters_intents()
         self._send_winner_text()
+
+    def _is_blue_guesser_turn(self):
+        state = self.state
+        return state.current_team_color == TeamColor.BLUE and state.current_player_role == PlayerRole.GUESSER
 
     def _send_winner_text(self):
         winner = self.state.winner
@@ -206,7 +221,7 @@ class EventHandler:
             if response.given_guess:
                 text = f"{team_color} hinter: " + get_given_guess_result_message_text(given_guess=response.given_guess)
                 self.send_markdown(text)
-        self.session.state = response.game_state
+        self.set_state(new_state=response.game_state)
         sleep(0.2 + random() / 2)
 
     def send_score(self):
@@ -224,14 +239,14 @@ class EventHandler:
             if state.bonus_given:
                 message += " (bonus round)"
         text = self.send_markdown(message, reply_markup=keyboard)
-        self.session.last_keyboard_message = text.message_id  # type: ignore
+        self.update_session(last_keyboard_message=text.message_id)
 
     def _refresh_game_state(self):
         if not self.game_id:
             return
         request = GetGameStateRequest(game_id=self.game_id)
         response = self.client.get_game_state(request=request)
-        self.session.state = response.game_state
+        self.set_state(new_state=response.game_state)
 
     def _handle_error(self, error: Exception):
         log.debug(f"Handling error: {error}")
@@ -309,7 +324,7 @@ class ProcessMessageHandler(EventHandler):
             return None
         request = GuessRequest(game_id=self.game_id, card_index=card_index)
         response = self.client.guess(request)
-        session.state = response.game_state
+        self.set_state(response.game_state)
         given_guess = response.given_guess
         if given_guess is None:
             pass  # This means we passed the turn
@@ -474,12 +489,6 @@ or just click the word on the keyboard. \
 Use '-pass' and '-quit' to pass the turn and quit the game.
 """
         self.send_markdown(text)
-
-
-def _is_blue_guesser_turn(session):
-    return (
-        session.state.current_team_color == TeamColor.BLUE and session.state.current_player_role == PlayerRole.GUESSER
-    )
 
 
 def _enrich_sentry_context(**kwargs):
