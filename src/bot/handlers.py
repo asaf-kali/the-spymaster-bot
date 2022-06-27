@@ -436,10 +436,10 @@ class GetSessionsHandler(EventHandler):
 
 class LoadModelsHandler(EventHandler):
     def handle(self):
-        log.info("Sending async load models request")
+        self.send_text("Sending load models request...")
         request = LoadModelsRequest(model_identifiers=AVAILABLE_MODELS)
         response = self.client.load_models(request)
-        self.send_text(f"Got response: {response.dict()}")
+        self.send_markdown(f"Got response load models response:\n```{response.dict()}```")
 
 
 class ConfigSolverHandler(EventHandler):
