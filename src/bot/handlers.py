@@ -28,6 +28,7 @@ from the_spymaster_api.structs import (
 )
 from the_spymaster_solvers_client.structs import Difficulty, LoadModelsRequest
 from the_spymaster_util import get_logger
+from the_spymaster_util.measure_time import MeasureTime
 
 from bot.models import (
     AVAILABLE_MODELS,
@@ -438,8 +439,9 @@ class LoadModelsHandler(EventHandler):
     def handle(self):
         self.send_text("Sending load models request...")
         request = LoadModelsRequest(model_identifiers=AVAILABLE_MODELS)
-        response = self.client.load_models(request)
-        self.send_markdown(f"Got response load models response:\n```{response.dict()}```")
+        with MeasureTime() as mt:
+            response = self.client.load_models(request)
+        self.send_markdown(f"Successfully loaded `{response.loaded_models_count}` models in `{mt.delta}` seconds.")
 
 
 class ConfigSolverHandler(EventHandler):
