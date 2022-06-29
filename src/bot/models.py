@@ -41,21 +41,14 @@ class BotState(IntEnum):
     Playing = auto()
 
 
-class SessionId(BaseModel):
-    chat_id: int
-
-    def __str__(self) -> str:
-        return f"{self.chat_id}"
-
-    def __hash__(self):
-        return hash(self.json())
-
-
 class GameConfig(BaseModel):  # Move to backend api?
     language: str = "english"
     difficulty: Difficulty = Difficulty.EASY
     solver: Solver = Solver.NAIVE
     model_identifier: Optional[ModelIdentifier] = None
+
+    class Config:
+        frozen = True
 
 
 class Session(BaseModel):

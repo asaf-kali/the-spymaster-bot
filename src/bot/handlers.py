@@ -134,6 +134,16 @@ class EventHandler:
         self.set_session(new_session)
         return new_session
 
+    def update_game_config(self, **kwargs):
+        session = self.session
+        if not session or not session.config:
+            raise ValueError()
+        old_config = self.session.config
+        new_config = old_config.copy(update=kwargs)
+        self.update_session(config=new_config)
+
+        return self.update_session(game_config=GameConfig(**kwargs))
+
     def set_state(self, new_state: GameState) -> Session:
         return self.update_session(state=new_state)
 
@@ -365,7 +375,8 @@ class ConfigLanguageHandler(EventHandler):
     def handle(self):
         text = self.update.message.text.lower()
         log.info(f"Setting language: '{text}'")
-        self.session.config.language = parse_language(text)
+        language = parse_language(text)
+        self.update_game_config(language=language)
         keyboard = build_difficulty_keyboard()
         self.send_text("🥵 Pick difficulty:", reply_markup=keyboard)
         return BotState.ConfigDifficulty
@@ -387,7 +398,8 @@ class ConfigDifficultyHandler(EventHandler):
     def handle(self):
         text = self.update.message.text.lower()
         log.info(f"Setting difficulty: '{text}'")
-        self.session.config.difficulty = parse_difficulty(text)
+        difficulty = parse_difficulty(text)
+        self.update_game_config(difficulty=difficulty)
         keyword = build_models_keyboard(language=self.session.config.language)
         self.send_text("🧠 Pick language model:", reply_markup=keyword)
         return BotState.ConfigModel
@@ -411,9 +423,8 @@ class ConfigModelHandler(EventHandler):
     def handle(self):
         text = self.update.message.text.lower()
         log.info(f"Setting model: '{text}'")
-        self.session.config.model_identifier = parse_model_identifier(
-            language=self.session.config.language, model_name=text
-        )
+        model_identifier = parse_model_identifier(language=self.session.config.language, model_name=text)
+        self.update_game_config(model_identifier=model_identifier)
         return self.trigger(StartEventHandler)
 
 
