@@ -27,11 +27,6 @@ locals {
   bot_kms_env_map = {
     "dev" : "arn:aws:kms:us-east-1:096386908883:key/4d0d382c-dcfa-4f44-b990-c66f468dc5dd",
   }
-  bot_provisioned_concurrency_env_map = {
-    "dev" : 2,
-    "prod" : 5,
-  }
-  bot_provisioned_concurrency = local.bot_provisioned_concurrency_env_map[var.env]
   bot_kms_arn                 = local.bot_kms_env_map[var.env]
 }
 
@@ -96,12 +91,6 @@ resource "aws_lambda_alias" "bot_handler_live_alias" {
   function_name    = aws_lambda_function.bot_handler_lambda.function_name
   function_version = aws_lambda_function.bot_handler_lambda.version
   name             = "live"
-}
-
-resource "aws_lambda_provisioned_concurrency_config" "bot_handler_provision" {
-  function_name                     = aws_lambda_function.bot_handler_lambda.function_name
-  qualifier                         = aws_lambda_alias.bot_handler_live_alias.name
-  provisioned_concurrent_executions = local.bot_provisioned_concurrency
 }
 
 resource "aws_lambda_function_url" "bot_handler_lambda_url" {
