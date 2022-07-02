@@ -36,6 +36,7 @@ def handle(event: dict, context=None):
             log.warning("Error decoding JSON")
             return create_response(400, data={"message": "Error decoding JSON", "error": str(e)})
         bot.process_update(update_data)
+        return create_response(200, data={"message": "OK"})
     except Exception as e:
         log.exception("Error handling event")
         sentry_sdk.capture_exception(e)
