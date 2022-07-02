@@ -18,12 +18,18 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 locals {
-  project_name      = "the-spymaster-bot"
-  service_name      = "${local.project_name}-${var.env}"
-  aws_account_id    = data.aws_caller_identity.current.account_id
-  project_root      = "${path.module}/../"
-  lambda_zip_name   = "the-spymaster-bot.zip"
-  layer_zip_name    = "the-spymaster-bot-layer.zip"
+  project_name    = "the-spymaster-bot"
+  service_name    = "${local.project_name}-${var.env}"
+  aws_account_id  = data.aws_caller_identity.current.account_id
+  project_root    = "${path.module}/../"
+  lambda_zip_name = "the-spymaster-bot.zip"
+  layer_zip_name  = "the-spymaster-bot-layer.zip"
+  # Secrets
+  bot_kms_env_map = {
+    "dev" : "arn:aws:kms:us-east-1:096386908883:key/4d0d382c-dcfa-4f44-b990-c66f468dc5dd",
+  }
+  bot_kms_arn       = local.bot_kms_env_map[var.env]
+  # Domain
   base_app_domain   = "the-spymaster.xyz"
   hosted_zone_id    = "Z0770508EK6R7V32364I"
   certificate_arn   = "arn:aws:acm:us-east-1:096386908883:certificate/fc0faea8-e891-438a-a779-4013ee38755f"
@@ -34,11 +40,7 @@ locals {
   }
   domain_suffix      = local.domain_suffix_map[var.env]
   bot_webhook_domain = "telegram.${local.domain_suffix}${local.base_app_domain}"
-  bot_kms_env_map    = {
-    "dev" : "arn:aws:kms:us-east-1:096386908883:key/4d0d382c-dcfa-4f44-b990-c66f468dc5dd",
-  }
-  bot_kms_arn      = local.bot_kms_env_map[var.env]
-  bot_endpoint_url = "${aws_apigatewayv2_api.api_gateway.api_endpoint}/${aws_apigatewayv2_stage.api_stage.name}/"
+  bot_endpoint_url   = "${aws_apigatewayv2_api.api_gateway.api_endpoint}/${aws_apigatewayv2_stage.api_stage.name}/"
 }
 
 variable "aws_region" {
