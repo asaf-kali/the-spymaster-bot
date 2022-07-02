@@ -18,16 +18,24 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 locals {
-  project_name    = "the-spymaster-bot"
-  service_name    = "${local.project_name}-${var.env}"
-  aws_account_id  = data.aws_caller_identity.current.account_id
-  project_root    = "${path.module}/../"
-  lambda_zip_name = "the-spymaster-bot.zip"
-  layer_zip_name  = "the-spymaster-bot-layer.zip"
-  bot_kms_env_map = {
+  project_name      = "the-spymaster-bot"
+  service_name      = "${local.project_name}-${var.env}"
+  aws_account_id    = data.aws_caller_identity.current.account_id
+  project_root      = "${path.module}/../"
+  lambda_zip_name   = "the-spymaster-bot.zip"
+  layer_zip_name    = "the-spymaster-bot-layer.zip"
+  base_app_domain   = "the-spymaster.xyz"
+  domain_suffix_map = {
+    "dev"     = "dev."
+    "staging" = "staging."
+    "prod"    = ""
+  }
+  domain_suffix      = local.domain_suffix_map[var.env]
+  bot_webhook_domain = "telegram.${local.domain_suffix}${local.base_app_domain}"
+  bot_kms_env_map    = {
     "dev" : "arn:aws:kms:us-east-1:${local.aws_account_id}:key/4d0d382c-dcfa-4f44-b990-c66f468dc5dd",
   }
-  bot_kms_arn                 = local.bot_kms_env_map[var.env]
+  bot_kms_arn = local.bot_kms_env_map[var.env]
 }
 
 variable "aws_region" {
@@ -93,11 +101,67 @@ resource "aws_lambda_alias" "bot_handler_live_alias" {
   name             = "live"
 }
 
-resource "aws_lambda_function_url" "bot_handler_lambda_url" {
-  function_name      = aws_lambda_function.bot_handler_lambda.function_name
-  qualifier          = aws_lambda_alias.bot_handler_live_alias.name
-  authorization_type = "NONE"
+# API Gateway
+
+resource "aws_apigatewayv2_api" "api_gateway" {
+  name          = "${local.service_name}-api"
+  protocol_type = "HTTP"
 }
+
+resource "aws_apigatewayv2_integration" "api_gateway_integration" {
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  integration_type   = "AWS_PROXY"
+  integration_method = "POST"
+  integration_uri    = aws_lambda_function.bot_handler_lambda.invoke_arn
+  #  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "api_gateway_route" {
+  api_id    = aws_apigatewayv2_api.api_gateway.id
+  route_key = "ANY /{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.api_gateway_integration.id}"
+}
+
+resource "aws_lambda_permission" "bot_handler_api_gateway_permission" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  principal     = "apigateway.amazonaws.com"
+  function_name = aws_lambda_function.bot_handler_lambda.arn
+  #  qualifier     = aws_lambda_alias.bot_handler_live_alias.name
+  source_arn    = "${aws_apigatewayv2_api.api_gateway.execution_arn}/*/*/{proxy+}"
+}
+
+resource "aws_apigatewayv2_stage" "api_stage" {
+  api_id      = aws_apigatewayv2_api.api_gateway.id
+  name        = local.service_name
+  auto_deploy = true
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gw_log_group.arn
+
+    format = jsonencode({
+      request_id                = "$context.requestId"
+      source_ip                 = "$context.identity.sourceIp"
+      request_time              = "$context.requestTime"
+      protocol                  = "$context.protocol"
+      http_method               = "$context.httpMethod"
+      resource_path             = "$context.resourcePath"
+      route_key                 = "$context.routeKey"
+      status                    = "$context.status"
+      response_length           = "$context.responseLength"
+      integration_error_message = "$context.integrationErrorMessage"
+    }
+    )
+  }
+}
+
+resource "aws_cloudwatch_log_group" "api_gw_log_group" {
+  name              = "/aws/api-gw/${aws_apigatewayv2_api.api_gateway.name}"
+  retention_in_days = 30
+}
+
+
+# Lambda role
 
 data "aws_iam_policy_document" "lambda_assume_policy_doc" {
   statement {
@@ -175,6 +239,6 @@ resource "aws_dynamodb_table" "persistence_table" {
 
 # Outputs
 
-output "bot_trigger_url" {
-  value = aws_lambda_function_url.bot_handler_lambda_url.function_url
+output "api_endpoint" {
+  value = "${aws_apigatewayv2_api.api_gateway.api_endpoint}/${aws_apigatewayv2_stage.api_stage.name}/"
 }
