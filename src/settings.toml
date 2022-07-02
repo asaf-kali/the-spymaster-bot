@@ -22,13 +22,14 @@ bot_log_level = "DEBUG"
 
 [dev]
 env_verbose_name = "Dev"
-base_backend_url = "https://f6j2fl9tc6.execute-api.us-east-1.amazonaws.com/dev"
+base_backend_url = "https://backend.dev.the-spymaster.xyz"
 
 [stage]
 env_verbose_name = "Staging"
 
 [prod]
 env_verbose_name = "Production"
+base_backend_url = "https://backend.the-spymaster.xyz"
 
 [rsbpi]
 env_verbose_name = "Raspberry Pi"
