@@ -64,7 +64,8 @@ def main():
         base_url=config.base_backend_url,
         dynamo_persistence=False,
     )
-    bot.poll()
+    # bot.poll()
+    bot.process_update({"action": "warmup"})
 
 
 if __name__ == "__main__":
