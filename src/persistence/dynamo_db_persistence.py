@@ -47,7 +47,7 @@ class DynamoPersistencyStore:
         item_id = self.get_item_id(key=key)
         existing_data = self.cache.get(item_id)
         if data == existing_data:
-            log.info(f"Data {data} is the same as in cache, not storing")
+            log.debug(f"Data {data} is the same as in cache, not storing")
             return
         item_type = self.get_item_type()
         item = PersistenceItem(item_id=item_id, item_type=item_type, item_data=data)
