@@ -449,7 +449,7 @@ class GetSessionsHandler(EventHandler):
 class LoadModelsHandler(EventHandler):
     def handle(self):
         self.send_text("Sending load models request...")
-        request = LoadModelsRequest(model_identifiers=AVAILABLE_MODELS)
+        request = LoadModelsRequest(model_identifiers=AVAILABLE_MODELS, load_default_models=False)
         with MeasureTime() as mt:
             response = self.client.load_models(request)
         self.send_markdown(f"Successfully loaded `{response.loaded_models_count}` models in `{mt.delta}` seconds.")
