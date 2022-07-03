@@ -26,7 +26,7 @@ from the_spymaster_api.structs import (
     NextMoveRequest,
     StartGameRequest,
 )
-from the_spymaster_solvers_client.structs import Difficulty, LoadModelsRequest
+from the_spymaster_solvers_client.structs import Difficulty
 from the_spymaster_util import get_logger
 from the_spymaster_util.measure_time import MeasureTime
 
@@ -57,8 +57,8 @@ class EventHandler:
         self.context = context
 
     @property
-    def client(self) -> TheSpymasterClient:
-        return self.bot.client
+    def api_client(self) -> TheSpymasterClient:
+        return self.bot.api_client
 
     @property
     def user(self) -> Optional[TelegramUser]:
@@ -221,10 +221,10 @@ class EventHandler:
         if self._should_skip_turn():
             self.send_text(f"{team_color} guesser has skipped the turn.")
             request = GuessRequest(game_id=self.game_id, card_index=PASS_GUESS)
-            response = self.client.guess(request=request)
+            response = self.api_client.guess(request=request)
         else:
             request = NextMoveRequest(game_id=self.game_id, solver=self.session.config.solver)
-            response = self.client.next_move(request=request)
+            response = self.api_client.next_move(request=request)
             if response.given_hint:
                 given_hint = response.given_hint
                 text = f"{team_color} hinter says '*{given_hint.word}*' with *{given_hint.card_amount}* card(s)."
@@ -256,7 +256,7 @@ class EventHandler:
         if not self.game_id:
             return
         request = GetGameStateRequest(game_id=self.game_id)
-        response = self.client.get_game_state(request=request)
+        response = self.api_client.get_game_state(request=request)
         self.set_state(new_state=response.game_state)
 
     def _handle_error(self, error: Exception):
@@ -311,7 +311,7 @@ class StartEventHandler(EventHandler):
         session_config = existing_config or GameConfig()
         log.debug("Session config", extra={"session_config": session_config.dict()})
         request = StartGameRequest(language=session_config.language)
-        response = self.client.start_game(request)
+        response = self.api_client.start_game(request)
         session = Session(game_id=response.game_id, state=response.game_state, config=session_config)
         self.set_session(session=session)
         self.remove_keyboard()
@@ -334,7 +334,7 @@ class ProcessMessageHandler(EventHandler):
             self.send_board(f"Card '*{text}*' not found. Please reply with card index (1-25) or a word on the board.")
             return None
         request = GuessRequest(game_id=self.game_id, card_index=card_index)
-        response = self.client.guess(request)
+        response = self.api_client.guess(request)
         self.set_state(response.game_state)
         given_guess = response.given_guess
         if given_guess is None:
@@ -449,9 +449,8 @@ class GetSessionsHandler(EventHandler):
 class LoadModelsHandler(EventHandler):
     def handle(self):
         self.send_text("Sending load models request...")
-        request = LoadModelsRequest(model_identifiers=AVAILABLE_MODELS, load_default_models=False)
         with MeasureTime() as mt:
-            response = self.client.load_models(request)
+            response = self.bot.send_load_models_request()
         self.send_markdown(f"Successfully loaded `{response.loaded_models_count}` models in `{mt.delta}` seconds.")
 
 
