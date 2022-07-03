@@ -1,7 +1,7 @@
 # Lambda warmup event
 
 resource "aws_cloudwatch_event_rule" "lambda_warmup_rule" {
-  schedule_expression = "rate(2 minutes)"
+  schedule_expression = "rate(3 minutes)"
 }
 
 resource "aws_cloudwatch_event_target" "lambda_warmup_target" {
