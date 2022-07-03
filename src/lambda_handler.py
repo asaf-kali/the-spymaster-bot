@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 import sentry_sdk
 from the_spymaster_util import get_logger
@@ -35,13 +36,22 @@ def handle(event: dict, context=None):
         except json.JSONDecodeError as e:
             log.warning("Error decoding JSON")
             return create_response(400, data={"message": "Error decoding JSON", "error": str(e)})
-        bot.process_update(update_data)
-        return create_response(200, data={"message": "OK"})
+        result = bot.process_update(update_data)
+        return create_response(200, data={"result": json_safe(result)})
     except Exception as e:
         log.exception("Error handling event")
         sentry_sdk.capture_exception(e)
         sentry_sdk.flush(timeout=5)
         return create_response(500, data={"message": "Error handling event"})
+
+
+def json_safe(x: Any) -> Any:
+    if isinstance(x, (int, float, str, bool)):
+        return x
+    try:
+        return json.dumps(x)
+    except:  # noqa
+        return str(x)
 
 
 def create_response(status_code: int, data: dict):
@@ -64,5 +74,11 @@ def example_event():
     handle(event)
 
 
+def example_warmup():
+    update = {"action": "warmup"}
+    event = {"body": json.dumps(update)}
+    handle(event)
+
+
 if __name__ == "__main__":
-    example_event()
+    example_warmup()
