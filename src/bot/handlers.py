@@ -1,5 +1,4 @@
 from random import random
-from time import sleep
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type
 
 import sentry_sdk
@@ -162,13 +161,13 @@ class EventHandler:
         return self.send_text(text=text, parse_mode="Markdown", **kwargs)
 
     def fast_forward(self):
-        session = self.session
-        if session is None:
+        state = self.state
+        if not state:
             return None
-        while not session.state.is_game_over and not self._is_blue_guesser_turn():
-            self._next_move()
+        while not state.is_game_over and not self._is_blue_guesser_turn(state=state):
+            self._next_move(state=state)
         self.send_board()
-        if session.state.is_game_over:
+        if state.is_game_over:
             self.send_game_summary()
             log.update_context(game_id=None)
             self.trigger(HelpMessageHandler)
@@ -191,8 +190,7 @@ class EventHandler:
         self._send_hinters_intents()
         self._send_winner_text()
 
-    def _is_blue_guesser_turn(self):
-        state = self.state
+    def _is_blue_guesser_turn(self, state: GameState):
         return state.current_team_color == TeamColor.BLUE and state.current_player_role == PlayerRole.GUESSER
 
     def _send_winner_text(self):
@@ -213,9 +211,9 @@ class EventHandler:
         text = f"Hinters intents were:\n{intent_string}\n"
         self.send_markdown(text)
 
-    def _next_move(self):
-        team_color = self.state.current_team_color.value.title()
-        if self.state.current_player_role == PlayerRole.HINTER:
+    def _next_move(self, state: GameState):
+        team_color = state.current_team_color.value.title()
+        if state.current_player_role == PlayerRole.HINTER:
             self.send_score()
             self.send_text(f"{team_color} hinter is thinking... 🤔")
         if self._should_skip_turn():
@@ -223,7 +221,8 @@ class EventHandler:
             request = GuessRequest(game_id=self.game_id, card_index=PASS_GUESS)
             response = self.api_client.guess(request=request)
         else:
-            request = NextMoveRequest(game_id=self.game_id, solver=self.session.config.solver)
+            solver = self.session.config.solver  # type: ignore
+            request = NextMoveRequest(game_id=self.game_id, solver=solver)
             response = self.api_client.next_move(request=request)
             if response.given_hint:
                 given_hint = response.given_hint
@@ -233,7 +232,6 @@ class EventHandler:
                 text = f"{team_color} hinter: " + get_given_guess_result_message_text(given_guess=response.given_guess)
                 self.send_markdown(text)
         self.set_state(new_state=response.game_state)
-        sleep(0.2 + random() / 2)
 
     def send_score(self):
         score = self.state.remaining_score
@@ -451,7 +449,7 @@ class LoadModelsHandler(EventHandler):
         self.send_text("Sending load models request...")
         with MeasureTime() as mt:
             response = self.bot.send_load_models_request()
-        self.send_markdown(f"Successfully loaded `{response.loaded_models_count}` models in `{mt.delta}` seconds.")
+        self.send_markdown(f"Successfully loaded `{response.success_count}` models in `{mt.delta}` seconds.")
 
 
 class ConfigSolverHandler(EventHandler):
