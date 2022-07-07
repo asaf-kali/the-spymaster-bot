@@ -59,11 +59,11 @@ class TheSpymasterBot:
         parsed_update = self.parse_update(update)
         return self.dispatcher.process_update(parsed_update)
 
-    def handle_warmup(self) -> int:
+    def handle_warmup(self) -> dict:
         log.update_context(action="warmup")
         log.info("Warming up...")
         response = self.send_load_models_request()
-        return response.loaded_models_count
+        return response.dict()
 
     def send_load_models_request(self) -> LoadModelsResponse:
         request = LoadModelsRequest(model_identifiers=AVAILABLE_MODELS, load_default_models=False)
