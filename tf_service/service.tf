@@ -22,16 +22,16 @@ data "archive_file" "bot_lambda_code" {
 }
 
 resource "aws_lambda_function" "bot_handler_lambda" {
-  function_name    = "${local.service_name}-lambda"
-  role             = aws_iam_role.bot_lambda_exec_role.arn
-  handler          = "lambda_handler.handle"
-  runtime          = "python3.9"
-  filename         = data.archive_file.bot_lambda_code.output_path
-  source_code_hash = filebase64sha256(data.archive_file.bot_lambda_code.output_path)
-  timeout          = 60
-  memory_size      = 256
-  publish          = true
-  layers           = [
+  function_name                  = "${local.service_name}-lambda"
+  role                           = aws_iam_role.bot_lambda_exec_role.arn
+  handler                        = "lambda_handler.handle"
+  runtime                        = "python3.9"
+  filename                       = data.archive_file.bot_lambda_code.output_path
+  source_code_hash               = filebase64sha256(data.archive_file.bot_lambda_code.output_path)
+  timeout                        = 30
+  memory_size                    = 256
+  reserved_concurrent_executions = 5
+  layers                         = [
     aws_lambda_layer_version.bot_dependencies_layer.arn
   ]
   environment {
