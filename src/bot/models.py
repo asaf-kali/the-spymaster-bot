@@ -22,8 +22,8 @@ AVAILABLE_MODELS = [
     # ModelIdentifier(language="hebrew", model_name="skv-cbow-30", is_stemmed=True),
     # ModelIdentifier(language="hebrew", model_name="skv-cbow-150", is_stemmed=True),
     ModelIdentifier(language="hebrew", model_name="skv-ft-150", is_stemmed=True),
-    ModelIdentifier(language="hebrew", model_name="ft-30", is_stemmed=False),
-    ModelIdentifier(language="hebrew", model_name="cbow-30", is_stemmed=False),
+    # ModelIdentifier(language="hebrew", model_name="ft-30", is_stemmed=False),
+    # ModelIdentifier(language="hebrew", model_name="cbow-30", is_stemmed=False),
 ]
 
 
