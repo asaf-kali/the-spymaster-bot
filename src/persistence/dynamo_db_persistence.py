@@ -20,24 +20,17 @@ log = logging.getLogger(__name__)
 
 
 class DynamoPersistencyStore:
-    def __init__(self):
-        # This cache might be a bad idea, in case 2 requests come in the same time.
-        self.cache = {}
+    def __getitem__(self, item: ConversationKey):
+        return self.get(key=item)
 
-    def get_item_id(self, key: Any) -> str:
-        raise NotImplementedError()
-
-    def get_item_type(self) -> str:
-        raise NotImplementedError()
+    def __setitem__(self, key: Any, value: Any):
+        return self.set(key=key, data=value)
 
     def get(self, key: Any) -> Any:
         item_id = self.get_item_id(key=key)
-        if item_id in self.cache:
-            return self.cache[item_id]
         try:
             persistence_item = PersistenceItem.get(hash_key=item_id)
             data = persistence_item.item_data
-            self.cache[item_id] = data
             return data
         except DoesNotExist:
             log.info(f"Item {item_id} does not exist")
@@ -45,20 +38,15 @@ class DynamoPersistencyStore:
 
     def set(self, key: Any, data: Any):
         item_id = self.get_item_id(key=key)
-        existing_data = self.cache.get(item_id)
-        if data == existing_data:
-            log.debug(f"Data {data} is the same as in cache, not storing")
-            return
         item_type = self.get_item_type()
         item = PersistenceItem(item_id=item_id, item_type=item_type, item_data=data)
         item.save()
-        self.cache[item_id] = data
 
-    def __getitem__(self, item: ConversationKey):
-        return self.get(key=item)
+    def get_item_id(self, key: Any) -> str:
+        raise NotImplementedError()
 
-    def __setitem__(self, key: Any, value: Any):
-        return self.set(key=key, data=value)
+    def get_item_type(self) -> str:
+        raise NotImplementedError()
 
 
 class DynamoStoredConversations(DynamoPersistencyStore, ConversationDict):  # type: ignore
@@ -78,9 +66,7 @@ class DynamoStoredChatData(DynamoPersistencyStore, ChatDataDict):  # type: ignor
         return self.copy()
 
     def copy(self):
-        new = self.__class__()
-        new.cache = self.cache
-        return new
+        return self.__class__()
 
     def get_item_id(self, key: Any) -> str:
         return get_chat_id(key=key)
