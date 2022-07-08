@@ -54,8 +54,8 @@ class GameConfig(BaseModel):  # Move to backend api?
 class Session(BaseModel):
     game_id: Optional[int]
     state: Optional[GameState]
-    last_keyboard_message: Optional[int]
     config: Optional[GameConfig]
+    last_keyboard_message_id: Optional[int]
 
     class Config:
         frozen = True
@@ -63,8 +63,3 @@ class Session(BaseModel):
     @property
     def is_game_active(self) -> bool:
         return self.state is not None and not self.state.is_game_over
-
-    def clean_dict(self) -> dict:
-        result = self.dict(exclude={"last_keyboard_message", "state"})
-        result["is_game_active"] = self.is_game_active
-        return result

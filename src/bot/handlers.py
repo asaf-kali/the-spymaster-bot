@@ -49,11 +49,24 @@ log = get_logger(__name__)
 SUPPORTED_LANGUAGES = ["hebrew", "english"]
 
 
+class NoneValueError(Exception):
+    pass
+
+
 class EventHandler:
-    def __init__(self, bot: "TheSpymasterBot", update: Update, context: CallbackContext):
+    def __init__(
+        self,
+        bot: "TheSpymasterBot",
+        update: Update,
+        context: CallbackContext,
+        chat_id: Optional[int],
+        session: Optional[Session],
+    ):
         self.bot = bot
         self.update = update
         self.context = context
+        self.chat_id = chat_id
+        self.session = session
 
     @property
     def api_client(self) -> TheSpymasterClient:
@@ -80,32 +93,33 @@ class EventHandler:
         return self.user.full_name
 
     @property
-    def chat_id(self) -> Optional[int]:
-        return self.update.effective_chat.id if self.update.effective_chat else None
-
-    @property
-    def session(self) -> Optional[Session]:
-        session_data = self.bot.dispatcher.chat_data.get(self.chat_id)  # type: ignore
-        return Session(**session_data) if session_data else None
+    def game_id(self) -> Optional[int]:
+        if not self.session:
+            return None
+        return self.session.game_id
 
     @property
     def state(self) -> Optional[GameState]:
-        if self.session is None:
+        if not self.session:
             return None
         return self.session.state
 
     @property
-    def game_id(self) -> Optional[int]:
-        if self.session is None:
+    def config(self) -> Optional[GameConfig]:
+        if not self.session:
             return None
-        return self.session.game_id
+        return self.session.config
 
     @classmethod
     def generate_callback(cls, bot: "TheSpymasterBot") -> Callable[[Update, CallbackContext], Any]:
         def callback(update: Update, context: CallbackContext) -> Any:
-            instance = cls(bot=bot, update=update, context=context)
+            chat_id = update.effective_chat.id if update.effective_chat else None
+            session_data = bot.dispatcher.chat_data.get(chat_id) if chat_id else None
+            session = Session(**session_data) if session_data else None
+            instance = cls(bot=bot, update=update, context=context, chat_id=chat_id, session=session)
             try:
-                log.update_context(telegram_user_id=instance.user_id, game_id=instance.game_id)
+                game_id = session.game_id if session else None
+                log.update_context(telegram_user_id=instance.user_id, game_id=game_id)
             except Exception as e:
                 log.warning(f"Failed to update context: {e}")
             try:
@@ -118,30 +132,27 @@ class EventHandler:
 
         return callback
 
-    def set_session(self, session: Optional[Session]):
+    def set_session(self, session: Optional[Session]) -> Optional[Session]:
         if not self.chat_id:
-            log.warning("Chat id is not set, cannot set session.")
-            return
+            raise NoneValueError("chat_id is not set, cannot set session.")
         chat_data = session.dict() if session else None
+        self.session = session
         self.bot.dispatcher.chat_data[self.chat_id] = chat_data
+        return session
 
     def update_session(self, **kwargs) -> Session:
-        old_session = self.session
-        if old_session is None:
-            raise ValueError()
-        new_session = old_session.copy(update=kwargs)
+        if self.session is None:
+            raise NoneValueError("session is not set, cannot update session.")
+        new_session = self.session.copy(update=kwargs)
         self.set_session(new_session)
         return new_session
 
-    def update_game_config(self, **kwargs):
-        session = self.session
-        if not session or not session.config:
-            raise ValueError()
-        old_config = self.session.config
+    def update_game_config(self, **kwargs) -> Session:
+        old_config = self.config
+        if not old_config:
+            raise NoneValueError("session is not set, cannot update game config.")
         new_config = old_config.copy(update=kwargs)
-        self.update_session(config=new_config)
-
-        return self.update_session(game_config=GameConfig(**kwargs))
+        return self.update_session(config=new_config)
 
     def set_state(self, new_state: GameState) -> Session:
         return self.update_session(state=new_state)
@@ -150,7 +161,9 @@ class EventHandler:
         raise NotImplementedError()
 
     def trigger(self, other: Type["EventHandler"]) -> Any:
-        return other(bot=self.bot, update=self.update, context=self.context).handle()
+        return other(
+            bot=self.bot, update=self.update, context=self.context, chat_id=self.chat_id, session=self.session
+        ).handle()
 
     def send_text(self, text: str, put_log: bool = False, **kwargs) -> Message:
         if put_log:
@@ -161,40 +174,34 @@ class EventHandler:
         return self.send_text(text=text, parse_mode="Markdown", **kwargs)
 
     def fast_forward(self):
-        state = self.state
-        if not state:
-            return None
-        while not state.is_game_over and not self._is_blue_guesser_turn(state=state):
-            self._next_move(state=state)
-        self.send_board()
-        if state.is_game_over:
-            self.send_game_summary()
+        if not self.state:
+            raise NoneValueError("state is not set, cannot fast forward.")
+        while not self.state.is_game_over and not _is_blue_guesser_turn(state=self.state):
+            self._next_move()
+        self.send_board(state=self.state)
+        if self.state.is_game_over:
+            self.send_game_summary(state=self.state)
             log.update_context(game_id=None)
             self.trigger(HelpMessageHandler)
             return None
         return BotState.Playing
 
-    def remove_keyboard(self):
-        if not self.session or not self.session.last_keyboard_message:
+    def remove_keyboard(self, last_keyboard_message_id: Optional[int]):
+        if last_keyboard_message_id is None:
             return
         log.debug("Removing keyboard")
         try:
-            self.context.bot.edit_message_reply_markup(
-                chat_id=self.chat_id, message_id=self.session.last_keyboard_message
-            )
+            self.context.bot.edit_message_reply_markup(chat_id=self.chat_id, message_id=last_keyboard_message_id)
         except TelegramBadRequest:
             pass
-        self.update_session(last_keyboard_message=None)
+        self.update_session(last_keyboard_message_id=None)
 
-    def send_game_summary(self):
-        self._send_hinters_intents()
-        self._send_winner_text()
+    def send_game_summary(self, state: GameState):
+        self._send_hinters_intents(state=state)
+        self._send_winner_text(state=state)
 
-    def _is_blue_guesser_turn(self, state: GameState):
-        return state.current_team_color == TeamColor.BLUE and state.current_player_role == PlayerRole.GUESSER
-
-    def _send_winner_text(self):
-        winner = self.state.winner
+    def _send_winner_text(self, state: GameState):
+        winner = state.winner
         player_won = winner.team_color == TeamColor.BLUE
         winning_emoji = "🎉" if player_won else "😭"
         reason_emoji = WIN_REASON_TO_EMOJI[winner.reason]
@@ -202,8 +209,8 @@ class EventHandler:
         text = f"You {status}! {winning_emoji}\n{winner.team_color} team won: {winner.reason.value} {reason_emoji}"
         self.send_text(text, put_log=True)
 
-    def _send_hinters_intents(self):
-        relevant_hints = [hint for hint in self.state.raw_hints if hint.for_words]
+    def _send_hinters_intents(self, state: GameState):
+        relevant_hints = [hint for hint in state.raw_hints if hint.for_words]
         if not relevant_hints:
             return
         intent_strings = [f"'*{hint.word}*' for {hint.for_words}" for hint in relevant_hints]
@@ -211,17 +218,19 @@ class EventHandler:
         text = f"Hinters intents were:\n{intent_string}\n"
         self.send_markdown(text)
 
-    def _next_move(self, state: GameState):
-        team_color = state.current_team_color.value.title()
-        if state.current_player_role == PlayerRole.HINTER:
-            self.send_score()
+    def _next_move(self):
+        if not self.state:
+            raise NoneValueError("state is not set, cannot run next move.")
+        team_color = self.state.current_team_color.value.title()
+        if self.state.current_player_role == PlayerRole.HINTER:
+            self.send_score(state=self.state)
             self.send_text(f"{team_color} hinter is thinking... 🤔")
-        if self._should_skip_turn():
+        if _should_skip_turn(current_player_role=self.state.current_player_role, config=self.config):
             self.send_text(f"{team_color} guesser has skipped the turn.")
             request = GuessRequest(game_id=self.game_id, card_index=PASS_GUESS)
             response = self.api_client.guess(request=request)
         else:
-            solver = self.session.config.solver  # type: ignore
+            solver = self.config.solver
             request = NextMoveRequest(game_id=self.game_id, solver=solver)
             response = self.api_client.next_move(request=request)
             if response.given_hint:
@@ -233,13 +242,12 @@ class EventHandler:
                 self.send_markdown(text)
         self.set_state(new_state=response.game_state)
 
-    def send_score(self):
-        score = self.state.remaining_score
+    def send_score(self, state: GameState):
+        score = state.remaining_score
         text = f"{BLUE_EMOJI}  *{score[TeamColor.BLUE]}*  remaining card(s)  *{score[TeamColor.RED]}*  {RED_EMOJI}"
         self.send_markdown(text)
 
-    def send_board(self, message: str = None):
-        state: GameState = self.state
+    def send_board(self, state: GameState, message: str = None):
         board_to_send = state.board if state.is_game_over else state.board.censured
         table = board_to_send.as_table
         keyboard = build_board_keyboard(table, is_game_over=state.is_game_over)
@@ -251,9 +259,7 @@ class EventHandler:
         self.update_session(last_keyboard_message=text.message_id)
 
     def _refresh_game_state(self):
-        if not self.game_id:
-            return
-        request = GetGameStateRequest(game_id=self.game_id)
+        request = GetGameStateRequest(game_id=self.session.game_id)
         response = self.api_client.get_game_state(request=request)
         self.set_state(new_state=response.game_state)
 
@@ -293,26 +299,23 @@ class EventHandler:
     def _handle_bad_message(self, e: BadMessageError):
         self.send_markdown(f"🧐 {e}", put_log=True)
 
-    def _should_skip_turn(self) -> bool:
-        dice = random()
-        return (
-            self.state.current_player_role == PlayerRole.GUESSER  # type: ignore
-            and dice < self.session.config.difficulty.pass_probability  # type: ignore
-        )
+
+def _should_skip_turn(current_player_role: PlayerRole, config: GameConfig) -> bool:
+    pass_probability = config.difficulty.pass_probability
+    dice = random()
+    return current_player_role == PlayerRole.GUESSER and dice < pass_probability
 
 
 class StartEventHandler(EventHandler):
     def handle(self):
         log.update_context(username=self.username, full_name=self.user_full_name)
         log.info(f"Got start event from {self.user_full_name}")
-        existing_config = self.session.config if self.session else None
-        session_config = existing_config or GameConfig()
-        log.debug("Session config", extra={"session_config": session_config.dict()})
-        request = StartGameRequest(language=session_config.language)
+        game_config = self.config or GameConfig()
+        request = StartGameRequest(language=game_config.language)
         response = self.api_client.start_game(request)
-        session = Session(game_id=response.game_id, state=response.game_state, config=session_config)
+        log.debug("Game starting", extra={"game_id": response.game_id, "game_config": game_config.dict()})
+        session = Session(game_id=response.game_id, state=response.game_state, config=game_config)
         self.set_session(session=session)
-        self.remove_keyboard()
         self.send_markdown(f"Game *#{response.game_id}* is starting! 🥳", put_log=True)
         return self.fast_forward()
 
@@ -321,15 +324,19 @@ class ProcessMessageHandler(EventHandler):
     def handle(self):
         text = self.update.message.text.lower()
         log.info(f"Processing message: '{text}'")
-        self.remove_keyboard()
-        session = self.session
-        if not session or not session.is_game_active:
+        if not self.session:
+            return self.trigger(HelpMessageHandler)
+        self.remove_keyboard(last_keyboard_message_id=self.session.last_keyboard_message_id)
+        if not self.session.is_game_active:
             return self.trigger(HelpMessageHandler)
         try:
             command = COMMAND_TO_INDEX.get(text, text)
-            card_index = _get_card_index(board=session.state.board, text=command)
+            card_index = _get_card_index(board=self.state.board, text=command)
         except:  # noqa
-            self.send_board(f"Card '*{text}*' not found. Please reply with card index (1-25) or a word on the board.")
+            self.send_board(
+                state=self.state,
+                message=f"Card '*{text}*' not found. Please reply with card index (1-25) or a word on the board.",
+            )
             return None
         request = GuessRequest(game_id=self.game_id, card_index=card_index)
         response = self.api_client.guess(request)
@@ -341,6 +348,10 @@ class ProcessMessageHandler(EventHandler):
             text = get_given_guess_result_message_text(given_guess)
             self.send_markdown(text)
         return self.fast_forward()
+
+
+def _is_blue_guesser_turn(state: GameState):
+    return state.current_team_color == TeamColor.BLUE and state.current_player_role == PlayerRole.GUESSER
 
 
 def _get_card_index(board: Board, text: str) -> int:
