@@ -1,50 +1,44 @@
 # Layer
 
-data "archive_file" "lambda_layer_code" {
+data "archive_file" "layer_code_archive" {
   type        = "zip"
   source_dir  = "${local.project_root}/.deployment/layer-dependencies/"
-  output_path = local.layer_zip_name
+  output_path = "layer.zip"
 }
 
-resource "aws_lambda_layer_version" "bot_dependencies_layer" {
-  filename         = data.archive_file.lambda_layer_code.output_path
+resource "aws_lambda_layer_version" "dependencies_layer" {
+  filename         = data.archive_file.layer_code_archive.output_path
   layer_name       = "${local.service_name}-layer"
-  source_code_hash = filebase64sha256(data.archive_file.lambda_layer_code.output_path)
+  source_code_hash = filebase64sha256(data.archive_file.layer_code_archive.output_path)
   skip_destroy     = true
 }
 
 # Lambda
 
-data "archive_file" "bot_lambda_code" {
+data "archive_file" "service_code_archive" {
   type        = "zip"
   source_dir  = "${local.project_root}/src"
-  output_path = local.lambda_zip_name
+  output_path = "service.zip"
 }
 
-resource "aws_lambda_function" "bot_handler_lambda" {
+resource "aws_lambda_function" "service_lambda" {
   function_name                  = "${local.service_name}-lambda"
-  role                           = aws_iam_role.bot_lambda_exec_role.arn
+  role                           = aws_iam_role.lambda_exec_role.arn
   handler                        = "lambda_handler.handle"
   runtime                        = "python3.9"
-  filename                       = data.archive_file.bot_lambda_code.output_path
-  source_code_hash               = filebase64sha256(data.archive_file.bot_lambda_code.output_path)
+  filename                       = data.archive_file.service_code_archive.output_path
+  source_code_hash               = filebase64sha256(data.archive_file.service_code_archive.output_path)
   timeout                        = 30
-  memory_size                    = 256
+  memory_size                    = 200
   reserved_concurrent_executions = 5
   layers                         = [
-    aws_lambda_layer_version.bot_dependencies_layer.arn
+    aws_lambda_layer_version.dependencies_layer.arn
   ]
   environment {
     variables = {
       ENV_FOR_DYNACONF = var.env
     }
   }
-}
-
-resource "aws_lambda_alias" "bot_handler_live_alias" {
-  function_name    = aws_lambda_function.bot_handler_lambda.function_name
-  function_version = aws_lambda_function.bot_handler_lambda.version
-  name             = "live"
 }
 
 # Lambda role
@@ -60,7 +54,7 @@ data "aws_iam_policy_document" "lambda_assume_policy_doc" {
   }
 }
 
-resource "aws_iam_role" "bot_lambda_exec_role" {
+resource "aws_iam_role" "lambda_exec_role" {
   name               = "${local.service_name}-lambda-exec-role"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_policy_doc.json
   inline_policy {
@@ -91,7 +85,7 @@ resource "aws_iam_role" "bot_lambda_exec_role" {
             "Action" : [
               "kms:Decrypt",
             ],
-            "Resource" : local.bot_kms_arn
+            "Resource" : local.kms_arn
           },
           {
             "Effect" : "Allow",

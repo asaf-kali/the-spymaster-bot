@@ -9,7 +9,7 @@ resource "aws_apigatewayv2_integration" "api_gateway_integration" {
   api_id             = aws_apigatewayv2_api.api_gateway.id
   integration_type   = "AWS_PROXY"
   integration_method = "POST"
-  integration_uri    = aws_lambda_function.bot_handler_lambda.invoke_arn
+  integration_uri    = aws_lambda_function.service_lambda.invoke_arn
 }
 
 resource "aws_apigatewayv2_route" "api_gateway_route" {
@@ -22,7 +22,7 @@ resource "aws_lambda_permission" "bot_handler_api_gateway_permission" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   principal     = "apigateway.amazonaws.com"
-  function_name = aws_lambda_function.bot_handler_lambda.arn
+  function_name = aws_lambda_function.service_lambda.arn
   source_arn    = "${aws_apigatewayv2_api.api_gateway.execution_arn}/*/*/{proxy+}"
 }
 
