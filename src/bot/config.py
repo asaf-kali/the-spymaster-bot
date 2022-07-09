@@ -62,6 +62,7 @@ def configure_logging(config: Config = None):
         "telegram": {"level": "INFO"},
         "botocore": {"level": "WARNING"},
         "urllib3": {"level": "WARNING"},
+        "pynamodb": {"level": "WARNING"},
     }
     kwargs = (
         dict(
