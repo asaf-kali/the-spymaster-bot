@@ -1,16 +1,14 @@
 import json
-from typing import Any
 
 import sentry_sdk
 from the_spymaster_util import get_logger
 
-from bot.config import get_config
+from bot.config import configure_logging, configure_sentry, get_config
 from bot.the_spymaster_bot import TheSpymasterBot
-from main import configure_logging, configure_sentry
+from util import create_response, json_safe
 
 configure_logging()
 log = get_logger(__name__)
-
 log.info("Bootstrap starting...")
 config = get_config()
 configure_logging(config=config)
@@ -43,42 +41,3 @@ def handle(event: dict, context=None):
         sentry_sdk.capture_exception(e)
         sentry_sdk.flush(timeout=5)
         return create_response(500, data={"message": "Error handling event"})
-
-
-def json_safe(x: Any) -> Any:
-    if isinstance(x, (int, float, str, bool)):
-        return x
-    try:
-        return json.dumps(x)
-    except:  # noqa
-        return str(x)
-
-
-def create_response(status_code: int, data: dict):
-    return {"statusCode": status_code, "body": json.dumps(data)}
-
-
-def example_event():
-    telegram_update = {
-        "update_id": 617241338,
-        "message": {
-            "message_id": 2611,
-            "from": {"id": 1362351931, "is_bot": False, "first_name": "𝒦𝒶𝓁𝒾", "language_code": "en"},
-            "chat": {"id": 1362351931, "first_name": "𝒦𝒶𝓁𝒾", "type": "private"},
-            "date": 1655500031,
-            "text": "/start",
-            "entities": [{"offset": 0, "length": 6, "type": "bot_command"}],
-        },
-    }
-    event = {"body": json.dumps(telegram_update)}
-    handle(event)
-
-
-def example_warmup():
-    update = {"action": "warmup"}
-    event = {"body": json.dumps(update)}
-    handle(event)
-
-
-if __name__ == "__main__":
-    example_warmup()

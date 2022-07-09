@@ -3,8 +3,7 @@ import sys
 
 os.chdir("src")
 sys.path.insert(0, "./")
-from bot.config import get_config
-from main import configure_logging
+from bot.config import configure_logging, get_config
 
 config = get_config()
 config.load()
