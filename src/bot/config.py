@@ -1,8 +1,8 @@
 import logging
+from logging.config import dictConfig
 from typing import List
 
-from cachetools.func import ttl_cache
-from the_spymaster_util import LazyConfig
+from the_spymaster_util import LazyConfig, get_dict_config, get_logger
 
 log = logging.getLogger(__name__)
 
@@ -52,6 +52,55 @@ class Config(LazyConfig):
         return self.get("SHOULD_LOAD_SSM_PARAMETERS")
 
 
-@ttl_cache(maxsize=1, ttl=600)
+def configure_logging(config: Config = None):
+    loggers = {
+        "bot": {
+            "handlers": ["console_out", "console_err"],
+            "level": config.bot_log_level if config else "DEBUG",
+            "propagate": False,
+        },
+        "telegram": {"level": "INFO"},
+        "botocore": {"level": "WARNING"},
+        "urllib3": {"level": "WARNING"},
+    }
+    kwargs = (
+        dict(
+            std_formatter=config.std_formatter,
+            root_log_level=config.root_log_level,
+            indent_json=config.indent_json,
+        )
+        if config
+        else {}
+    )
+    log_config = get_dict_config(
+        **kwargs,
+        extra_loggers=loggers,
+    )
+    dictConfig(log_config)
+    get_logger(__name__).debug("Logging configured.")
+
+
+def configure_sentry(config: Config):
+    import sentry_sdk
+    from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
+
+    sentry_sdk.init(  # type: ignore
+        dsn=config.sentry_dsn,
+        integrations=[LoggingIntegration(event_level=None), AwsLambdaIntegration()],
+        environment=config.env_verbose_name,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=1.0,
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=True,
+    )
+
+
+_config = Config()
+
+
 def get_config() -> Config:
-    return Config()
+    return _config
