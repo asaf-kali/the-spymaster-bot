@@ -1,12 +1,13 @@
 DEL_COMMAND=gio trash
 TERRAFORM_PLAN_FILE=deploy.tfplan
+ENV=default
 
 plan:
-	terraform plan -out $(TERRAFORM_PLAN_FILE)
+	terraform workspace select $(ENV)
+	terraform plan -out $(TERRAFORM_PLAN_FILE) -var-file="$(ENV).tfvars"
+
 
 apply:
 	terraform apply $(TERRAFORM_PLAN_FILE)
 
-deploy:
-	@make plan --no-print-directory
-	@make apply --no-print-directory
+deploy: plan apply

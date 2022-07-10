@@ -36,7 +36,7 @@ resource "aws_lambda_function" "service_lambda" {
   ]
   environment {
     variables = {
-      ENV_FOR_DYNACONF = var.env
+      ENV_FOR_DYNACONF = local.env
     }
   }
 }
