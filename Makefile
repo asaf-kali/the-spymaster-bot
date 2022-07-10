@@ -60,12 +60,12 @@ build-layer:
 	sudo ./scripts/build_layer.sh
 
 plan:
-	cd tf_service; make plan;
+	cd tf; make plan;
 
 apply:
-	cd tf_service; make apply;
+	cd tf; make apply;
 
 update:
-	cd tf_service; make deploy;
+	cd tf; make deploy;
 
 deploy: build-layer update
