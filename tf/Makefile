@@ -1,4 +1,3 @@
-DEL_COMMAND=gio trash
 TERRAFORM_PLAN_FILE=deploy.tfplan
 ENV=default
 
