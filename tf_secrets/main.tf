@@ -16,22 +16,19 @@ provider "aws" {
 # Parameters
 
 locals {
+  # Environment
+  env_map = {
+    "default" = "dev"
+    "prod"    = "prod"
+  }
+  env          = local.env_map[terraform.workspace]
+  # Base
   project_name = "the-spymaster-bot"
-  service_name = "${local.project_name}-${var.env}"
+  service_name = "${local.project_name}-${local.env}"
 }
 
 variable "aws_region" {
   default = "us-east-1"
-}
-
-variable "env" {
-  type    = string
-  default = "dev"
-
-  validation {
-    condition     = contains(["dev", "stage", "prod"], var.env)
-    error_message = "Valid values for env: `dev`, `stage`, `prod`"
-  }
 }
 
 variable "sentry_dsn" {
@@ -47,7 +44,7 @@ variable "telegram_token" {
 # Resources
 
 resource "aws_kms_key" "bot_kms_key" {
-  description = "KMS key for bot service on ${var.env} environment"
+  description = "KMS key for bot service"
 }
 
 resource "aws_kms_alias" "bot_kms_key_alias" {
