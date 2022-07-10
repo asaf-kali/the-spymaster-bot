@@ -460,7 +460,7 @@ class LoadModelsHandler(EventHandler):
         self.send_text("Sending load models request...")
         with MeasureTime() as mt:
             response = self.bot.send_load_models_request()
-        self.send_markdown(f"Successfully loaded `{response.success_count}` models in `{mt.delta}` seconds.")
+        self.send_markdown(f"Loaded `{response.success_count}` models in `{mt.delta}` seconds.")
 
 
 class ConfigSolverHandler(EventHandler):
