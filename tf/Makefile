@@ -1,3 +1,4 @@
+DEL_COMMAND=gio trash
 TERRAFORM_PLAN_FILE=deploy.tfplan
 ENV=default
 
@@ -7,3 +8,5 @@ plan:
 
 apply:
 	terraform apply $(TERRAFORM_PLAN_FILE)
+
+deploy: plan apply
