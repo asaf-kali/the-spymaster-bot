@@ -1,7 +1,7 @@
 import json
 
 import sentry_sdk
-from the_spymaster_util import get_logger
+from the_spymaster_util.logging import get_logger
 
 from bot.config import configure_logging, configure_sentry, get_config
 from bot.the_spymaster_bot import TheSpymasterBot
