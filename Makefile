@@ -22,10 +22,13 @@ install: install-dev test lint
 # Test
 
 test:
-	export ENV_FOR_DYNACONF=test; python -m $(PYTHON_TEST_COMMAND)
+	export ENV_FOR_DYNACONF=test; \
+	export TELEGRAM_TOKEN="123:ABC"; \
+	python -m $(PYTHON_TEST_COMMAND)
 
 cover:
-	export ENV_FOR_DYNACONF=test; coverage run -m $(PYTHON_TEST_COMMAND)
+	export ENV_FOR_DYNACONF=test; \
+	coverage run -m $(PYTHON_TEST_COMMAND)
 	coverage html
 	xdg-open htmlcov/index.html &
 	$(DEL_COMMAND) .coverage*
