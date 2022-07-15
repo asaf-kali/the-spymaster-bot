@@ -13,7 +13,7 @@ def main():
     bot = TheSpymasterBot(
         telegram_token=config.telegram_token,
         base_url=config.base_backend_url,
-        dynamo_persistence=False,
+        dynamo_persistence=True,
     )
     bot.poll()
 

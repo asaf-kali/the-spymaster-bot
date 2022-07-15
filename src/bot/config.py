@@ -2,7 +2,8 @@ import logging
 from logging.config import dictConfig
 from typing import List
 
-from the_spymaster_util import LazyConfig, get_dict_config, get_logger
+from the_spymaster_util.config import LazyConfig
+from the_spymaster_util.logging import get_dict_config, get_logger
 
 log = logging.getLogger(__name__)
 
