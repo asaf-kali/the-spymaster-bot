@@ -1,9 +1,11 @@
 import logging
 from typing import Any, Dict, Optional
 
-from pynamodb.exceptions import DoesNotExist
+from pynamodb.exceptions import DoesNotExist as PynamoDoesNotExist
 from telegram.ext import BasePersistence
 from telegram.ext.utils.types import BD, CD, UD, CDCData, ConversationDict
+from the_spymaster_util.measure_time import MeasureTime
+from the_spymaster_util.ttl_dict import TTLDict
 
 from persistence.persistence_item import (
     ChatDataDict,
@@ -17,30 +19,77 @@ from persistence.persistence_item import (
 )
 
 log = logging.getLogger(__name__)
+SEC_TO_MS = 1000
+
+
+class DoesNotExist(Exception):
+    def __init__(self, item_id: str):
+        self.item_id = item_id
 
 
 class DynamoPersistencyStore:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._cache = TTLDict(default_ttl=1)
+
     def __getitem__(self, item: ConversationKey):
-        return self.get(key=item)
-
-    def __setitem__(self, key: Any, value: Any):
-        return self.set(key=key, data=value)
-
-    def get(self, key: Any) -> Any:
-        item_id = self.get_item_id(key=key)
+        if item in self._cache:
+            # This might be problematic with multiple lambdas: a lambda might keep cache from an old run,
+            # while in another lambda's cache (and in dynamo) the data is already newer.
+            # Hopefully TTL dict will solve this problem.
+            return self._cache[item]
         try:
-            persistence_item = PersistenceItem.get(hash_key=item_id)
-            data = persistence_item.item_data
-            return data
-        except DoesNotExist:
-            log.info(f"Item {item_id} does not exist")
+            return self.read(key=item)
+        except DoesNotExist as e:
+            log.info(f"Item {e.item_id} does not exist")
             return None
 
-    def set(self, key: Any, data: Any):
+    def __setitem__(self, key: Any, value: Any):
+        self._cache[key] = value
+
+    def __copy__(self):
+        return self.copy()
+
+    def copy(self):
+        return self.__class__()
+
+    def clear_cache(self):
+        self._cache.clear()
+
+    def read(self, key: Any) -> Optional[Any]:
+        item_id = self.get_item_id(key=key)
+        log.debug("Reading from Dynamo", extra={"item_id": item_id})
+        with MeasureTime() as mt:
+            try:
+                persistence_item = PersistenceItem.get(hash_key=item_id)
+            except PynamoDoesNotExist as e:
+                raise DoesNotExist(item_id=item_id) from e
+        log.debug("Read complete", extra={"item_id": item_id, "duration_ms": mt.delta * SEC_TO_MS})
+        data = persistence_item.item_data
+        self._cache[key] = data
+        return data
+
+    def write(self, key: Any, data: Any):
         item_id = self.get_item_id(key=key)
         item_type = self.get_item_type()
+        cached_data = self._cache.get(key)
+        if cached_data == data:
+            log.debug("Data is the same as in cache, not writing to Dynamo", extra={"item_id": item_id})
+            return
         item = PersistenceItem(item_id=item_id, item_type=item_type, item_data=data)
-        item.save()
+        log.debug("Writing to Dynamo", extra={"item_id": item_id})
+        with MeasureTime() as mt:
+            item.save()
+        log.debug("Write complete", extra={"item_id": item_id, "duration_ms": mt.delta * SEC_TO_MS})
+
+    def get(self, key: Any, default: Any = None) -> Any:
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+    def set(self, key: Any, data: Any):
+        self[key] = data
 
     def get_item_id(self, key: Any) -> str:
         raise NotImplementedError()
@@ -62,12 +111,6 @@ class DynamoStoredConversations(DynamoPersistencyStore, ConversationDict):  # ty
 
 
 class DynamoStoredChatData(DynamoPersistencyStore, ChatDataDict):  # type: ignore
-    def __copy__(self):
-        return self.copy()
-
-    def copy(self):
-        return self.__class__()
-
     def get_item_id(self, key: Any) -> str:
         return get_chat_id(key=key)
 
@@ -132,13 +175,13 @@ class DynamoDbPersistence(BasePersistence):
 
     def update_conversation(self, name: str, key: ConversationKey, new_state: Optional[object]) -> None:
         conversation_store = self.get_conversations(name=name)
-        conversation_store.set(key=key, data=new_state)
+        conversation_store.write(key=key, data=new_state)
 
     def update_user_data(self, user_id: int, data: UD) -> None:
         raise NotImplementedError()
 
     def update_chat_data(self, chat_id: int, data: CD) -> None:
-        self.chat_data_store.set(key=chat_id, data=data)
+        self.chat_data_store.write(key=chat_id, data=data)
 
     def update_bot_data(self, data: BD) -> None:
         raise NotImplementedError()
