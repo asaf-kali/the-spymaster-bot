@@ -329,6 +329,8 @@ class ProcessMessageHandler(EventHandler):
         self.remove_keyboard(last_keyboard_message_id=self.session.last_keyboard_message_id)
         if not self.session.is_game_active:
             return self.trigger(HelpMessageHandler)
+        if self.state and not _is_blue_guesser_turn(self.state):
+            return self.fast_forward()
         try:
             command = COMMAND_TO_INDEX.get(text, text)
             card_index = _get_card_index(board=self.state.board, text=command)
