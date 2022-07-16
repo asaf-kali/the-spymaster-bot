@@ -5,7 +5,6 @@ from pynamodb.exceptions import DoesNotExist as PynamoDoesNotExist
 from telegram.ext import BasePersistence
 from telegram.ext.utils.types import BD, CD, UD, CDCData, ConversationDict
 from the_spymaster_util.measure_time import MeasureTime
-from the_spymaster_util.ttl_dict import TTLDict
 
 from persistence.persistence_item import (
     ChatDataDict,
@@ -30,7 +29,7 @@ class DoesNotExist(Exception):
 class DynamoPersistencyStore:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._cache = TTLDict(default_ttl=1)
+        self._cache = {}
 
     def __getitem__(self, item: ConversationKey):
         if item in self._cache:
@@ -42,7 +41,7 @@ class DynamoPersistencyStore:
             return self.read(key=item)
         except DoesNotExist as e:
             log.info(f"Item {e.item_id} does not exist")
-            return None
+            raise KeyError(item) from e
 
     def __setitem__(self, key: Any, value: Any):
         self._cache[key] = value
@@ -77,10 +76,11 @@ class DynamoPersistencyStore:
             log.debug("Data is the same as in cache, not writing to Dynamo", extra={"item_id": item_id})
             return
         item = PersistenceItem(item_id=item_id, item_type=item_type, item_data=data)
-        log.debug("Writing to Dynamo", extra={"item_id": item_id})
+        log.debug("Writing to Dynamo", extra={"item_id": item_id, "item_data": data})
         with MeasureTime() as mt:
             item.save()
         log.debug("Write complete", extra={"item_id": item_id, "duration_ms": mt.delta * SEC_TO_MS})
+        self._cache[key] = data
 
     def get(self, key: Any, default: Any = None) -> Any:
         try:
@@ -176,12 +176,14 @@ class DynamoDbPersistence(BasePersistence):
     def update_conversation(self, name: str, key: ConversationKey, new_state: Optional[object]) -> None:
         conversation_store = self.get_conversations(name=name)
         conversation_store.write(key=key, data=new_state)
+        conversation_store.clear_cache()
 
     def update_user_data(self, user_id: int, data: UD) -> None:
         raise NotImplementedError()
 
     def update_chat_data(self, chat_id: int, data: CD) -> None:
         self.chat_data_store.write(key=chat_id, data=data)
+        self.chat_data_store.clear_cache()
 
     def update_bot_data(self, data: BD) -> None:
         raise NotImplementedError()

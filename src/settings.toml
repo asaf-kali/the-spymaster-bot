@@ -19,6 +19,7 @@ env_verbose_name = "Local"
 should_load_ssm_parameters = false
 std_formatter = "simple"
 bot_log_level = "DEBUG"
+persistence_db_table_name = "the-spymaster-bot-dev-persistence-table"
 
 [dev]
 env_verbose_name = "Dev"
