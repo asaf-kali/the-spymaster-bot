@@ -32,13 +32,13 @@ class BadMessageError(Exception):
 
 
 class BotState(IntEnum):
-    Entry = auto()
-    ConfigLanguage = auto()
-    ConfigDifficulty = auto()
-    ConfigModel = auto()
-    ConfigSolver = auto()
-    ContinueGetId = auto()
-    Playing = auto()
+    ENTRY = auto()
+    CONFIG_LANGUAGE = auto()
+    CONFIG_DIFFICULTY = auto()
+    CONFIG_MODEL = auto()
+    CONFIG_SOLVER = auto()
+    CONTINUE_GET_ID = auto()
+    PLAYING = auto()
 
 
 class GameConfig(BaseModel):  # Move to backend api?

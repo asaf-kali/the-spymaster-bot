@@ -49,7 +49,7 @@ def get_bot_id(key: int) -> str:
 
 
 def main():
-    session = Session(game_id=1, last_keyboard_message=2)
+    session = Session(game_id=1, last_keyboard_message_id=2)
     session_item = PersistenceItem(
         item_id=get_conversation_id("main", key=(999, 999)),
         item_data=session.dict(),

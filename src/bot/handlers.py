@@ -184,7 +184,7 @@ class EventHandler:
             log.update_context(game_id=None)
             self.trigger(HelpMessageHandler)
             return None
-        return BotState.Playing
+        return BotState.PLAYING
 
     def remove_keyboard(self, last_keyboard_message_id: Optional[int]):
         if last_keyboard_message_id is None:
@@ -256,7 +256,7 @@ class EventHandler:
             if state.bonus_given:
                 message += " (bonus round)"
         text = self.send_markdown(message, reply_markup=keyboard)
-        self.update_session(last_keyboard_message=text.message_id)
+        self.update_session(last_keyboard_message_id=text.message_id)
 
     def _refresh_game_state(self):
         request = GetGameStateRequest(game_id=self.session.game_id)
@@ -372,7 +372,7 @@ class CustomHandler(EventHandler):
         self.set_session(session=session)
         keyboard = build_language_keyboard()
         self.send_text("🌍 Pick language:", reply_markup=keyboard)
-        return BotState.ConfigLanguage
+        return BotState.CONFIG_LANGUAGE
 
 
 def build_language_keyboard():
@@ -388,7 +388,7 @@ class ConfigLanguageHandler(EventHandler):
         self.update_game_config(language=language)
         keyboard = build_difficulty_keyboard()
         self.send_text("🥵 Pick difficulty:", reply_markup=keyboard)
-        return BotState.ConfigDifficulty
+        return BotState.CONFIG_DIFFICULTY
 
 
 def build_difficulty_keyboard():
@@ -411,7 +411,7 @@ class ConfigDifficultyHandler(EventHandler):
         self.update_game_config(difficulty=difficulty)
         keyword = build_models_keyboard(language=self.session.config.language)
         self.send_text("🧠 Pick language model:", reply_markup=keyword)
-        return BotState.ConfigModel
+        return BotState.CONFIG_MODEL
 
 
 def build_models_keyboard(language: str):
@@ -466,7 +466,7 @@ class LoadModelsHandler(EventHandler):
 class ConfigSolverHandler(EventHandler):
     def handle(self):
         self.send_text("🤖 Solver is not implemented yet. Please use the default solver.")
-        return BotState.Entry
+        return BotState.ENTRY
 
 
 class ContinueHandler(EventHandler):
@@ -491,7 +491,7 @@ class TestingHandler(EventHandler):
         if "error" in text:
             raise ValueError(f"This is an error: {text}")
         self.send_text("Hello")
-        return BotState.ConfigSolver
+        return BotState.CONFIG_SOLVER
 
 
 class HelpMessageHandler(EventHandler):
