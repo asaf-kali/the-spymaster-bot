@@ -45,13 +45,7 @@ class DynamoPersistencyStore:
             raise KeyError(key) from e
 
     def __setitem__(self, key: Any, value: Any):
-        if key in self._cache:
-            existing_data = self._cache[key]
-            if existing_data == value:
-                log.debug("Data is the same as in cache, not writing to Dynamo", extra={"key": key})
-                return
         self._cache[key] = value
-        self._write(key=key, data=value)
 
     def __copy__(self):
         return self.copy()
@@ -89,8 +83,16 @@ class DynamoPersistencyStore:
         except KeyError:
             return default
 
-    def set(self, key: Any, data: Any):
+    def set(self, key: Any, data: Any, commit: bool = False):
         self[key] = data
+        if commit:
+            self.commit(key=key)
+
+    def commit(self, key: Any):
+        if key not in self._cache:
+            raise KeyError(key)
+        self._write(key=key, data=self._cache[key])
+        del self._cache[key]
 
     def get_item_id(self, key: Any) -> str:
         raise NotImplementedError()
@@ -176,15 +178,13 @@ class DynamoDbPersistence(BasePersistence):
 
     def update_conversation(self, name: str, key: ConversationKey, new_state: Optional[object]) -> None:
         conversation_store = self.get_conversations(name=name)
-        conversation_store.set(key=key, data=new_state)
-        conversation_store.clear_cache()
+        conversation_store.set(key=key, data=new_state, commit=True)
 
     def update_user_data(self, user_id: int, data: UD) -> None:
         raise NotImplementedError()
 
     def update_chat_data(self, chat_id: int, data: CD) -> None:
-        self.chat_data_store.set(key=chat_id, data=data)
-        self.chat_data_store.clear_cache()
+        self.chat_data_store.set(key=chat_id, data=data, commit=True)
 
     def update_bot_data(self, data: BD) -> None:
         raise NotImplementedError()
