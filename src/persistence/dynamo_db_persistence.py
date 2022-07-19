@@ -35,7 +35,7 @@ class DynamoPersistencyStore:
         if item in self._cache:
             # This might be problematic with multiple lambdas: a lambda might keep cache from an old run,
             # while in another lambda's cache (and in dynamo) the data is already newer.
-            # Hopefully TTL dict will solve this problem.
+            # That's why it's important to call clear_cache() before / after each lambda run.
             return self._cache[item]
         try:
             return self.read(key=item)
@@ -44,7 +44,13 @@ class DynamoPersistencyStore:
             raise KeyError(item) from e
 
     def __setitem__(self, key: Any, value: Any):
+        if key in self._cache:
+            existing_data = self._cache[key]
+            if existing_data == value:
+                log.debug("Data is the same as in cache, not writing to Dynamo", extra={"key": key})
+                return
         self._cache[key] = value
+        self.write(key=key, data=value)
 
     def __copy__(self):
         return self.copy()
@@ -63,18 +69,14 @@ class DynamoPersistencyStore:
                 persistence_item = PersistenceItem.get(hash_key=item_id)
             except PynamoDoesNotExist as e:
                 raise DoesNotExist(item_id=item_id) from e
-        log.debug("Read complete", extra={"item_id": item_id, "duration_ms": mt.delta * SEC_TO_MS})
         data = persistence_item.item_data
+        log.debug("Read complete", extra={"item_id": item_id, "duration_ms": mt.delta * SEC_TO_MS, "data": data})
         self._cache[key] = data
         return data
 
     def write(self, key: Any, data: Any):
         item_id = self.get_item_id(key=key)
         item_type = self.get_item_type()
-        cached_data = self._cache.get(key)
-        if cached_data == data:
-            log.debug("Data is the same as in cache, not writing to Dynamo", extra={"item_id": item_id})
-            return
         item = PersistenceItem(item_id=item_id, item_type=item_type, item_data=data)
         log.debug("Writing to Dynamo", extra={"item_id": item_id, "item_data": data})
         with MeasureTime() as mt:
@@ -175,14 +177,14 @@ class DynamoDbPersistence(BasePersistence):
 
     def update_conversation(self, name: str, key: ConversationKey, new_state: Optional[object]) -> None:
         conversation_store = self.get_conversations(name=name)
-        conversation_store.write(key=key, data=new_state)
+        conversation_store.set(key=key, data=new_state)
         conversation_store.clear_cache()
 
     def update_user_data(self, user_id: int, data: UD) -> None:
         raise NotImplementedError()
 
     def update_chat_data(self, chat_id: int, data: CD) -> None:
-        self.chat_data_store.write(key=chat_id, data=data)
+        self.chat_data_store.set(key=chat_id, data=data)
         self.chat_data_store.clear_cache()
 
     def update_bot_data(self, data: BD) -> None:
