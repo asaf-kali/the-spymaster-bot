@@ -31,17 +31,18 @@ class DynamoPersistencyStore:
         super().__init__(*args, **kwargs)
         self._cache = {}
 
-    def __getitem__(self, item: ConversationKey):
-        if item in self._cache:
+    def __getitem__(self, key: ConversationKey):
+        if key in self._cache:
             # This might be problematic with multiple lambdas: a lambda might keep cache from an old run,
             # while in another lambda's cache (and in dynamo) the data is already newer.
             # That's why it's important to call clear_cache() before / after each lambda run.
-            return self._cache[item]
+            return self._cache[key]
         try:
-            return self.read(key=item)
+            self._cache[key] = self._read(key=key)
+            return self._cache[key]
         except DoesNotExist as e:
             log.info(f"Item {e.item_id} does not exist")
-            raise KeyError(item) from e
+            raise KeyError(key) from e
 
     def __setitem__(self, key: Any, value: Any):
         if key in self._cache:
@@ -50,7 +51,7 @@ class DynamoPersistencyStore:
                 log.debug("Data is the same as in cache, not writing to Dynamo", extra={"key": key})
                 return
         self._cache[key] = value
-        self.write(key=key, data=value)
+        self._write(key=key, data=value)
 
     def __copy__(self):
         return self.copy()
@@ -61,7 +62,7 @@ class DynamoPersistencyStore:
     def clear_cache(self):
         self._cache.clear()
 
-    def read(self, key: Any) -> Optional[Any]:
+    def _read(self, key: Any) -> Optional[Any]:
         item_id = self.get_item_id(key=key)
         log.debug("Reading from Dynamo", extra={"item_id": item_id})
         with MeasureTime() as mt:
@@ -71,10 +72,9 @@ class DynamoPersistencyStore:
                 raise DoesNotExist(item_id=item_id) from e
         data = persistence_item.item_data
         log.debug("Read complete", extra={"item_id": item_id, "duration_ms": mt.delta * SEC_TO_MS, "data": data})
-        self._cache[key] = data
         return data
 
-    def write(self, key: Any, data: Any):
+    def _write(self, key: Any, data: Any):
         item_id = self.get_item_id(key=key)
         item_type = self.get_item_type()
         item = PersistenceItem(item_id=item_id, item_type=item_type, item_data=data)
@@ -82,7 +82,6 @@ class DynamoPersistencyStore:
         with MeasureTime() as mt:
             item.save()
         log.debug("Write complete", extra={"item_id": item_id, "duration_ms": mt.delta * SEC_TO_MS})
-        self._cache[key] = data
 
     def get(self, key: Any, default: Any = None) -> Any:
         try:
