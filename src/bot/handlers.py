@@ -268,11 +268,11 @@ class EventHandler:
         try:
             _enrich_sentry_context(user_name=self.user_full_name)
         except Exception as e:
-            log.error(f"Failed to enrich sentry context: {e}")
+            log.warning(f"Failed to enrich sentry context: {e}")
         try:
-            if isinstance(error, HTTPError):
-                self._handle_http_error(error)
-                return
+            # if isinstance(error, HTTPError):
+            #     self._handle_http_error(error)
+            #     return
             if isinstance(error, BadMessageError):
                 self._handle_bad_message(error)
                 return
