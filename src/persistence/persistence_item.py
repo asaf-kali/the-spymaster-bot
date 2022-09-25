@@ -33,7 +33,8 @@ ConversationKey = Tuple[int, ...]
 
 
 def get_conversation_id(conversation_name: str, key: ConversationKey) -> str:
-    return f"conversation::{conversation_name}:{key}"
+    key_str = ":".join([str(k) for k in key])
+    return f"conversation::{conversation_name}:{key_str}"
 
 
 def get_chat_id(key: int) -> str:
