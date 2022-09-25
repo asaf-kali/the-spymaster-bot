@@ -52,7 +52,7 @@ class GameConfig(BaseModel):  # Move to backend api?
 
 
 class Session(BaseModel):
-    game_id: Optional[int]
+    game_id: Optional[str]
     state: Optional[GameState]
     config: Optional[GameConfig]
     last_keyboard_message_id: Optional[int]

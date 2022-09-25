@@ -93,7 +93,7 @@ class EventHandler:
         return self.user.full_name
 
     @property
-    def game_id(self) -> Optional[int]:
+    def game_id(self) -> Optional[str]:
         if not self.session:
             return None
         return self.session.game_id
@@ -313,10 +313,12 @@ class StartEventHandler(EventHandler):
         game_config = self.config or GameConfig()
         request = StartGameRequest(language=game_config.language)
         response = self.api_client.start_game(request)
+        log.update_context(game_id=response.game_id)
         log.debug("Game starting", extra={"game_id": response.game_id, "game_config": game_config.dict()})
         session = Session(game_id=response.game_id, state=response.game_state, config=game_config)
         self.set_session(session=session)
-        self.send_markdown(f"Game *#{response.game_id}* is starting! 🥳", put_log=True)
+        short_id = response.game_id[-4:]
+        self.send_markdown(f"Game *{short_id}* is starting! 🥳", put_log=True)
         return self.fast_forward()
 
 
