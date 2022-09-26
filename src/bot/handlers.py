@@ -21,6 +21,7 @@ from the_spymaster_api.structs import (
     ErrorResponse,
     GetGameStateRequest,
     GuessRequest,
+    GuessResponse,
     ModelIdentifier,
     NextMoveRequest,
     StartGameRequest,
@@ -99,12 +100,6 @@ class EventHandler:
         return self.session.game_id
 
     @property
-    def state(self) -> Optional[GameState]:
-        if not self.session:
-            return None
-        return self.session.state
-
-    @property
     def config(self) -> Optional[GameConfig]:
         if not self.session:
             return None
@@ -154,9 +149,6 @@ class EventHandler:
         new_config = old_config.copy(update=kwargs)
         return self.update_session(config=new_config)
 
-    def set_state(self, new_state: GameState) -> Session:
-        return self.update_session(state=new_state)
-
     def handle(self):
         raise NotImplementedError()
 
@@ -173,15 +165,16 @@ class EventHandler:
     def send_markdown(self, text: str, **kwargs) -> Message:
         return self.send_text(text=text, parse_mode="Markdown", **kwargs)
 
-    def fast_forward(self):
-        if not self.state:
+    def fast_forward(self, state: GameState):
+        if not state:
             raise NoneValueError("state is not set, cannot fast forward.")
-        while not self.state.is_game_over and not _is_blue_guesser_turn(state=self.state):
-            self._next_move()
-        self.send_board(state=self.state)
-        if self.state.is_game_over:
-            self.send_game_summary(state=self.state)
+        while not state.is_game_over and not _is_blue_guesser_turn(state=state):
+            state = self._next_move(state=state)
+        self.send_board(state=state)
+        if state.is_game_over:
+            self.send_game_summary(state=state)
             log.update_context(game_id=None)
+            self.update_session(game_id=None)
             self.trigger(HelpMessageHandler)
             return None
         return BotState.PLAYING
@@ -218,29 +211,29 @@ class EventHandler:
         text = f"Hinters intents were:\n{intent_string}\n"
         self.send_markdown(text)
 
-    def _next_move(self):
-        if not self.state:
+    def _next_move(self, state: GameState) -> GameState:
+        if not state or not self.config:
             raise NoneValueError("state is not set, cannot run next move.")
-        team_color = self.state.current_team_color.value.title()
-        if self.state.current_player_role == PlayerRole.HINTER:
-            self.send_score(state=self.state)
+        team_color = state.current_team_color.value.title()
+        if state.current_player_role == PlayerRole.HINTER:
+            self.send_score(state=state)
             self.send_text(f"{team_color} hinter is thinking... 🤔")
-        if _should_skip_turn(current_player_role=self.state.current_player_role, config=self.config):
+        if _should_skip_turn(current_player_role=state.current_player_role, config=self.config):
             self.send_text(f"{team_color} guesser has skipped the turn.")
             request = GuessRequest(game_id=self.game_id, card_index=PASS_GUESS)
             response = self.api_client.guess(request=request)
-        else:
-            solver = self.config.solver
-            request = NextMoveRequest(game_id=self.game_id, solver=solver)
-            response = self.api_client.next_move(request=request)
-            if response.given_hint:
-                given_hint = response.given_hint
-                text = f"{team_color} hinter says '*{given_hint.word}*' with *{given_hint.card_amount}* card(s)."
-                self.send_markdown(text, put_log=True)
-            if response.given_guess:
-                text = f"{team_color} hinter: " + get_given_guess_result_message_text(given_guess=response.given_guess)
-                self.send_markdown(text)
-        self.set_state(new_state=response.game_state)
+            return response.game_state
+        solver = self.config.solver
+        request = NextMoveRequest(game_id=self.game_id, solver=solver)
+        response = self.api_client.next_move(request=request)
+        if response.given_hint:
+            given_hint = response.given_hint
+            text = f"{team_color} hinter says '*{given_hint.word}*' with *{given_hint.card_amount}* card(s)."
+            self.send_markdown(text, put_log=True)
+        if response.given_guess:
+            text = f"{team_color} hinter: " + get_given_guess_result_message_text(given_guess=response.given_guess)
+            self.send_markdown(text)
+        return response.game_state
 
     def send_score(self, state: GameState):
         score = state.remaining_score
@@ -258,10 +251,10 @@ class EventHandler:
         text = self.send_markdown(message, reply_markup=keyboard)
         self.update_session(last_keyboard_message_id=text.message_id)
 
-    def _refresh_game_state(self):
-        request = GetGameStateRequest(game_id=self.session.game_id)
-        response = self.api_client.get_game_state(request=request)
-        self.set_state(new_state=response.game_state)
+    def _get_game_state(self, game_id: str) -> GameState:
+        request = GetGameStateRequest(game_id=game_id)
+        return self.api_client.get_game_state(request=request).game_state
+        # self.set_state(new_state=response.game_state)
 
     def _handle_error(self, error: Exception):
         log.debug(f"Handling error: {error}")
@@ -284,10 +277,10 @@ class EventHandler:
         except:  # noqa
             pass
         # Try refreshing the state
-        try:
-            self._refresh_game_state()
-        except:  # noqa
-            log.exception("Failed to refresh game state")
+        # try:
+        #     self._refresh_game_state()
+        # except:  # noqa
+        #     log.exception("Failed to refresh game state")
 
     def _handle_http_error(self, e: Exception) -> bool:
         if not isinstance(e, HTTPError):
@@ -325,11 +318,11 @@ class StartEventHandler(EventHandler):
         response = self.api_client.start_game(request)
         log.update_context(game_id=response.game_id)
         log.debug("Game starting", extra={"game_id": response.game_id, "game_config": game_config.dict()})
-        session = Session(game_id=response.game_id, state=response.game_state, config=game_config)
+        session = Session(game_id=response.game_id, config=game_config)
         self.set_session(session=session)
         short_id = response.game_id[-4:]
         self.send_markdown(f"Game *{short_id}* is starting! 🥳", put_log=True)
-        return self.fast_forward()
+        return self.fast_forward(state=response.game_state)
 
 
 class ProcessMessageHandler(EventHandler):
@@ -341,27 +334,30 @@ class ProcessMessageHandler(EventHandler):
         self.remove_keyboard(last_keyboard_message_id=self.session.last_keyboard_message_id)
         if not self.session.is_game_active:
             return self.trigger(HelpMessageHandler)
-        if self.state and not _is_blue_guesser_turn(self.state):
-            return self.fast_forward()
+        state = self._get_game_state(game_id=self.game_id)
+        if state and not _is_blue_guesser_turn(state):
+            return self.fast_forward(state)
         try:
             command = COMMAND_TO_INDEX.get(text, text)
-            card_index = _get_card_index(board=self.state.board, text=command)
+            card_index = _get_card_index(board=state.board, text=command)
         except:  # noqa
             self.send_board(
-                state=self.state,
+                state=state,
                 message=f"Card '*{text}*' not found. Please reply with card index (1-25) or a word on the board.",
             )
             return None
-        request = GuessRequest(game_id=self.game_id, card_index=card_index)
-        response = self.api_client.guess(request)
-        self.set_state(response.game_state)
+        response = self._guess(card_index)
         given_guess = response.given_guess
         if given_guess is None:
             pass  # This means we passed the turn
         else:
             text = get_given_guess_result_message_text(given_guess)
             self.send_markdown(text)
-        return self.fast_forward()
+        return self.fast_forward(response.game_state)
+
+    def _guess(self, card_index: int) -> GuessResponse:
+        request = GuessRequest(game_id=self.game_id, card_index=card_index)
+        return self.api_client.guess(request)
 
 
 def _is_blue_guesser_turn(state: GameState):

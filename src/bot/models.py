@@ -1,7 +1,7 @@
 from enum import IntEnum, auto
 from typing import Optional
 
-from codenames.game import PASS_GUESS, QUIT_GAME, CardColor, GameState, WinningReason
+from codenames.game import PASS_GUESS, QUIT_GAME, CardColor, WinningReason
 from pydantic import BaseModel
 from the_spymaster_api.structs import ModelIdentifier
 from the_spymaster_solvers_client.structs import Difficulty, Solver
@@ -53,7 +53,6 @@ class GameConfig(BaseModel):  # Move to backend api?
 
 class Session(BaseModel):
     game_id: Optional[str]
-    state: Optional[GameState]
     config: Optional[GameConfig]
     last_keyboard_message_id: Optional[int]
 
@@ -62,4 +61,4 @@ class Session(BaseModel):
 
     @property
     def is_game_active(self) -> bool:
-        return self.state is not None and not self.state.is_game_over
+        return self.game_id is not None
