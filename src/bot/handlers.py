@@ -522,6 +522,12 @@ Use '-pass' and '-quit' to pass the turn and quit the game.
         self.send_markdown(text)
 
 
+class ErrorHandler(EventHandler):
+    def handle(self):
+        log.warning("Using telegram bot handling mechanism, check why error was not handled in callback.")
+        self._handle_error(self.context.error)
+
+
 def _enrich_sentry_context(**kwargs):
     for k, v in log.context.items():
         sentry_sdk.set_tag(k, v)
