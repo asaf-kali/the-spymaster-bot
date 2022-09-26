@@ -23,6 +23,7 @@ from bot.handlers import (
     ContinueGetIdHandler,
     ContinueHandler,
     CustomHandler,
+    ErrorHandler,
     EventHandler,
     FallbackHandler,
     GetSessionsHandler,
@@ -92,6 +93,7 @@ class TheSpymasterBot:
         process_message_handler = MessageHandler(
             Filters.text & ~Filters.command, self.generate_callback(ProcessMessageHandler)
         )
+        error_handler = self.generate_callback(ErrorHandler)
 
         conv_handler = ConversationHandler(
             name="main",
@@ -119,6 +121,7 @@ class TheSpymasterBot:
 
         self.dispatcher.add_handler(conv_handler)
         self.dispatcher.add_handler(process_message_handler)
+        self.dispatcher.add_error_handler(error_handler)  # type: ignore
 
     def poll(self) -> None:
         self.updater.start_polling()
