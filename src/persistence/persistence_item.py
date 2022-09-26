@@ -8,9 +8,12 @@ from pynamodb.settings import OperationSettings
 from telegram.ext.utils.types import CD, UD
 
 from bot.config import get_config
-from bot.models import Session
 
 config = get_config()
+
+ChatDataDict = DefaultDict[int, CD]
+UserDataDict = DefaultDict[int, UD]
+ConversationKey = Tuple[int, ...]
 
 
 class PersistenceItem(Model):
@@ -29,9 +32,6 @@ class PersistenceItem(Model):
         return super().save(condition=condition, settings=settings)
 
 
-ConversationKey = Tuple[int, ...]
-
-
 def get_conversation_id(conversation_name: str, key: ConversationKey) -> str:
     key_str = ":".join([str(k) for k in key])
     return f"conversation::{conversation_name}:{key_str}"
@@ -47,18 +47,3 @@ def get_user_id(key: int) -> str:
 
 def get_bot_id(key: int) -> str:
     return f"bot::{key}"
-
-
-def main():
-    session = Session(game_id=1, last_keyboard_message_id=2)
-    session_item = PersistenceItem(
-        item_id=get_conversation_id("main", key=(999, 999)),
-        item_data=session.dict(),
-    )
-    session_item.save()
-
-
-if __name__ == "__main__":
-    main()
-ChatDataDict = DefaultDict[int, CD]
-UserDataDict = DefaultDict[int, UD]
