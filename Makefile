@@ -9,11 +9,12 @@ install-run:
 	pip install -r requirements.txt
 
 install-test:
-	pip install --upgrade pip
-	pip install -r requirements-dev.txt
+	pip install -r requirements-test.txt
 	@make install-run --no-print-directory
 
 install-dev:
+	pip install -r requirements-dev.txt
+	pip install -r requirements-lint.txt
 	@make install-test --no-print-directory
 	pre-commit install
 
@@ -35,17 +36,23 @@ cover:
 
 # Lint
 
-lint-only:
+format:
 	black .
 	isort .
 
-lint-check:
-	black . --check
-	isort . --check
+check-black:
+	black --check .
+
+check-isort:
+	isort --check .
+
+check-mypy:
 	mypy .
+
+check-flake8:
 	flake8 . --max-line-length=$(LINE_LENGTH) --ignore=E203,W503,E402 --exclude=local,.deployment
 
-lint: lint-only
+lint: format
 	pre-commit run --all-files
 
 # Run

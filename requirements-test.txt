@@ -1,0 +1,5 @@
+# Testing
+pytest==7.1.1
+parameterized==0.8.1
+freezegun==1.2.1
+coverage==6.3.2
