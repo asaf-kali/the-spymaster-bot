@@ -270,11 +270,9 @@ class EventHandler:
         except Exception as e:
             log.warning(f"Failed to enrich sentry context: {e}")
         try:
-            # if isinstance(error, HTTPError):
-            #     self._handle_http_error(error)
-            #     return
-            if isinstance(error, BadMessageError):
-                self._handle_bad_message(error)
+            if self._handle_http_error(error):
+                return
+            if self._handle_bad_message(error):
                 return
         except Exception as handling_error:
             sentry_sdk.capture_exception(handling_error)
@@ -291,13 +289,25 @@ class EventHandler:
         except:  # noqa
             log.exception("Failed to refresh game state")
 
-    def _handle_http_error(self, e: HTTPError):
-        data = e.response.json()
-        response = ErrorResponse(**data)
-        self.send_text(f"{response.message}: {response.details}", put_log=True)
+    def _handle_http_error(self, e: Exception) -> bool:
+        if not isinstance(e, HTTPError):
+            return False
+        response = e.response
+        if not 400 <= response.status_code < 500:
+            return False
+        data = response.json()
+        error_response = ErrorResponse(**data)
+        text = error_response.message
+        if error_response.details:
+            text += f": {error_response.details}"
+        self.send_text(text, put_log=True)
+        return True
 
-    def _handle_bad_message(self, e: BadMessageError):
+    def _handle_bad_message(self, e: Exception) -> bool:
+        if not isinstance(e, BadMessageError):
+            return False
         self.send_markdown(f"🧐 {e}", put_log=True)
+        return True
 
 
 def _should_skip_turn(current_player_role: PlayerRole, config: GameConfig) -> bool:
@@ -396,7 +406,7 @@ class ConfigLanguageHandler(EventHandler):
 
 
 def build_difficulty_keyboard():
-    difficulties = _title_list([Difficulty.EASY.value, Difficulty.MEDIUM.value, Difficulty.HARD.value])
+    difficulties = _title_list([Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD])
     keyboard = ReplyKeyboardMarkup([difficulties], one_time_keyboard=True)
     return keyboard
 
