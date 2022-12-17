@@ -30,7 +30,7 @@ resource "aws_lambda_function" "service_lambda" {
   source_code_hash               = filebase64sha256(data.archive_file.service_code_archive.output_path)
   timeout                        = 30
   memory_size                    = 200
-  reserved_concurrent_executions = 5
+  reserved_concurrent_executions = 2
   layers                         = [
     aws_lambda_layer_version.dependencies_layer.arn
   ]
