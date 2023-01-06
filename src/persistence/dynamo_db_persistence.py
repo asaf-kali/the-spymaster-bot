@@ -42,7 +42,7 @@ class DynamoPersistencyStore:
             return self._cache[key]
         except DoesNotExist as e:
             log.info(f"Item {e.item_id} does not exist")
-            raise KeyError(key) from e
+            return None
 
     def __setitem__(self, key: Any, value: Any):
         self._cache[key] = value
@@ -105,6 +105,12 @@ class DynamoStoredConversations(DynamoPersistencyStore, ConversationDict):  # ty
     def __init__(self, conversation_name: str):
         super().__init__()
         self.conversation_name = conversation_name
+
+    def __getitem__(self, item):
+        value = super().__getitem__(key=item)
+        if value is None:
+            return 0
+        return value
 
     def get_item_id(self, key: Any) -> str:
         return get_conversation_id(conversation_name=self.conversation_name, key=key)
