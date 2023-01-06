@@ -231,7 +231,7 @@ class EventHandler:
             text = f"{team_color} hinter says '*{given_hint.word}*' with *{given_hint.card_amount}* card(s)."
             self.send_markdown(text, put_log=True)
         if response.given_guess:
-            text = f"{team_color} hinter: " + get_given_guess_result_message_text(given_guess=response.given_guess)
+            text = f"{team_color} guesser: " + get_given_guess_result_message_text(given_guess=response.given_guess)
             self.send_markdown(text)
         return response.game_state
 
@@ -496,12 +496,19 @@ class FallbackHandler(EventHandler):
 
 class TestingHandler(EventHandler):
     def handle(self):
-        text = self.update.message.text
-        log.info(f"Testing handler with text: {text}")
+        text = remove_command(self.update.message.text)
+        log.info(f"Testing handler with text: '{text}'")
         if "error" in text:
             raise ValueError(f"This is an error: {text}")
         self.send_text("Hello")
         return BotState.CONFIG_SOLVER
+
+
+def remove_command(text: str) -> str:
+    """
+    Given a text like "/example 123 xyz", returns "123 xyz"
+    """
+    return text.split(maxsplit=1)[1]
 
 
 class HelpMessageHandler(EventHandler):
