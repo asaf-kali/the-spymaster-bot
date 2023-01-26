@@ -27,7 +27,7 @@ from the_spymaster_api.structs import (
     StartGameRequest,
 )
 from the_spymaster_solvers_client.structs import Difficulty
-from the_spymaster_util.logging import get_logger
+from the_spymaster_util.logger import get_logger
 from the_spymaster_util.measure_time import MeasureTime
 
 from bot.models import (
