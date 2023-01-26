@@ -13,7 +13,7 @@ from telegram.ext import (
 )
 from the_spymaster_api import TheSpymasterClient
 from the_spymaster_solvers_client.structs import LoadModelsRequest, LoadModelsResponse
-from the_spymaster_util.logging import get_logger
+from the_spymaster_util.logger import get_logger
 
 from bot.handlers import (
     ConfigDifficultyHandler,
