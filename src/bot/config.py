@@ -1,6 +1,6 @@
 import logging
 from logging.config import dictConfig
-from typing import List
+from typing import List, Optional
 
 from the_spymaster_util.config import LazyConfig
 from the_spymaster_util.logger import get_dict_config, get_logger
@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 class Config(LazyConfig):
-    def load(self, extra_files: List[str] = None):
+    def load(self, extra_files: Optional[List[str]] = None):
         super().load(extra_files)
         parameters = [f"{self.service_prefix}-telegram-token", f"{self.service_prefix}-sentry-dsn"]
         if self.should_load_ssm_parameters:
@@ -53,7 +53,7 @@ class Config(LazyConfig):
         return self.get("SHOULD_LOAD_SSM_PARAMETERS")
 
 
-def configure_logging(config: Config = None):
+def configure_logging(config: Optional[Config] = None):
     loggers = {
         "bot": {
             "handlers": ["console_out", "console_err"],
@@ -66,11 +66,11 @@ def configure_logging(config: Config = None):
         "pynamodb": {"level": "WARNING"},
     }
     kwargs = (
-        dict(
-            std_formatter=config.std_formatter,
-            root_log_level=config.root_log_level,
-            indent_json=config.indent_json,
-        )
+        {
+            "std_formatter": config.std_formatter,
+            "root_log_level": config.root_log_level,
+            "indent_json": config.indent_json,
+        }
         if config
         else {}
     )

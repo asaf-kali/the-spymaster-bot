@@ -40,7 +40,7 @@ log = get_logger(__name__)
 
 
 class TheSpymasterBot:
-    def __init__(self, telegram_token: str, base_url: str = None, dynamo_persistence: bool = False):
+    def __init__(self, telegram_token: str, base_url: Optional[str] = None, dynamo_persistence: bool = False):
         self.api_client = TheSpymasterClient(base_url=base_url)
         persistence = DynamoDbPersistence() if dynamo_persistence else DictPersistence()
         self.updater = Updater(token=telegram_token, persistence=persistence)
@@ -48,7 +48,7 @@ class TheSpymasterBot:
 
     @property
     def dispatcher(self) -> Dispatcher:
-        return self.updater.dispatcher
+        return self.updater.dispatcher  # type: ignore
 
     def generate_callback(self, handler_type: Type[EventHandler]) -> Callable[[Update, CallbackContext], Any]:
         return handler_type.generate_callback(bot=self)
@@ -72,7 +72,7 @@ class TheSpymasterBot:
         return response
 
     def parse_update(self, update: dict) -> Optional[Update]:
-        return Update.de_json(update, bot=self.updater.bot)
+        return Update.de_json(update, bot=self.updater.bot)  # type: ignore
 
     def _construct_updater(self):
         log.info("Setting up bot...")

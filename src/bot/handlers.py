@@ -240,7 +240,7 @@ class EventHandler:
         text = f"{BLUE_EMOJI}  *{score[TeamColor.BLUE]}*  remaining card(s)  *{score[TeamColor.RED]}*  {RED_EMOJI}"
         self.send_markdown(text)
 
-    def send_board(self, state: GameState, message: str = None):
+    def send_board(self, state: GameState, message: Optional[str] = None):
         board_to_send = state.board if state.is_game_over else state.board.censured
         table = board_to_send.as_table
         keyboard = build_board_keyboard(table, is_game_over=state.is_game_over)
