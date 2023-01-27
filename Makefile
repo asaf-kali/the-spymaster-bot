@@ -1,20 +1,24 @@
 PYTHON_TEST_COMMAND=pytest -s
 DEL_COMMAND=gio trash
-LINE_LENGTH=120
 
 # Install
 
-install-run:
+upgrade-pip:
 	pip install --upgrade pip
+
+install-run:
 	pip install -r requirements.txt
 
 install-test:
 	pip install -r requirements-test.txt
 	@make install-run --no-print-directory
 
-install-dev:
-	pip install -r requirements-dev.txt
+install-lint:
 	pip install -r requirements-lint.txt
+
+install-dev: upgrade-pip
+	pip install -r requirements-dev.txt
+	@make install-lint --no-print-directory
 	@make install-test --no-print-directory
 	pre-commit install
 
@@ -37,8 +41,12 @@ cover:
 # Lint
 
 format:
+	ruff . --fix
 	black .
 	isort .
+
+check-ruff:
+	ruff .
 
 check-black:
 	black --check .
@@ -49,11 +57,12 @@ check-isort:
 check-mypy:
 	mypy .
 
-check-flake8:
-	flake8 . --max-line-length=$(LINE_LENGTH) --ignore=E203,W503,E402 --exclude=local,.deployment
+check-pylint:
+	pylint src/ --fail-under=9
 
 lint: format
 	pre-commit run --all-files
+	@make check-pylint --no-print-directory
 
 # Run
 

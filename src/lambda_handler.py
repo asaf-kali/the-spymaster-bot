@@ -7,11 +7,10 @@ from bot.config import configure_logging, configure_sentry, get_config
 from bot.the_spymaster_bot import TheSpymasterBot
 from util import create_response, json_safe
 
-configure_logging()
-log = get_logger(__name__)
-log.info("Bootstrap starting...")
+print("Bootstrap starting...")
 config = get_config()
 configure_logging(config=config)
+log = get_logger(__name__)
 configure_sentry(config=config)
 bot = TheSpymasterBot(
     telegram_token=config.telegram_token,

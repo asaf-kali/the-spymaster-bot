@@ -176,7 +176,7 @@ class DynamoDbPersistence(BasePersistence):
     def get_chat_data(self) -> DynamoStoredChatData:
         return self.chat_data_store
 
-    def get_bot_data(self) -> BD:
+    def get_bot_data(self) -> BD:  # type: ignore
         raise NotImplementedError()
 
     def get_callback_data(self) -> Optional[CDCData]:

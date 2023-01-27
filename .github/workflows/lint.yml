@@ -4,6 +4,16 @@ on:
   push:
 
 jobs:
+  check-ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - uses: ./.github/actions/lint-install
+      - name: Run ruff
+        run: |
+          make check-ruff
+
   check-black:
     runs-on: ubuntu-latest
     steps:
@@ -34,12 +44,13 @@ jobs:
         run: |
           make check-mypy
 
-  check-flake8:
+  check-pylint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-      - uses: ./.github/actions/lint-install
-      - name: Run flake8
+      - name: Run pylint
         run: |
-          make check-flake8
+          pip install pyOpenSSL==22.0.0
+          make install-dev
+          make check-pylint

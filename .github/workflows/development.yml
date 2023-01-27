@@ -1,10 +1,10 @@
-name: Tests
+name: Development
 
 on:
   push:
 
 jobs:
-  test:
+  local-development:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -13,9 +13,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
-      - name: Install dependencies
+      - name: Init local development environment
         run: |
-          make install-test
-      - name: Run tests
-        run: |
-          make test
+          make install
