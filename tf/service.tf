@@ -85,7 +85,7 @@ resource "aws_iam_role" "lambda_exec_role" {
             "Action" : [
               "kms:Decrypt",
             ],
-            "Resource" : aws_kms_key.kms_key.arn
+            "Resource" : local.default_key_arn
           },
           {
             "Effect" : "Allow",

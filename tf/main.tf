@@ -60,6 +60,8 @@ locals {
   domain_suffix      = local.domain_suffix_map[local.env]
   bot_webhook_domain = "telegram.${local.domain_suffix}${local.base_app_domain}"
   bot_endpoint_url   = "${aws_apigatewayv2_api.api_gateway.api_endpoint}/${aws_apigatewayv2_stage.api_stage.name}/"
+  # Encryption
+  default_key_arn     = "arn:aws:kms:us-east-1:${local.aws_account_id}:key/0b9c713c-1c4b-43ad-84df-1f62117838f0"
 }
 
 data "aws_caller_identity" "current" {}
