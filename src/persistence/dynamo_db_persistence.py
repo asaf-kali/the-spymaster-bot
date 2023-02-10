@@ -40,7 +40,7 @@ class DynamoPersistencyStore:
         try:
             self._cache[key] = self._read(key=key)
             return self._cache[key]
-        except DoesNotExist as e:
+        except DoesNotExist as e:  # pylint: disable=invalid-name
             log.info(f"Item {e.item_id} does not exist")
             return None
 
@@ -59,10 +59,10 @@ class DynamoPersistencyStore:
     def _read(self, key: Any) -> Optional[Any]:
         item_id = self.get_item_id(key=key)
         log.debug("Reading from Dynamo", extra={"item_id": item_id})
-        with MeasureTime() as mt:
+        with MeasureTime() as mt:  # pylint: disable=invalid-name
             try:
                 persistence_item = PersistenceItem.get(hash_key=item_id)
-            except PynamoDoesNotExist as e:
+            except PynamoDoesNotExist as e:  # pylint: disable=invalid-name
                 raise DoesNotExist(item_id=item_id) from e
         data = persistence_item.item_data
         log.debug("Read complete", extra={"item_id": item_id, "duration_ms": mt.delta * SEC_TO_MS, "data": data})
@@ -73,7 +73,7 @@ class DynamoPersistencyStore:
         item_type = self.get_item_type()
         item = PersistenceItem(item_id=item_id, item_type=item_type, item_data=data)
         log.debug("Writing to Dynamo", extra={"item_id": item_id, "item_data": data})
-        with MeasureTime() as mt:
+        with MeasureTime() as mt:  # pylint: disable=invalid-name
             item.save()
         log.debug("Write complete", extra={"item_id": item_id, "duration_ms": mt.delta * SEC_TO_MS})
 

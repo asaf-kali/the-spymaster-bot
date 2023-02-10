@@ -2,12 +2,12 @@ import json
 from typing import Any
 
 
-def json_safe(x: Any) -> Any:
+def json_safe(x: Any) -> Any:  # pylint: disable=invalid-name
     if isinstance(x, (int, float, str, bool)):
         return x
     try:
         return json.dumps(x)
-    except:  # noqa
+    except:  # noqa  # pylint: disable=bare-except
         return str(x)
 
 
