@@ -20,7 +20,7 @@ bot = TheSpymasterBot(
 log.info("Bootstrap complete.")
 
 
-def handle(event: dict, context=None):
+def handle(event: dict, context=None):  # pylint: disable=unused-argument
     try:
         log.reset_context()
         log.info("Received event", extra={"event": event})
@@ -30,12 +30,12 @@ def handle(event: dict, context=None):
             return create_response(400, data={"message": "No body in event"})
         try:
             update_data = json.loads(body)
-        except json.JSONDecodeError as e:
+        except json.JSONDecodeError as e:  # pylint: disable=invalid-name
             log.warning("Error decoding JSON")
             return create_response(400, data={"message": "Error decoding JSON", "error": str(e)})
         result = bot.process_update(update_data)
         return create_response(200, data={"result": json_safe(result)})
-    except Exception as e:
+    except Exception as e:  # pylint: disable=invalid-name
         log.exception("Error handling event")
         sentry_sdk.capture_exception(e)
         sentry_sdk.flush(timeout=5)

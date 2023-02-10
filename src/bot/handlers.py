@@ -54,7 +54,7 @@ class NoneValueError(Exception):
     pass
 
 
-class EventHandler:
+class EventHandler:  # pylint: disable=too-many-public-methods
     def __init__(
         self,
         bot: "TheSpymasterBot",
@@ -115,15 +115,16 @@ class EventHandler:
             try:
                 game_id = session.game_id if session else None
                 log.update_context(telegram_user_id=instance.user_id, game_id=game_id)
-            except Exception as e:
+            except Exception as e:  # pylint: disable=invalid-name
                 log.warning(f"Failed to update context: {e}")
             try:
                 log.debug(f"Dispatching to event handler: {cls.__name__}")
                 return instance.handle()
-            except Exception as e:
-                instance._handle_error(e)
+            except Exception as e:  # pylint: disable=invalid-name
+                instance.handle_error(e)
             finally:
                 log.reset_context()
+            return None
 
         return callback
 
@@ -256,11 +257,11 @@ class EventHandler:
         return self.api_client.get_game_state(request=request).game_state
         # self.set_state(new_state=response.game_state)
 
-    def _handle_error(self, error: Exception):
+    def handle_error(self, error: Exception):
         log.debug(f"Handling error: {error}")
         try:
             _enrich_sentry_context(user_name=self.user_full_name)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=invalid-name
             log.warning(f"Failed to enrich sentry context: {e}")
         try:
             if self._handle_http_error(error):
@@ -274,7 +275,7 @@ class EventHandler:
         log.exception(error)
         try:
             self.send_text(f"💔 Something went wrong: {error}")
-        except:  # noqa
+        except:  # noqa  # pylint: disable=bare-except
             pass
         # Try refreshing the state
         # try:
@@ -282,7 +283,7 @@ class EventHandler:
         # except:  # noqa
         #     log.exception("Failed to refresh game state")
 
-    def _handle_http_error(self, e: Exception) -> bool:
+    def _handle_http_error(self, e: Exception) -> bool:  # pylint: disable=invalid-name
         if not isinstance(e, HTTPError):
             return False
         response = e.response
@@ -296,7 +297,7 @@ class EventHandler:
         self.send_text(text, put_log=True)
         return True
 
-    def _handle_bad_message(self, e: Exception) -> bool:
+    def _handle_bad_message(self, e: Exception) -> bool:  # pylint: disable=invalid-name
         if not isinstance(e, BadMessageError):
             return False
         self.send_markdown(f"🧐 {e}", put_log=True)
@@ -340,7 +341,7 @@ class ProcessMessageHandler(EventHandler):
         try:
             command = COMMAND_TO_INDEX.get(text, text)
             card_index = _get_card_index(board=state.board, text=command)
-        except:  # noqa
+        except:  # noqa  # pylint: disable=bare-except
             self.send_board(
                 state=state,
                 message=f"Card '*{text}*' not found. Please reply with card index (1-25) or a word on the board.",
@@ -434,7 +435,7 @@ def build_models_keyboard(language: str):
 def parse_difficulty(text: str) -> Difficulty:
     try:
         return Difficulty(text)
-    except ValueError as e:
+    except ValueError as e:  # pylint: disable=invalid-name
         raise BadMessageError(f"Unknown difficulty: '*{text}*'") from e
 
 
@@ -468,7 +469,7 @@ class GetSessionsHandler(EventHandler):
 class LoadModelsHandler(EventHandler):
     def handle(self):
         self.send_text("Sending load models request...")
-        with MeasureTime() as mt:
+        with MeasureTime() as mt:  # pylint: disable=invalid-name
             response = self.bot.send_load_models_request()
         self.send_markdown(f"Loaded `{response.success_count}` models in `{mt.delta}` seconds.")
 
@@ -532,13 +533,13 @@ Use '-pass' and '-quit' to pass the turn and quit the game.
 class ErrorHandler(EventHandler):
     def handle(self):
         log.warning("Using telegram bot handling mechanism, check why error was not handled in callback.")
-        self._handle_error(self.context.error)
+        self.handle_error(self.context.error)
 
 
 def _enrich_sentry_context(**kwargs):
-    for k, v in log.context.items():
+    for k, v in log.context.items():  # pylint: disable=invalid-name
         sentry_sdk.set_tag(k, v)
-    for k, v in kwargs.items():
+    for k, v in kwargs.items():  # pylint: disable=invalid-name
         sentry_sdk.set_tag(k, v)
 
 

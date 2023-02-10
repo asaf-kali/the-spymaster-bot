@@ -74,7 +74,7 @@ class TheSpymasterBot:
     def parse_update(self, update: dict) -> Optional[Update]:
         return Update.de_json(update, bot=self.updater.bot)  # type: ignore
 
-    def _construct_updater(self):
+    def _construct_updater(self):  # pylint: disable=too-many-locals
         log.info("Setting up bot...")
 
         start_handler = CommandHandler("start", self.generate_callback(StartEventHandler))

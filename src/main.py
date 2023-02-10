@@ -1,9 +1,8 @@
 import json
 
-from bot.config import configure_logging
-from src.bot.config import get_config
-from src.bot.the_spymaster_bot import TheSpymasterBot
-from src.lambda_handler import handle
+from bot.config import configure_logging, get_config
+from bot.the_spymaster_bot import TheSpymasterBot
+from lambda_handler import handle
 
 
 def main():
