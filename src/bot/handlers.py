@@ -237,8 +237,8 @@ class EventHandler:  # pylint: disable=too-many-public-methods
         return response.game_state
 
     def send_score(self, state: GameState):
-        score = state.remaining_score
-        text = f"{BLUE_EMOJI}  *{score[TeamColor.BLUE]}*  remaining card(s)  *{score[TeamColor.RED]}*  {RED_EMOJI}"
+        score = state.score
+        text = f"{BLUE_EMOJI}  *{score.blue.unrevealed}*  remaining card(s)  *{score.red.unrevealed}*  {RED_EMOJI}"
         self.send_markdown(text)
 
     def send_board(self, state: GameState, message: Optional[str] = None):
