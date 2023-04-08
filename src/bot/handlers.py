@@ -2,15 +2,12 @@ from random import random
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type
 
 import sentry_sdk
-from codenames.game import (
-    PASS_GUESS,
-    Board,
-    Card,
-    GameState,
-    GivenGuess,
-    PlayerRole,
-    TeamColor,
-)
+from codenames.game.board import Board
+from codenames.game.card import Card
+from codenames.game.color import TeamColor
+from codenames.game.move import PASS_GUESS, GivenGuess
+from codenames.game.player import PlayerRole
+from codenames.game.state import GameState
 from requests import HTTPError
 from telegram import Message, ReplyKeyboardMarkup, Update
 from telegram import User as TelegramUser

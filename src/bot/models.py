@@ -1,7 +1,9 @@
 from enum import IntEnum, auto
 from typing import Optional
 
-from codenames.game import PASS_GUESS, QUIT_GAME, CardColor, WinningReason
+from codenames.game.color import CardColor
+from codenames.game.move import PASS_GUESS, QUIT_GAME
+from codenames.game.winner import WinningReason
 from pydantic import BaseModel
 from the_spymaster_api.structs import ModelIdentifier
 from the_spymaster_solvers_client.structs import Difficulty, Solver
