@@ -1,7 +1,7 @@
 # Service core
-codenames==1.2.7
+codenames==2.0.2
 the-spymaster-util==3.0.6
-the-spymaster-api==1.6.0
+the-spymaster-api==1.7.0
 
 # Telegram bot
 python-telegram-bot==13.11
