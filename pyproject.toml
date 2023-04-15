@@ -8,19 +8,19 @@ source = ["bot"]
 line-length = 120
 select = ["B", "C", "E", "F", "W"]
 ignore = []
-exclude = ["local", ".deployment"]
+exclude = ["local", "tf"]
 
 [tool.black]
 line-length = 120
 
 [tool.isort]
 profile = "black"
-skip = ["__init__.py", ".deployment/"]
+skip = ["__init__.py", "tf/"]
 
 [tool.mypy]
 ignore_missing_imports = true
 explicit_package_bases = true
-exclude = ["local/", ".deployment/", "dist/", "build/"]
+exclude = ["local/", "tf/", "dist/", "build/"]
 
 [tool.pylint]
 max-line-length = 120

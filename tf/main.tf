@@ -47,7 +47,8 @@ locals {
   project_name      = "the-spymaster-bot"
   service_name      = "${local.project_name}-${local.env}"
   aws_account_id    = data.aws_caller_identity.current.account_id
-  project_root      = "${path.module}/../"
+  tf_root           = abspath(path.module)
+  project_root      = abspath("${path.module}/../")
   # Domain
   base_app_domain   = "the-spymaster.xyz"
   hosted_zone_id    = "Z0770508EK6R7V32364I"
@@ -61,7 +62,10 @@ locals {
   bot_webhook_domain = "telegram.${local.domain_suffix}${local.base_app_domain}"
   bot_endpoint_url   = "${aws_apigatewayv2_api.api_gateway.api_endpoint}/${aws_apigatewayv2_stage.api_stage.name}/"
   # Encryption
-  default_key_arn     = "arn:aws:kms:us-east-1:096386908883:key/0b9c713c-1c4b-43ad-84df-1f62117838f0"
+  default_key_arn    = "arn:aws:kms:us-east-1:096386908883:key/0b9c713c-1c4b-43ad-84df-1f62117838f0"
+  # Helper
+  requirements_hash  = md5(file("${local.project_root}/requirements.txt"))
+  layer_build_path   = ".deployment/layer-dependencies/${local.requirements_hash}"
 }
 
 data "aws_caller_identity" "current" {}
