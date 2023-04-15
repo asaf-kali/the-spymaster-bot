@@ -14,7 +14,7 @@ pynamodb==5.4.1
 # Utils
 requests==2.28.2
 cachetools==4.2.2
-boto3==1.26.109
+boto3==1.26.114
 
 # Monitor
 sentry-sdk==1.19.1

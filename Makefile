@@ -75,9 +75,6 @@ kill:
 
 # Deploy
 
-build-layer:
-	sudo ./scripts/build_layer.sh
-
 plan:
 	cd tf; make plan;
 
@@ -86,5 +83,3 @@ apply:
 
 update:
 	cd tf; make deploy;
-
-deploy: build-layer update

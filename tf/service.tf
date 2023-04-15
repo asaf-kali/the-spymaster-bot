@@ -1,16 +1,35 @@
 # Layer
 
+resource "null_resource" "layer_code" {
+  triggers = {
+    requirements_file = local.requirements_hash
+  }
+  provisioner "local-exec" {
+    command = <<EOF
+image_name="public.ecr.aws/sam/build-python3.9"
+export_folder="tf/${local.layer_build_path}/python"
+update_pip_cmd="pip install --upgrade pip"
+install_dependencies_cmd="pip install -r requirements.txt -t $export_folder"
+docker_cmd="$update_pip_cmd; $install_dependencies_cmd; exit"
+
+docker run -v "${local.project_root}":/var/task "$image_name" /bin/sh -c "$docker_cmd"
+EOF
+  }
+}
+
 data "archive_file" "layer_code_archive" {
   type        = "zip"
-  source_dir  = "${local.project_root}/.deployment/layer-dependencies/"
+  source_dir  = local.layer_build_path
   output_path = "layer.zip"
+  depends_on  = [
+    null_resource.layer_code
+  ]
 }
 
 resource "aws_lambda_layer_version" "dependencies_layer" {
-  filename         = data.archive_file.layer_code_archive.output_path
-  layer_name       = "${local.service_name}-layer"
-  source_code_hash = filebase64sha256(data.archive_file.layer_code_archive.output_path)
-  skip_destroy     = true
+  filename     = data.archive_file.layer_code_archive.output_path
+  layer_name   = "${local.service_name}-layer"
+  skip_destroy = true
 }
 
 # Lambda
