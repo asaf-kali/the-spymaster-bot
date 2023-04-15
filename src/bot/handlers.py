@@ -23,7 +23,7 @@ from the_spymaster_api.structs import (
     NextMoveRequest,
     StartGameRequest,
 )
-from the_spymaster_solvers_client.structs import Difficulty
+from the_spymaster_solvers_client.structs import Difficulty, Solver
 from the_spymaster_util.logger import get_logger
 from the_spymaster_util.measure_time import MeasureTime
 
@@ -302,9 +302,11 @@ class EventHandler:  # pylint: disable=too-many-public-methods
 
 
 def _should_skip_turn(current_player_role: PlayerRole, config: GameConfig) -> bool:
+    if current_player_role != PlayerRole.GUESSER:
+        return False
     pass_probability = config.difficulty.pass_probability
     dice = random()
-    return current_player_role == PlayerRole.GUESSER and dice < pass_probability
+    return dice < pass_probability
 
 
 class StartEventHandler(EventHandler):
@@ -373,9 +375,16 @@ def _get_card_index(board: Board, text: str) -> int:
     return board.find_card_index(text)
 
 
+class NextMoveHandler(EventHandler):
+    def handle(self):
+        state = self._get_game_state(game_id=self.game_id)
+        new_state = self._next_move(state=state)
+        return self.fast_forward(state=new_state)
+
+
 class CustomHandler(EventHandler):
     def handle(self):
-        game_config = GameConfig()
+        game_config = GameConfig(difficulty=Difficulty.HARD)
         session = Session(config=game_config)
         self.set_session(session=session)
         keyboard = build_language_keyboard()
@@ -394,21 +403,14 @@ class ConfigLanguageHandler(EventHandler):
         log.info(f"Setting language: '{text}'")
         language = parse_language(text)
         self.update_game_config(language=language)
-        keyboard = build_difficulty_keyboard()
-        self.send_text("🥵 Pick difficulty:", reply_markup=keyboard)
-        return BotState.CONFIG_DIFFICULTY
+        keyboard = build_solver_keyboard()
+        self.send_text("🧮 Pick solver:", reply_markup=keyboard)
+        return BotState.CONFIG_SOLVER
 
 
-def build_difficulty_keyboard():
-    difficulties = _title_list([Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD])
-    keyboard = ReplyKeyboardMarkup([difficulties], one_time_keyboard=True)
-    return keyboard
-
-
-def parse_language(text: str) -> str:
-    if text not in SUPPORTED_LANGUAGES:
-        raise BadMessageError(f"Unknown language: '*{text}*'")
-    return text
+def build_solver_keyboard():
+    solvers = ["Naive", "GPT"]
+    return ReplyKeyboardMarkup([solvers], one_time_keyboard=True)
 
 
 class ConfigDifficultyHandler(EventHandler):
@@ -473,8 +475,30 @@ class LoadModelsHandler(EventHandler):
 
 class ConfigSolverHandler(EventHandler):
     def handle(self):
-        self.send_text("🤖 Solver is not implemented yet. Please use the default solver.")
-        return BotState.ENTRY
+        text = self.update.message.text.upper()
+        try:
+            solver = Solver[text]
+        except Exception as e:
+            raise BadMessageError(f"Unknown solver: '*{text}*'") from e
+        log.info(f"Setting solver: '{solver}'")
+        self.update_game_config(solver=solver)
+        if solver == Solver.GPT:
+            return self.trigger(StartEventHandler)
+        keyboard = build_difficulty_keyboard()
+        self.send_text("🥵 Pick difficulty:", reply_markup=keyboard)
+        return BotState.CONFIG_SOLVER
+
+
+def build_difficulty_keyboard():
+    difficulties = _title_list([Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD])
+    keyboard = ReplyKeyboardMarkup([difficulties], one_time_keyboard=True)
+    return keyboard
+
+
+def parse_language(text: str) -> str:
+    if text not in SUPPORTED_LANGUAGES:
+        raise BadMessageError(f"Unknown language: '*{text}*'")
+    return text
 
 
 class ContinueHandler(EventHandler):

@@ -22,7 +22,7 @@ install-dev: upgrade-pip
 	@make install-test --no-print-directory
 	pre-commit install
 
-install: install-dev test lint
+install: install-dev lint cover
 
 # Test
 
