@@ -29,6 +29,7 @@ from bot.handlers import (
     GetSessionsHandler,
     HelpMessageHandler,
     LoadModelsHandler,
+    NextMoveHandler,
     ProcessMessageHandler,
     StartEventHandler,
     TestingHandler,
@@ -76,13 +77,12 @@ class TheSpymasterBot:
 
     def _construct_updater(self):  # pylint: disable=too-many-locals
         log.info("Setting up bot...")
-
         start_handler = CommandHandler("start", self.generate_callback(StartEventHandler))
         custom_handler = CommandHandler("custom", self.generate_callback(CustomHandler))
         config_language_handler = MessageHandler(Filters.text, self.generate_callback(ConfigLanguageHandler))
+        config_solver_handler = MessageHandler(Filters.text, self.generate_callback(ConfigSolverHandler))
         config_difficulty_handler = MessageHandler(Filters.text, self.generate_callback(ConfigDifficultyHandler))
         config_model_handler = MessageHandler(Filters.text, self.generate_callback(ConfigModelHandler))
-        config_solver_handler = MessageHandler(Filters.text, self.generate_callback(ConfigSolverHandler))
         continue_game_handler = CommandHandler("continue", self.generate_callback(ContinueHandler))
         continue_get_id_handler = MessageHandler(Filters.text, self.generate_callback(ContinueGetIdHandler))
         fallback_handler = CommandHandler("quit", self.generate_callback(FallbackHandler))
@@ -93,24 +93,26 @@ class TheSpymasterBot:
         process_message_handler = MessageHandler(
             Filters.text & ~Filters.command, self.generate_callback(ProcessMessageHandler)
         )
+        next_move_handler = CommandHandler("next_move", self.generate_callback(NextMoveHandler))
         error_handler = self.generate_callback(ErrorHandler)
 
         conv_handler = ConversationHandler(
             name="main",
             entry_points=[
+                help_message_handler,
                 start_handler,
                 custom_handler,
-                continue_game_handler,
-                help_message_handler,
-                get_sessions_handler,
+                next_move_handler,
                 load_models_handler,
                 testing_handler,
+                get_sessions_handler,
+                continue_game_handler,
             ],
             states={
                 BotState.CONFIG_LANGUAGE: [config_language_handler],
+                BotState.CONFIG_SOLVER: [config_solver_handler, fallback_handler],
                 BotState.CONFIG_DIFFICULTY: [config_difficulty_handler, fallback_handler],
                 BotState.CONFIG_MODEL: [config_model_handler, fallback_handler],
-                BotState.CONFIG_SOLVER: [config_solver_handler, fallback_handler],
                 BotState.CONTINUE_GET_ID: [continue_get_id_handler],
                 BotState.PLAYING: [process_message_handler],
             },

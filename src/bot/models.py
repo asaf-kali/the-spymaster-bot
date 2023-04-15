@@ -36,9 +36,9 @@ class BadMessageError(Exception):
 class BotState(IntEnum):
     ENTRY = auto()
     CONFIG_LANGUAGE = auto()
+    CONFIG_SOLVER = auto()
     CONFIG_DIFFICULTY = auto()
     CONFIG_MODEL = auto()
-    CONFIG_SOLVER = auto()
     CONTINUE_GET_ID = auto()
     PLAYING = auto()
 

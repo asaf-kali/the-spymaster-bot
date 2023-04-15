@@ -24,6 +24,10 @@ exclude = ["local/", ".deployment/", "dist/", "build/"]
 
 [tool.pylint]
 max-line-length = 120
+good-names = [
+    "e",
+    "i",
+]
 disable = [
     "C0114",
     "C0115",
