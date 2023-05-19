@@ -486,7 +486,7 @@ class ConfigSolverHandler(EventHandler):
             return self.trigger(StartEventHandler)
         keyboard = build_difficulty_keyboard()
         self.send_text("🥵 Pick difficulty:", reply_markup=keyboard)
-        return BotState.CONFIG_SOLVER
+        return BotState.CONFIG_DIFFICULTY
 
 
 def build_difficulty_keyboard():
