@@ -1,43 +1,36 @@
 # Layer
 
-resource "null_resource" "layer_code" {
-  triggers = {
-    requirements_file = local.requirements_hash
-  }
-  provisioner "local-exec" {
-    command = <<EOF
-image_name="public.ecr.aws/sam/build-python3.9"
-export_folder="tf/${local.layer_build_path}/python"
-update_pip_cmd="pip install --upgrade pip"
-install_dependencies_cmd="pip install -r requirements.txt -t $export_folder"
-docker_cmd="$update_pip_cmd; $install_dependencies_cmd; exit"
-
-docker run -v "${local.project_root}":/var/task "$image_name" /bin/sh -c "$docker_cmd"
-EOF
-  }
+module "layer_archive" {
+  source     = "git@github.com:asaf-kali/resources//tf/filtered_archive"
+  source_dir = local.layer_src_root
+  name       = "layer"
 }
 
-data "archive_file" "layer_code_archive" {
-  type        = "zip"
-  source_dir  = local.layer_build_path
-  output_path = "layer.zip"
-  depends_on  = [
-    null_resource.layer_code
-  ]
+output "layer_archive_hash" {
+  value = filebase64sha256(module.layer_archive.output_path)
 }
 
 resource "aws_lambda_layer_version" "dependencies_layer" {
-  filename     = data.archive_file.layer_code_archive.output_path
-  layer_name   = "${local.service_name}-layer"
-  skip_destroy = true
+  layer_name       = "${local.service_name}-layer"
+  filename         = module.layer_archive.output_path
+  source_code_hash = filebase64sha256(module.layer_archive.output_path)
+  skip_destroy     = true
 }
 
 # Lambda
 
-data "archive_file" "service_code_archive" {
-  type        = "zip"
-  source_dir  = "${local.project_root}/src"
-  output_path = "service.zip"
+module "lambda_archive" {
+  source           = "git@github.com:asaf-kali/resources//tf/filtered_archive"
+  source_dir       = local.lambda_src_root
+  name             = "service"
+  exclude_patterns = [
+    "**/__pycache__/**",
+    "**/.pytest_cache/**",
+  ]
+}
+
+output "lambda_archive_hash" {
+  value = filebase64sha256(module.lambda_archive.output_path)
 }
 
 resource "aws_lambda_function" "service_lambda" {
@@ -45,8 +38,8 @@ resource "aws_lambda_function" "service_lambda" {
   role                           = aws_iam_role.lambda_exec_role.arn
   handler                        = "lambda_handler.handle"
   runtime                        = "python3.9"
-  filename                       = data.archive_file.service_code_archive.output_path
-  source_code_hash               = filebase64sha256(data.archive_file.service_code_archive.output_path)
+  filename                       = module.lambda_archive.output_path
+  source_code_hash               = filebase64sha256(module.lambda_archive.output_path)
   timeout                        = 30
   memory_size                    = 200
   reserved_concurrent_executions = 2

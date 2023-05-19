@@ -88,11 +88,17 @@ kill:
 
 # Deploy
 
+build-layer:
+	./scripts/build_layer.sh
+
+update:
+	cd tf; make update;
+
 plan:
 	cd tf; make plan;
 
 apply:
 	cd tf; make apply;
 
-update:
+deploy:
 	cd tf; make deploy;
