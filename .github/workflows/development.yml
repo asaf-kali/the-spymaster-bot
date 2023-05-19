@@ -15,4 +15,5 @@ jobs:
           python-version: 3.9
       - name: Init local development environment
         run: |
-          make install
+          make install-ci
+          make install SYNC=""

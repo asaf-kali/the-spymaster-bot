@@ -1,2 +1,0 @@
-# Other
-pre-commit~=2.17
