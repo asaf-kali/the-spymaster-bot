@@ -13,6 +13,7 @@ bot_log_level = "INFO"
 env_verbose_name = "Test"
 should_load_ssm_parameters = false
 std_formatter = "debug"
+telegram_token = "12345:DUMMY_TOKEN"
 
 [local]
 env_verbose_name = "Local"
