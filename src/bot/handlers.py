@@ -244,8 +244,8 @@ class EventHandler:  # pylint: disable=too-many-public-methods
         keyboard = build_board_keyboard(table, is_game_over=state.is_game_over)
         if message is None:
             message = "Game over!" if state.is_game_over else "Pick your guess!"
-            if state.bonus_given:
-                message += " (bonus round)"
+        if state.left_guesses == 1:
+            message += " (bonus round)"
         text = self.send_markdown(message, reply_markup=keyboard)
         self.update_session(last_keyboard_message_id=text.message_id)
 

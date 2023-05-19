@@ -26,10 +26,10 @@ class PersistenceItem(Model):
     updated_ts = NumberAttribute()
 
     def save(
-        self, condition: Optional[Condition] = None, settings: OperationSettings = OperationSettings.default
+        self, condition: Optional[Condition] = None, settings: OperationSettings = OperationSettings.default, **kwargs
     ) -> Dict[str, Any]:
         self.updated_ts = int(time.time())
-        return super().save(condition=condition, settings=settings)
+        return super().save(condition=condition, settings=settings, **kwargs)
 
 
 def get_conversation_id(conversation_name: str, key: ConversationKey) -> str:
