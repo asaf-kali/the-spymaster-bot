@@ -20,7 +20,7 @@ dynaconf = "^3.1.12"
 pydantic = "^1.9"
 pynamodb = "^5.4.1"
 # Utils
-requests = "^2.26.0"
+requests = "^2.31.0"
 cachetools = "^4.2.2"
 boto3 = "^1.26.114"
 # Monitor
