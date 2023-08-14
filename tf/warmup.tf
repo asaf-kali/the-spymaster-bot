@@ -3,6 +3,7 @@
 resource "aws_cloudwatch_event_rule" "lambda_warmup_rule" {
   name                = "${local.service_name}-warmup"
   schedule_expression = "rate(3 minutes)"
+  is_enabled          = local.warmup_enabled
 }
 
 resource "aws_cloudwatch_event_target" "lambda_warmup_target" {

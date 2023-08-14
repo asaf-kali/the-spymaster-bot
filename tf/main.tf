@@ -4,7 +4,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "4.18.0"
+      version = "5.12.0"
     }
   }
   backend "s3" {
@@ -43,6 +43,7 @@ locals {
     "prod"    = "prod"
   }
   env               = local.env_map[terraform.workspace]
+  is_prod           = local.env == "prod"
   # Base
   project_name      = "the-spymaster-bot"
   service_name      = "${local.project_name}-${local.env}"
@@ -66,6 +67,9 @@ locals {
   bot_endpoint_url   = "${aws_apigatewayv2_api.api_gateway.api_endpoint}/${aws_apigatewayv2_stage.api_stage.name}/"
   # Encryption
   default_key_arn    = "arn:aws:kms:us-east-1:096386908883:key/0b9c713c-1c4b-43ad-84df-1f62117838f0"
+  # Config
+  # warmup is true if prod else false
+  warmup_enabled     = local.is_prod
 }
 
 data "aws_caller_identity" "current" {}
