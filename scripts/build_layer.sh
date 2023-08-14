@@ -1,5 +1,5 @@
 #!/bin/bash
-image_name="public.ecr.aws/sam/build-python3.9"
+image_name="public.ecr.aws/sam/build-python3.11"
 export_folder=".deployment/layer-dependencies/python"
 update_pip_cmd="pip install --upgrade pip"
 install_dependencies_cmd="pip install -r requirements.lock -t ${export_folder}"
