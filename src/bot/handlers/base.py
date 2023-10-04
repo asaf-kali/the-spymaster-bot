@@ -1,11 +1,11 @@
 from random import random
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Callable, Optional, Type
 
 import sentry_sdk
-from codenames.game.board import Board
+from beautifultable import BeautifulTable
 from codenames.game.card import Card
 from codenames.game.color import TeamColor
-from codenames.game.move import PASS_GUESS, GivenGuess
+from codenames.game.move import PASS_GUESS
 from codenames.game.player import PlayerRole
 from codenames.game.state import GameState
 from requests import HTTPError
@@ -15,20 +15,20 @@ from telegram.error import BadRequest as TelegramBadRequest
 from telegram.ext import CallbackContext
 from the_spymaster_api import TheSpymasterClient
 from the_spymaster_api.structs import (
+    APIGameRuleError,
     ErrorResponse,
     GetGameStateRequest,
     GuessRequest,
-    GuessResponse,
-    ModelIdentifier,
     NextMoveRequest,
-    StartGameRequest,
 )
-from the_spymaster_solvers_client.structs import Difficulty, Solver
 from the_spymaster_util.logger import get_logger
-from the_spymaster_util.measure_time import MeasureTime
 
+from bot.handlers.common import (
+    enrich_sentry_context,
+    get_given_guess_result_message_text,
+    is_blue_guesser_turn,
+)
 from bot.models import (
-    AVAILABLE_MODELS,
     BLUE_EMOJI,
     COMMAND_TO_INDEX,
     RED_EMOJI,
@@ -43,8 +43,6 @@ if TYPE_CHECKING:
     from bot.the_spymaster_bot import TheSpymasterBot
 
 log = get_logger(__name__)
-
-SUPPORTED_LANGUAGES = ["hebrew", "english"]
 
 
 class NoneValueError(Exception):
@@ -166,13 +164,17 @@ class EventHandler:  # pylint: disable=too-many-public-methods
     def fast_forward(self, state: GameState):
         if not state:
             raise NoneValueError("state is not set, cannot fast forward.")
-        while not state.is_game_over and not _is_blue_guesser_turn(state=state):
+        while not state.is_game_over and not is_blue_guesser_turn(state=state):
             state = self._next_move(state=state)
         self.send_board(state=state)
         if state.is_game_over:
             self.send_game_summary(state=state)
             log.update_context(game_id=None)
             self.update_session(game_id=None)
+            from bot.handlers import (  # pylint: disable=import-outside-toplevel
+                HelpMessageHandler,
+            )
+
             self.trigger(HelpMessageHandler)
             return None
         return BotState.PLAYING
@@ -241,7 +243,7 @@ class EventHandler:  # pylint: disable=too-many-public-methods
     def send_board(self, state: GameState, message: Optional[str] = None):
         board_to_send = state.board if state.is_game_over else state.board.censured
         table = board_to_send.as_table
-        keyboard = build_board_keyboard(table, is_game_over=state.is_game_over)
+        keyboard = _build_board_keyboard(table, is_game_over=state.is_game_over)
         if message is None:
             message = "Game over!" if state.is_game_over else "Pick your guess!"
         if state.left_guesses == 1:
@@ -257,13 +259,15 @@ class EventHandler:  # pylint: disable=too-many-public-methods
     def handle_error(self, error: Exception):
         log.debug(f"Handling error: {error}")
         try:
-            _enrich_sentry_context(user_name=self.user_full_name)
+            enrich_sentry_context(user_name=self.user_full_name)
         except Exception as e:  # pylint: disable=invalid-name
             log.warning(f"Failed to enrich sentry context: {e}")
         try:
             if self._handle_http_error(error):
                 return
             if self._handle_bad_message(error):
+                return
+            if self._handle_bad_move(error):
                 return
         except Exception as handling_error:
             sentry_sdk.capture_exception(handling_error)
@@ -300,6 +304,12 @@ class EventHandler:  # pylint: disable=too-many-public-methods
         self.send_markdown(f"🧐 {e}", put_log=True)
         return True
 
+    def _handle_bad_move(self, e: Exception) -> bool:  # pylint: disable=invalid-name
+        if not isinstance(e, APIGameRuleError):
+            return False
+        self.send_text(f"🤬 {e.message}", put_log=True)
+        return True
+
 
 def _should_skip_turn(current_player_role: PlayerRole, config: GameConfig) -> bool:
     if current_player_role != PlayerRole.GUESSER:
@@ -309,268 +319,7 @@ def _should_skip_turn(current_player_role: PlayerRole, config: GameConfig) -> bo
     return dice < pass_probability
 
 
-class StartEventHandler(EventHandler):
-    def handle(self):
-        log.update_context(username=self.username, full_name=self.user_full_name)
-        log.info(f"Got start event from {self.user_full_name}")
-        game_config = self.config or GameConfig()
-        request = StartGameRequest(language=game_config.language)
-        response = self.api_client.start_game(request)
-        log.update_context(game_id=response.game_id)
-        log.debug("Game starting", extra={"game_id": response.game_id, "game_config": game_config.dict()})
-        session = Session(game_id=response.game_id, config=game_config)
-        self.set_session(session=session)
-        short_id = response.game_id[-4:]
-        self.send_markdown(f"Game *{short_id}* is starting! 🥳", put_log=True)
-        return self.fast_forward(state=response.game_state)
-
-
-class ProcessMessageHandler(EventHandler):
-    def handle(self):
-        text = self.update.message.text.lower()
-        log.info(f"Processing message: '{text}'")
-        if not self.session:
-            return self.trigger(HelpMessageHandler)
-        self.remove_keyboard(last_keyboard_message_id=self.session.last_keyboard_message_id)
-        if not self.session.is_game_active:
-            return self.trigger(HelpMessageHandler)
-        state = self._get_game_state(game_id=self.game_id)
-        if state and not _is_blue_guesser_turn(state):
-            return self.fast_forward(state)
-        try:
-            command = COMMAND_TO_INDEX.get(text, text)
-            card_index = _get_card_index(board=state.board, text=command)
-        except:  # noqa  # pylint: disable=bare-except
-            self.send_board(
-                state=state,
-                message=f"Card '*{text}*' not found. Please reply with card index (1-25) or a word on the board.",
-            )
-            return None
-        response = self._guess(card_index)
-        given_guess = response.given_guess
-        if given_guess is None:
-            pass  # This means we passed the turn
-        else:
-            text = get_given_guess_result_message_text(given_guess)
-            self.send_markdown(text)
-        return self.fast_forward(response.game_state)
-
-    def _guess(self, card_index: int) -> GuessResponse:
-        request = GuessRequest(game_id=self.game_id, card_index=card_index)
-        return self.api_client.guess(request)
-
-
-def _is_blue_guesser_turn(state: GameState):
-    return state.current_team_color == TeamColor.BLUE and state.current_player_role == PlayerRole.GUESSER
-
-
-def _get_card_index(board: Board, text: str) -> int:
-    try:
-        index = int(text)
-        if index > 0:
-            index -= 1
-        return index
-    except ValueError:
-        pass
-    return board.find_card_index(text)
-
-
-class NextMoveHandler(EventHandler):
-    def handle(self):
-        state = self._get_game_state(game_id=self.game_id)
-        new_state = self._next_move(state=state)
-        return self.fast_forward(state=new_state)
-
-
-class CustomHandler(EventHandler):
-    def handle(self):
-        game_config = GameConfig(difficulty=Difficulty.HARD)
-        session = Session(config=game_config)
-        self.set_session(session=session)
-        keyboard = build_language_keyboard()
-        self.send_text("🌍 Pick language:", reply_markup=keyboard)
-        return BotState.CONFIG_LANGUAGE
-
-
-def build_language_keyboard():
-    languages = _title_list(SUPPORTED_LANGUAGES)
-    return ReplyKeyboardMarkup([languages], one_time_keyboard=True)
-
-
-class ConfigLanguageHandler(EventHandler):
-    def handle(self):
-        text = self.update.message.text.lower()
-        log.info(f"Setting language: '{text}'")
-        language = parse_language(text)
-        self.update_game_config(language=language)
-        keyboard = build_solver_keyboard()
-        self.send_text("🧮 Pick solver:", reply_markup=keyboard)
-        return BotState.CONFIG_SOLVER
-
-
-def build_solver_keyboard():
-    solvers = ["Naive", "GPT"]
-    return ReplyKeyboardMarkup([solvers], one_time_keyboard=True)
-
-
-class ConfigDifficultyHandler(EventHandler):
-    def handle(self):
-        text = self.update.message.text.lower()
-        log.info(f"Setting difficulty: '{text}'")
-        difficulty = parse_difficulty(text)
-        self.update_game_config(difficulty=difficulty)
-        keyword = build_models_keyboard(language=self.session.config.language)
-        self.send_text("🧠 Pick language model:", reply_markup=keyword)
-        return BotState.CONFIG_MODEL
-
-
-def build_models_keyboard(language: str):
-    language_models = [model for model in AVAILABLE_MODELS if model.language == language]
-    model_names = [model.model_name for model in language_models]
-    keyboard = ReplyKeyboardMarkup([model_names], one_time_keyboard=True)
-    return keyboard
-
-
-def parse_difficulty(text: str) -> Difficulty:
-    try:
-        return Difficulty(text)
-    except ValueError as e:  # pylint: disable=invalid-name
-        raise BadMessageError(f"Unknown difficulty: '*{text}*'") from e
-
-
-class ConfigModelHandler(EventHandler):
-    def handle(self):
-        text = self.update.message.text.lower()
-        log.info(f"Setting model: '{text}'")
-        model_identifier = parse_model_identifier(language=self.session.config.language, model_name=text)
-        self.update_game_config(model_identifier=model_identifier)
-        return self.trigger(StartEventHandler)
-
-
-def parse_model_identifier(language: str, model_name: str) -> ModelIdentifier:
-    for model in AVAILABLE_MODELS:
-        if model.language == language and model.model_name == model_name:
-            return model
-    raise BadMessageError(f"Unknown model '*{model_name}*' for language '*{language}*'")
-
-
-class GetSessionsHandler(EventHandler):
-    def handle(self):
-        log.info(f"Getting sessions for user {self.user.full_name}")
-        self.send_text("Not implemented yet")
-        # sessions_dict = {}
-        # for session_id, session in self.bot.sessions.items():
-        #     sessions_dict[session_id.chat_id] = session.clean_dict()
-        # pretty_json = json.dumps(sessions_dict, indent=2, ensure_ascii=False)
-        # self.send_text(pretty_json)
-
-
-class LoadModelsHandler(EventHandler):
-    def handle(self):
-        self.send_text("Sending load models request...")
-        with MeasureTime() as mt:  # pylint: disable=invalid-name
-            response = self.bot.send_load_models_request()
-        self.send_markdown(f"Loaded `{response.success_count}` models in `{mt.delta}` seconds.")
-
-
-class ConfigSolverHandler(EventHandler):
-    def handle(self):
-        text = self.update.message.text.upper()
-        try:
-            solver = Solver[text]
-        except Exception as e:
-            raise BadMessageError(f"Unknown solver: '*{text}*'") from e
-        log.info(f"Setting solver: '{solver}'")
-        self.update_game_config(solver=solver)
-        if solver == Solver.GPT:
-            return self.trigger(StartEventHandler)
-        keyboard = build_difficulty_keyboard()
-        self.send_text("🥵 Pick difficulty:", reply_markup=keyboard)
-        return BotState.CONFIG_DIFFICULTY
-
-
-def build_difficulty_keyboard():
-    difficulties = _title_list([Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD])
-    keyboard = ReplyKeyboardMarkup([difficulties], one_time_keyboard=True)
-    return keyboard
-
-
-def parse_language(text: str) -> str:
-    if text not in SUPPORTED_LANGUAGES:
-        raise BadMessageError(f"Unknown language: '*{text}*'")
-    return text
-
-
-class ContinueHandler(EventHandler):
-    def handle(self):
-        self.send_text("This is not implemented yet 😢")
-
-
-class ContinueGetIdHandler(EventHandler):
-    def handle(self):
-        pass
-
-
-class FallbackHandler(EventHandler):
-    def handle(self):
-        pass
-
-
-class TestingHandler(EventHandler):
-    def handle(self):
-        text = remove_command(self.update.message.text)
-        log.info(f"Testing handler with text: '{text}'")
-        if "error" in text:
-            raise ValueError(f"This is an error: {text}")
-        self.send_text("Hello")
-        return BotState.CONFIG_SOLVER
-
-
-def remove_command(text: str) -> str:
-    """
-    Given a text like "/example 123 xyz", returns "123 xyz"
-    """
-    return text.split(maxsplit=1)[1]
-
-
-class HelpMessageHandler(EventHandler):
-    def handle(self):
-        log.info("Sending help message")
-        text = """Welcome! I'm *The Spymaster* 🕵🏼‍♂️
-/start - start a new game.
-/custom - start a new game with custom configurations.
-/continue - continue an old game.
-/help - show this message.
-
-How to play:
-You are the blue guesser. The bot will play all other roles. \
-When the blue hinter sends a hint, you can reply with a card index (1-25), \
-or just click the word on the keyboard. \
-Use '-pass' and '-quit' to pass the turn and quit the game.
-"""
-        self.send_markdown(text)
-
-
-class ErrorHandler(EventHandler):
-    def handle(self):
-        log.warning("Using telegram bot handling mechanism, check why error was not handled in callback.")
-        self.handle_error(self.context.error)
-
-
-def _enrich_sentry_context(**kwargs):
-    for k, v in log.context.items():  # pylint: disable=invalid-name
-        sentry_sdk.set_tag(k, v)
-    for k, v in kwargs.items():  # pylint: disable=invalid-name
-        sentry_sdk.set_tag(k, v)
-
-
-def get_given_guess_result_message_text(given_guess: GivenGuess) -> str:
-    card = given_guess.guessed_card
-    result = "Correct! ✅" if given_guess.correct else "Wrong! ❌"
-    return f"Card '*{card.word}*' is {card.color.emoji}, {result}"
-
-
-def build_board_keyboard(table, is_game_over: bool) -> ReplyKeyboardMarkup:
+def _build_board_keyboard(table: BeautifulTable, is_game_over: bool) -> ReplyKeyboardMarkup:
     reply_keyboard = []
     for row in table.rows:
         row_keyboard = []
@@ -584,7 +333,3 @@ def build_board_keyboard(table, is_game_over: bool) -> ReplyKeyboardMarkup:
         reply_keyboard.append(row_keyboard)
     reply_keyboard.append(list(COMMAND_TO_INDEX.keys()))
     return ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
-
-
-def _title_list(strings: List[str]) -> List[str]:
-    return [s.title() for s in strings]
