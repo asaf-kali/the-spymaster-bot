@@ -26,6 +26,9 @@ boto3 = "^1.26.114"
 # Monitor
 sentry-sdk = "^1.19.1"
 
+[tool.poetry.group.security.dependencies]
+tornado = "^6.3.3"
+
 [tool.poetry.group.test.dependencies]
 pytest = "^7.1.1"
 parameterized = "^0.8.1"
