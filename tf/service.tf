@@ -20,7 +20,7 @@ resource "aws_lambda_layer_version" "dependencies_layer" {
 # Lambda
 
 module "lambda_archive" {
-  source           = "git@github.com:asaf-kali/resources//tf/filtered_archive"
+  source           = "github.com/asaf-kali/resources//tf/filtered_archive"
   source_dir       = local.lambda_src_root
   name             = "service"
   exclude_patterns = [
