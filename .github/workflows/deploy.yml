@@ -1,9 +1,11 @@
 name: Deploy
 
+# Runs when "Tests" workflow completes successfully
+
+
 on:
   workflow_run:
-    workflows: [ "tests" ]
-    branches: [ not-main ]
+    workflows: [ "Tests" ]
     types:
       - completed
 

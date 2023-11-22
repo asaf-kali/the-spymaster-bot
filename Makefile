@@ -102,3 +102,10 @@ apply:
 
 deploy:
 	cd tf; make deploy;
+
+# Quick and dirty
+
+wip:
+	git add .
+	git commit -m "WIP" --no-verify
+	git push
