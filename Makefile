@@ -107,5 +107,5 @@ deploy:
 
 wip:
 	git add .
-	git commit -m "WIP"
+	git commit -m "WIP" --no-verify
 	git push
