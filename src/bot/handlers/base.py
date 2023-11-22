@@ -5,7 +5,7 @@ import sentry_sdk
 from beautifultable import BeautifulTable
 from codenames.game.card import Card
 from codenames.game.color import TeamColor
-from codenames.game.move import PASS_GUESS
+from codenames.game.move import PASS_GUESS, Hint
 from codenames.game.player import PlayerRole
 from codenames.game.state import GameState
 from requests import HTTPError
@@ -206,7 +206,7 @@ class EventHandler:  # pylint: disable=too-many-public-methods
         relevant_hints = [hint for hint in state.raw_hints if hint.for_words]
         if not relevant_hints:
             return
-        intent_strings = [f"'*{hint.word}*' for {hint.for_words}" for hint in relevant_hints]
+        intent_strings = [_hint_intent_string(hint) for hint in relevant_hints]
         intent_string = "\n".join(intent_strings)
         text = f"Hinters intents were:\n{intent_string}\n"
         self.send_markdown(text)
@@ -288,6 +288,8 @@ class EventHandler:  # pylint: disable=too-many-public-methods
         if not isinstance(e, HTTPError):
             return False
         response = e.response
+        if not response:
+            return False
         if not 400 <= response.status_code < 500:
             return False
         data = response.json()
@@ -333,3 +335,7 @@ def _build_board_keyboard(table: BeautifulTable, is_game_over: bool) -> ReplyKey
         reply_keyboard.append(row_keyboard)
     reply_keyboard.append(list(COMMAND_TO_INDEX.keys()))
     return ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+
+
+def _hint_intent_string(hint: Hint) -> str:
+    return f"'*{hint.word}*' for {hint.for_words}"
