@@ -1,7 +1,7 @@
 # Layer
 
 module "layer_archive" {
-  source     = "git@github.com:asaf-kali/resources//tf/filtered_archive"
+  source     = "git::https://git@github.com/asaf-kali/resources//tf/filtered_archive"
   source_dir = local.layer_src_root
   name       = "layer"
 }
