@@ -108,5 +108,5 @@ deploy:
 wip:
 	make format
 	git add .
-	git commit -m "WIP" --no-verify
+	git commit -m "Auto commit" --no-verify
 	git push
