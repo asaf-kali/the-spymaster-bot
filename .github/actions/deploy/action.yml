@@ -27,8 +27,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout repo
-      uses: actions/checkout@v2
     - name: Set env vars
       run: |
           echo "AWS_ACCESS_KEY_ID=${{ inputs.aws_access_key_id }}" >> $GITHUB_ENV
