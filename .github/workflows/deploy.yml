@@ -17,9 +17,16 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: us-east-1
+      DEFAULT_SENTRY_DSN: ${{ secrets.DEFAULT_SENTRY_DSN }}
+      DEFAULT_TELEGRAM_TOKEN: ${{ secrets.DEFAULT_TELEGRAM_TOKEN }}
+      DEFAULT_VARS_FILE: tf/default.tfvars
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+      - name: Create tfvars file
+        run: |
+          echo "telegram_token = \"${DEFAULT_TELEGRAM_TOKEN}\"" > ${DEFAULT_VARS_FILE}
+          echo "sentry_dsn = \"${DEFAULT_SENTRY_DSN}\"" > ${DEFAULT_VARS_FILE}
       - name: Deploy service to AWS
         run: |
           make install-ci
