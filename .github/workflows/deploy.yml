@@ -1,18 +1,48 @@
-name: Deploy
-
-# Runs when "Tests" workflow completes successfully
-
+name: Tests
 
 on:
-  workflow_run:
-    workflows: [ "Tests" ]
-    types:
-      - completed
+  push:
 
 jobs:
-  deploy-dev:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+  unit-tests:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Set up python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          make install-ci
+          make install-test
+      - name: Run tests
+        run: |
+          make test
+
+  automation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout automation repo
+        uses: actions/checkout@master
+        with:
+          repository: asaf-kali/the-spymaster-automation
+          token: ${{ secrets.AUTOMATION_REPO_PAT }}
+          path: automation
+      - name: Install CI dependencies
+        run: cd automation; make install-ci
+      - name: Run automation
+        run: cd automation; make run
+
+  deploy-dev:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs:
+      - unit-tests
+      - automation
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
