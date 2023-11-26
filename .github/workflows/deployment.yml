@@ -31,6 +31,10 @@ jobs:
           repository: asaf-kali/the-spymaster-automation
           token: ${{ secrets.AUTOMATION_REPO_PAT }}
           path: automation
+      - name: Set up python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.11"
       - name: Install CI dependencies
         run: cd automation; make install-ci
       - name: Install dependencies
