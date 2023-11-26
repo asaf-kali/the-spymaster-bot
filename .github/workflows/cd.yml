@@ -27,30 +27,17 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - unit-tests
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: us-east-1
-      DEFAULT_SENTRY_DSN: ${{ secrets.DEFAULT_SENTRY_DSN }}
-      DEFAULT_TELEGRAM_TOKEN: ${{ secrets.DEFAULT_TELEGRAM_TOKEN }}
-      DEFAULT_VARS_FILE: tf/default.tfvars
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-      - name: Create tfvars files
-        run: |
-          echo "sentry_dsn = \"${DEFAULT_SENTRY_DSN}\"" > ${DEFAULT_VARS_FILE}
-          echo "telegram_token = \"${DEFAULT_TELEGRAM_TOKEN}\"" >> ${DEFAULT_VARS_FILE}
-      - name: Install CI dependencies
-        run: make install-ci
-      - name: Terraform init
-        run: cd tf; terraform init
-      - name: Build Lambda Layer
-        run: make build-layer
-      - name: Terraform plan
-        run: make plan
-      - name: Terraform apply
-        run: make apply
+      - uses: ./.github/actions/deploy
+        with:
+          workspace: default
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: us-east-1
+          sentry_dsn: ${{ secrets.DEFAULT_SENTRY_DSN }}
+          telegram_token: ${{ secrets.DEFAULT_TELEGRAM_TOKEN }}
 
   automation:
     runs-on: ubuntu-latest

@@ -1,0 +1,50 @@
+name: Deploy
+description: "A reusable action to deploy the application using Terraform."
+
+inputs:
+  # The name of the Terraform workspace to use
+  workspace:
+    description: "The name of the Terraform workspace to use"
+    required: true
+    default: "default"
+  aws_access_key_id:
+    description: "AWS access key ID"
+    required: true
+  aws_secret_access_key:
+    description: "AWS secret access key"
+    required: true
+  aws_region:
+    description: "The AWS region to deploy to"
+    required: true
+    default: "us-east-1"
+  sentry_dsn:
+    description: "Sentry DSN"
+    required: true
+  telegram_token:
+    description: "Telegram bot token"
+    required: true
+
+runs:
+  using: "composite"
+  env:
+    AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}
+    AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
+    AWS_DEFAULT_REGION: ${{ inputs.aws_region }}
+    TF_VAR_FILE: tf/${{ inputs.workspace }}.tfvars
+  steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+    - name: Create tfvars files
+      run: |
+        echo "sentry_dsn = \"${{ inputs.sentry_dsn }}\"" > ${TF_VAR_FILE}
+        echo "telegram_token = \"${{ inputs.telegram_token }}\"" >> ${TF_VAR_FILE}
+    - name: Install CI dependencies
+      run: make install-ci
+    - name: Terraform init
+      run: cd tf; terraform init
+    - name: Build Lambda Layer
+      run: make build-layer
+    - name: Terraform plan
+      run: make plan WORKSPACE=${{ inputs.workspace }}
+    - name: Terraform apply
+      run: make apply
