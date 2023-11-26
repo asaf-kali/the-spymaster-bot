@@ -35,17 +35,24 @@ runs:
           echo "AWS_SECRET_ACCESS_KEY=${{ inputs.aws_secret_access_key }}" >> $GITHUB_ENV
           echo "AWS_DEFAULT_REGION=${{ inputs.aws_region }}" >> $GITHUB_ENV
           echo "TF_VAR_FILE=tf/${{ inputs.workspace }}.tfvars" >> $GITHUB_ENV
+      shell: bash
     - name: Create tfvars files
       run: |
         echo "sentry_dsn = \"${{ inputs.sentry_dsn }}\"" > ${TF_VAR_FILE}
         echo "telegram_token = \"${{ inputs.telegram_token }}\"" >> ${TF_VAR_FILE}
+      shell: bash
     - name: Install CI dependencies
       run: make install-ci
+      shell: bash
     - name: Terraform init
       run: cd tf; terraform init
+      shell: bash
     - name: Build Lambda Layer
       run: make build-layer
+      shell: bash
     - name: Terraform plan
       run: make plan WORKSPACE=${{ inputs.workspace }}
+      shell: bash
     - name: Terraform apply
       run: make apply
+      shell: bash
