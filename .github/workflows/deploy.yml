@@ -23,10 +23,10 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-      - name: Create tfvars file
+      - name: Create tfvars files
         run: |
-          echo "telegram_token = \"${DEFAULT_TELEGRAM_TOKEN}\"" > ${DEFAULT_VARS_FILE}
           echo "sentry_dsn = \"${DEFAULT_SENTRY_DSN}\"" > ${DEFAULT_VARS_FILE}
+          echo "telegram_token = \"${DEFAULT_TELEGRAM_TOKEN}\"" >> ${DEFAULT_VARS_FILE}
       - name: Deploy service to AWS
         run: |
           make install-ci
