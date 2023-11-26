@@ -106,6 +106,7 @@ deploy:
 # Quick and dirty
 
 wip:
+	make format
 	git add .
 	git commit -m "WIP" --no-verify
 	git push
