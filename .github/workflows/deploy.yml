@@ -22,5 +22,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Deploy service to AWS
         run: |
+          make install-ci
           cd tf; terraform init
           make deploy
