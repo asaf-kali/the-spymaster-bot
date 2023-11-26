@@ -26,14 +26,15 @@ inputs:
 
 runs:
   using: "composite"
-  env:
-    AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}
-    AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
-    AWS_DEFAULT_REGION: ${{ inputs.aws_region }}
-    TF_VAR_FILE: tf/${{ inputs.workspace }}.tfvars
   steps:
     - name: Checkout repo
       uses: actions/checkout@v2
+    - name: Set env vars
+      run: |
+          echo "AWS_ACCESS_KEY_ID=${{ inputs.aws_access_key_id }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ inputs.aws_secret_access_key }}" >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=${{ inputs.aws_region }}" >> $GITHUB_ENV
+          echo "TF_VAR_FILE=tf/${{ inputs.workspace }}.tfvars" >> $GITHUB_ENV
     - name: Create tfvars files
       run: |
         echo "sentry_dsn = \"${{ inputs.sentry_dsn }}\"" > ${TF_VAR_FILE}

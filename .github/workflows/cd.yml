@@ -31,7 +31,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Deploy to dev
-        uses: ./.github/actions/deploy
+        uses: .github/actions/deploy
         with:
           workspace: default
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
