@@ -27,8 +27,13 @@ jobs:
         run: |
           echo "sentry_dsn = \"${DEFAULT_SENTRY_DSN}\"" > ${DEFAULT_VARS_FILE}
           echo "telegram_token = \"${DEFAULT_TELEGRAM_TOKEN}\"" >> ${DEFAULT_VARS_FILE}
-      - name: Deploy service to AWS
-        run: |
-          make install-ci
-          cd tf; terraform init
-          make deploy
+      - name: Install CI dependencies
+        run: make install-ci
+      - name: Terraform init
+        run: cd tf; terraform init
+      - name: Build Lambda Layer
+        run: make build-layer
+      - name: Terraform plan
+        run: make plan
+      - name: Terraform apply
+        run: make apply
