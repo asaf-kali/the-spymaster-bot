@@ -33,8 +33,10 @@ jobs:
           path: automation
       - name: Install CI dependencies
         run: cd automation; make install-ci
+      - name: Install dependencies
+        run: cd automation; make install-test
       - name: Run automation
-        run: cd automation; make run
+        run: cd automation; make test
 
   deploy-dev:
     if: ${{ github.ref == 'refs/heads/main' }}
