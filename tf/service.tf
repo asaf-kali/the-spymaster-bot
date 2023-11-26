@@ -24,6 +24,7 @@ module "lambda_archive" {
   source_dir       = local.lambda_src_root
   name             = "service"
   exclude_patterns = [
+    ".coverage",
     "**/__pycache__/**",
     "**/.pytest_cache/**",
   ]
