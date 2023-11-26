@@ -1,4 +1,4 @@
-name: Development stability
+name: Stability
 
 on:
   push:
