@@ -1,4 +1,4 @@
-name: Tests
+name: Deployment
 
 on:
   push:
@@ -24,7 +24,6 @@ jobs:
 
   automation:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout automation repo
         uses: actions/checkout@master
