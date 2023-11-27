@@ -12,7 +12,7 @@ class TestingHandler(EventHandler):
         log.info(f"Testing handler with text: '{text}'")
         if "error" in text:
             raise ValueError(f"This is an error: {text}")
-        self.send_text("Hello")
+        self.send_text(f"Hello, {text}!")
         return BotState.CONFIG_SOLVER
 
 
