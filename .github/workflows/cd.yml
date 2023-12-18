@@ -31,9 +31,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: "3.11"
-      - name: Install dependencies
-        run: |
-          make install-ci
+#      - name: Install dependencies
+#        run: |
+#          make install-ci
       - name: Build Lambda Layer
         run: make build-layer
       - name: Archive .deployment folder
