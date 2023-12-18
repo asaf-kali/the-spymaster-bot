@@ -22,7 +22,7 @@ jobs:
         run: |
           make test
 
-  build-layer:
+  build-deployment:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -34,20 +34,22 @@ jobs:
       - name: Install dependencies
         run: |
           make install-ci
-          make install-test
       - name: Build Lambda Layer
         run: make build-layer
-      - name: Upload Lambda Layer
+      - name: Archive .deployment folder
+        run: zip -r deployment.zip .deployment
+      - name: Upload deployment artifact
         uses: actions/upload-artifact@v2
         with:
-          name: layer
-          path: layer.zip
+          name: deployment-${{ github.sha }}
+          path: deployment.zip
 
   deploy-dev:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs:
       - unit-tests
+      - build-deployment
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -55,6 +57,7 @@ jobs:
         uses: ./.github/actions/deploy
         with:
           workspace: default
+          sha: ${{ github.sha }}
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: us-east-1
@@ -94,6 +97,7 @@ jobs:
         uses: ./.github/actions/deploy
         with:
           workspace: prod
+          sha: ${{ github.sha }}
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: us-east-1
