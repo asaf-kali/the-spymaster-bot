@@ -42,11 +42,17 @@ runs:
         echo "sentry_dsn = \"${{ inputs.sentry_dsn }}\"" > ${TF_VAR_FILE}
         echo "telegram_token = \"${{ inputs.telegram_token }}\"" >> ${TF_VAR_FILE}
       shell: bash
+    - name: Debug before download
+      run: ls -la
+      shell: bash
     - name: Download deploy artifact
       uses: actions/download-artifact@v2
       with:
         name: deployment-${{ inputs.sha }}
         path: deployment.zip
+    - name: Debug after download
+      run: ls -la
+      shell: bash
     - name: Unzip deploy artifact
       run: unzip deployment.zip
       shell: bash
