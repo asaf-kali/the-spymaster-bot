@@ -45,8 +45,8 @@ runs:
     - name: Debug before download
       run: |
         ls -la
-        cat ${PWD}
-        cat ${GITHUB_WORKSPACE}
+        cat "${PWD}"
+        cat "${GITHUB_WORKSPACE}"
       shell: bash
     - name: Download deploy artifact
       uses: actions/download-artifact@v4
