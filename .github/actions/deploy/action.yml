@@ -42,16 +42,11 @@ runs:
         echo "sentry_dsn = \"${{ inputs.sentry_dsn }}\"" > ${TF_VAR_FILE}
         echo "telegram_token = \"${{ inputs.telegram_token }}\"" >> ${TF_VAR_FILE}
       shell: bash
-    - name: Debug before download
-      run: |
-        ls -la ${PWD}
-        ls -la ${GITHUB_WORKSPACE}
-      shell: bash
     - name: Download deploy artifact
       uses: actions/download-artifact@v4
       with:
         name: deployment-${{ inputs.sha }}
-        path: ./deployment
+        path: ./.deployment
 #    - name: Set file permissions
 #      run: chmod 777 deployment.zip
 #      shell: bash
