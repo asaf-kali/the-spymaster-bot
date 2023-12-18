@@ -22,7 +22,7 @@ jobs:
         run: |
           make test
 
-  build-layer:
+  build-deployment:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -34,14 +34,15 @@ jobs:
       - name: Install dependencies
         run: |
           make install-ci
-          make install-test
       - name: Build Lambda Layer
         run: make build-layer
-      - name: Upload Lambda Layer
+      - name: Archive .deployment folder
+        run: zip -r deployment.zip .deployment
+      - name: Upload deployment artifact
         uses: actions/upload-artifact@v2
         with:
-          name: layer
-          path: layer.zip
+          name: deployment-${{ github.sha }}
+          path: deployment.zip
 
   deploy-dev:
     if: ${{ github.ref == 'refs/heads/main' }}
