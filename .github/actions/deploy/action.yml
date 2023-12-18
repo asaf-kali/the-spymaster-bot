@@ -46,7 +46,7 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: deployment-${{ inputs.sha }}
-        path: .deployment
+        path: ./.deployment
     - name: Install CI dependencies
       run: make install-ci
       shell: bash
