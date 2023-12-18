@@ -51,7 +51,7 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: deployment-${{ inputs.sha }}
-        path: ./
+        path: ./deployment
 #    - name: Set file permissions
 #      run: chmod 777 deployment.zip
 #      shell: bash
