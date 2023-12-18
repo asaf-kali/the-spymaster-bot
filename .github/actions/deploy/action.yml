@@ -50,6 +50,9 @@ runs:
       with:
         name: deployment-${{ inputs.sha }}
         path: deployment.zip
+    - name: Set file permissions
+      run: chmod 644 deployment.zip
+      shell: bash
     - name: Debug after download
       run: ls -la
       shell: bash
