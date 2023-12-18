@@ -46,7 +46,7 @@ runs:
       run: ls -la
       shell: bash
     - name: Download deploy artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: deployment-${{ inputs.sha }}
         path: deployment.zip

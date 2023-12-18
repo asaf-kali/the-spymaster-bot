@@ -39,7 +39,7 @@ jobs:
       - name: Archive .deployment folder
         run: zip -r deployment.zip .deployment
       - name: Upload deployment artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: deployment-${{ github.sha }}
           path: deployment.zip
