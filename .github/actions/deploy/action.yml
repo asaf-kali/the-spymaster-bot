@@ -45,9 +45,6 @@ runs:
     - name: Terraform init
       run: cd tf; terraform init
       shell: bash
-    - name: Build Lambda Layer
-      run: make build-layer
-      shell: bash
     - name: Terraform plan
       run: make plan WORKSPACE=${{ inputs.workspace }}
       shell: bash
