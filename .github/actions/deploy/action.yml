@@ -43,17 +43,24 @@ runs:
         echo "telegram_token = \"${{ inputs.telegram_token }}\"" >> ${TF_VAR_FILE}
       shell: bash
     - name: Debug before download
-      run: ls -la
+      run: |
+        ls -la
+        cat ${PWD}
+        cat ${GITHUB_WORKSPACE}
       shell: bash
     - name: Download deploy artifact
       uses: actions/download-artifact@v4
       with:
         name: deployment-${{ inputs.sha }}
+        path: ./
 #    - name: Set file permissions
 #      run: chmod 777 deployment.zip
 #      shell: bash
     - name: Debug after download
-      run: ls -la
+      run: |
+        ls -la
+        cd .deployment
+        ls -la
       shell: bash
 #    - name: Unzip deploy artifact
 #      run: unzip ./deployment.zip
