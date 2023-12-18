@@ -47,7 +47,6 @@ runs:
       with:
         name: deployment-${{ inputs.sha }}
         path: .deployment
-      shell: bash
     - name: Install CI dependencies
       run: make install-ci
       shell: bash
