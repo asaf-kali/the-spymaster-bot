@@ -7,6 +7,9 @@ inputs:
     description: "The name of the Terraform workspace to use"
     required: true
     default: "default"
+  sha:
+    description: "The commit SHA to deploy"
+    required: true
   aws_access_key_id:
     description: "AWS access key ID"
     required: true
@@ -38,6 +41,14 @@ runs:
       run: |
         echo "sentry_dsn = \"${{ inputs.sentry_dsn }}\"" > ${TF_VAR_FILE}
         echo "telegram_token = \"${{ inputs.telegram_token }}\"" >> ${TF_VAR_FILE}
+      shell: bash
+    - name: Download deploy artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: deployment-${{ inputs.sha }}
+        path: deployment.zip
+    - name: Unzip deploy artifact
+      run: unzip deployment.zip
       shell: bash
     - name: Install CI dependencies
       run: make install-ci
