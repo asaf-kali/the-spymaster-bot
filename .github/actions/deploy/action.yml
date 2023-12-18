@@ -51,13 +51,13 @@ runs:
         name: deployment-${{ inputs.sha }}
         path: deployment.zip
     - name: Set file permissions
-      run: chmod 644 deployment.zip
+      run: chmod 777 deployment.zip
       shell: bash
     - name: Debug after download
       run: ls -la
       shell: bash
     - name: Unzip deploy artifact
-      run: unzip deployment.zip
+      run: unzip ./deployment.zip
       shell: bash
     - name: Install CI dependencies
       run: make install-ci
