@@ -36,13 +36,11 @@ jobs:
           make install-ci
       - name: Build Lambda Layer
         run: make build-layer
-      - name: Archive .deployment folder
-        run: zip -r deployment.zip .deployment
-      - name: Upload deployment artifact
+      - name: Upload deployment folder artifact
         uses: actions/upload-artifact@v4
         with:
           name: deployment-${{ github.sha }}
-          path: deployment.zip
+          path: ./.deployment
 
   deploy-dev:
     if: ${{ github.ref == 'refs/heads/main' }}
