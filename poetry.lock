@@ -1166,13 +1166,13 @@ the-spymaster-util = ">=3.0,<4.0"
 
 [[package]]
 name = "the-spymaster-util"
-version = "3.0.9"
+version = "3.0.11"
 description = "Common utilities and infra for The Spymaster game."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "the_spymaster_util-3.0.9-py3-none-any.whl", hash = "sha256:29da91a6adb6c94a34e7efc0d4e08f6af37a74a1ac079258bce0e7639977fd7a"},
-    {file = "the_spymaster_util-3.0.9.tar.gz", hash = "sha256:e604f2d719d29bd5c9ee5a2b441915b172768355e0d26e76b9f84d6d43583594"},
+    {file = "the_spymaster_util-3.0.11-py3-none-any.whl", hash = "sha256:7b75db721863fa35bda23fb04c527b133ff3ec09beda3efdea70dce8ad70fde3"},
+    {file = "the_spymaster_util-3.0.11.tar.gz", hash = "sha256:b6e2879fe855379339ceca96e4be6b4579735823775a750da4741f3482c87186"},
 ]
 
 [package.dependencies]
@@ -1440,4 +1440,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "ac53493867100510bfdf5753d383a8db1a40bc33bfe8f5153c4266898d7f9f60"
+content-hash = "eb071bbe31bb0b7d705be8838f7f8a14f269605bba5cb412d4fcdb4a08dfeb26"
