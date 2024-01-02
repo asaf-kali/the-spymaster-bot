@@ -10,9 +10,9 @@ readme = "README.md"
 [tool.poetry.dependencies]
 # Core
 python = "^3.8"
-codenames = "^2.2.1"
+codenames = "^4.0.3"
 the-spymaster-util = "^3.0.11"
-the-spymaster-api = "^1.9.2"
+the-spymaster-api = "^2.0.1"
 # Telegram bot
 python-telegram-bot = "^13.11"
 # Models
