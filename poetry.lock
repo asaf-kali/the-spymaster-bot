@@ -319,13 +319,13 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "codenames"
-version = "2.2.1"
+version = "4.0.3"
 description = "Codenames board game logic implementation in python."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "codenames-2.2.1-py3-none-any.whl", hash = "sha256:cca43b82d3534b2c0d54aef20e02691577fbe182d720f80142e44830db3eb950"},
-    {file = "codenames-2.2.1.tar.gz", hash = "sha256:6248ccbb490ecd4853de664dd773808b65a4a6f41328b8a925d21d2c12c2f578"},
+    {file = "codenames-4.0.3-py3-none-any.whl", hash = "sha256:d905257e5a7af474bae4ee14d52cca75f999337694d137a2476ca2baca7daa30"},
+    {file = "codenames-4.0.3.tar.gz", hash = "sha256:8c2ca97d28948d8625b1c2107e992590edae8415e7cebac5f5aac41a7e09d80b"},
 ]
 
 [package.dependencies]
@@ -957,6 +957,7 @@ files = [
     {file = "PyYAML-6.0.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:69b023b2b4daa7548bcfbd4aa3da05b3a74b772db9e23b982788168117739938"},
     {file = "PyYAML-6.0.1-cp310-cp310-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:81e0b275a9ecc9c0c0c07b4b90ba548307583c125f54d5b6946cfee6360c733d"},
     {file = "PyYAML-6.0.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ba336e390cd8e4d1739f42dfe9bb83a3cc2e80f567d8805e11b46f4a943f5515"},
+    {file = "PyYAML-6.0.1-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:326c013efe8048858a6d312ddd31d56e468118ad4cdeda36c719bf5bb6192290"},
     {file = "PyYAML-6.0.1-cp310-cp310-win32.whl", hash = "sha256:bd4af7373a854424dabd882decdc5579653d7868b8fb26dc7d0e99f823aa5924"},
     {file = "PyYAML-6.0.1-cp310-cp310-win_amd64.whl", hash = "sha256:fd1592b3fdf65fff2ad0004b5e363300ef59ced41c2e6b3a99d4089fa8c5435d"},
     {file = "PyYAML-6.0.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:6965a7bc3cf88e5a1c3bd2e0b5c22f8d677dc88a455344035f03399034eb3007"},
@@ -964,8 +965,15 @@ files = [
     {file = "PyYAML-6.0.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:42f8152b8dbc4fe7d96729ec2b99c7097d656dc1213a3229ca5383f973a5ed6d"},
     {file = "PyYAML-6.0.1-cp311-cp311-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:062582fca9fabdd2c8b54a3ef1c978d786e0f6b3a1510e0ac93ef59e0ddae2bc"},
     {file = "PyYAML-6.0.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d2b04aac4d386b172d5b9692e2d2da8de7bfb6c387fa4f801fbf6fb2e6ba4673"},
+    {file = "PyYAML-6.0.1-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:e7d73685e87afe9f3b36c799222440d6cf362062f78be1013661b00c5c6f678b"},
     {file = "PyYAML-6.0.1-cp311-cp311-win32.whl", hash = "sha256:1635fd110e8d85d55237ab316b5b011de701ea0f29d07611174a1b42f1444741"},
     {file = "PyYAML-6.0.1-cp311-cp311-win_amd64.whl", hash = "sha256:bf07ee2fef7014951eeb99f56f39c9bb4af143d8aa3c21b1677805985307da34"},
+    {file = "PyYAML-6.0.1-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:855fb52b0dc35af121542a76b9a84f8d1cd886ea97c84703eaa6d88e37a2ad28"},
+    {file = "PyYAML-6.0.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:40df9b996c2b73138957fe23a16a4f0ba614f4c0efce1e9406a184b6d07fa3a9"},
+    {file = "PyYAML-6.0.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6c22bec3fbe2524cde73d7ada88f6566758a8f7227bfbf93a408a9d86bcc12a0"},
+    {file = "PyYAML-6.0.1-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:8d4e9c88387b0f5c7d5f281e55304de64cf7f9c0021a3525bd3b1c542da3b0e4"},
+    {file = "PyYAML-6.0.1-cp312-cp312-win32.whl", hash = "sha256:d483d2cdf104e7c9fa60c544d92981f12ad66a457afae824d146093b8c294c54"},
+    {file = "PyYAML-6.0.1-cp312-cp312-win_amd64.whl", hash = "sha256:0d3304d8c0adc42be59c5f8a4d9e3d7379e6955ad754aa9d6ab7a398b59dd1df"},
     {file = "PyYAML-6.0.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:50550eb667afee136e9a77d6dc71ae76a44df8b3e51e41b77f6de2932bfe0f47"},
     {file = "PyYAML-6.0.1-cp36-cp36m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1fe35611261b29bd1de0070f0b2f47cb6ff71fa6595c077e42bd0c419fa27b98"},
     {file = "PyYAML-6.0.1-cp36-cp36m-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:704219a11b772aea0d8ecd7058d0082713c3562b4e271b849ad7dc4a5c90c13c"},
@@ -982,6 +990,7 @@ files = [
     {file = "PyYAML-6.0.1-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a0cd17c15d3bb3fa06978b4e8958dcdc6e0174ccea823003a106c7d4d7899ac5"},
     {file = "PyYAML-6.0.1-cp38-cp38-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:28c119d996beec18c05208a8bd78cbe4007878c6dd15091efb73a30e90539696"},
     {file = "PyYAML-6.0.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7e07cbde391ba96ab58e532ff4803f79c4129397514e1413a7dc761ccd755735"},
+    {file = "PyYAML-6.0.1-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:49a183be227561de579b4a36efbb21b3eab9651dd81b1858589f796549873dd6"},
     {file = "PyYAML-6.0.1-cp38-cp38-win32.whl", hash = "sha256:184c5108a2aca3c5b3d3bf9395d50893a7ab82a38004c8f61c258d4428e80206"},
     {file = "PyYAML-6.0.1-cp38-cp38-win_amd64.whl", hash = "sha256:1e2722cc9fbb45d9b87631ac70924c11d3a401b2d7f410cc0e3bbf249f2dca62"},
     {file = "PyYAML-6.0.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:9eb6caa9a297fc2c2fb8862bc5370d0303ddba53ba97e71f08023b6cd73d16a8"},
@@ -989,6 +998,7 @@ files = [
     {file = "PyYAML-6.0.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5773183b6446b2c99bb77e77595dd486303b4faab2b086e7b17bc6bef28865f6"},
     {file = "PyYAML-6.0.1-cp39-cp39-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:b786eecbdf8499b9ca1d697215862083bd6d2a99965554781d0d8d1ad31e13a0"},
     {file = "PyYAML-6.0.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bc1bf2925a1ecd43da378f4db9e4f799775d6367bdb94671027b73b393a7c42c"},
+    {file = "PyYAML-6.0.1-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:04ac92ad1925b2cff1db0cfebffb6ffc43457495c9b3c39d3fcae417d7125dc5"},
     {file = "PyYAML-6.0.1-cp39-cp39-win32.whl", hash = "sha256:faca3bdcf85b2fc05d06ff3fbc1f83e1391b3e724afa3feba7d13eeab355484c"},
     {file = "PyYAML-6.0.1-cp39-cp39-win_amd64.whl", hash = "sha256:510c9deebc5c0225e8c96813043e62b680ba2f9c50a08d3724c7f28a747d1486"},
     {file = "PyYAML-6.0.1.tar.gz", hash = "sha256:bfdf460b1736c775f2ba9f6a92bca30bc2095067b8a9d77876d1fad6cc3b4a43"},
@@ -1131,35 +1141,35 @@ files = [
 
 [[package]]
 name = "the-spymaster-api"
-version = "1.9.2"
+version = "2.0.1"
 description = "Python client implementation for The Spymaster HTTP backend."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "the_spymaster_api-1.9.2-py3-none-any.whl", hash = "sha256:80e3942ca834524ffb31259ab072f8c03567d093091203ea37d70d7623f2392a"},
-    {file = "the_spymaster_api-1.9.2.tar.gz", hash = "sha256:395db39a01f69c27ec951307148d2fe85a6c0eb041c064acc3d2e0c3012ffe95"},
+    {file = "the_spymaster_api-2.0.1-py3-none-any.whl", hash = "sha256:8beab9afbbb07310b2972c2ccc1c84a75c2d76d46205e08e5569e6a37f9d3b86"},
+    {file = "the_spymaster_api-2.0.1.tar.gz", hash = "sha256:28f696e97b8a674f4e78f05ec60c1bf23e8796832726c1287cc933e07e6b2a18"},
 ]
 
 [package.dependencies]
-codenames = ">=2.2,<3.0"
+codenames = ">=4.0,<5.0"
 pydantic = ">=1.9,<2.0"
 requests = ">=2.28,<3.0"
-the_spymaster_solvers_client = ">=1.7,<2.0"
+the_spymaster_solvers_client = ">=2.0,<3.0"
 the_spymaster_util = ">=3.0,<4.0"
 
 [[package]]
 name = "the-spymaster-solvers-client"
-version = "1.7.1"
+version = "2.0.0"
 description = "Python client implementation for The Spymaster Solvers HTTP backend."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "the-spymaster-solvers-client-1.7.1.tar.gz", hash = "sha256:61c035b50a374ee59347a4e1d19037f654e973d893c5d04c3ff8af652a41059a"},
-    {file = "the_spymaster_solvers_client-1.7.1-py3-none-any.whl", hash = "sha256:602d941ce83236ef79839a75b5767b3ea99f500b523ec1295475f86aab1c5c9e"},
+    {file = "the-spymaster-solvers-client-2.0.0.tar.gz", hash = "sha256:644f71346a5e1c14236d64e1eada2f8e976a3d4fa874b0fff99a843f7dd60fc5"},
+    {file = "the_spymaster_solvers_client-2.0.0-py3-none-any.whl", hash = "sha256:ee096a83fd005592950bb2370701997baedfcb1e5eef5a7ad5caee6c62738a81"},
 ]
 
 [package.dependencies]
-codenames = ">=2.0,<3.0"
+codenames = ">=4.0,<5.0"
 pydantic = ">=1.9,<2.0"
 requests = ">=2.28,<3.0"
 the-spymaster-util = ">=3.0,<4.0"
@@ -1440,4 +1450,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "eb071bbe31bb0b7d705be8838f7f8a14f269605bba5cb412d4fcdb4a08dfeb26"
+content-hash = "7448745cc1ddec65669de36940a199298c44e06a9afaa3b57cc4a3e174974ce2"

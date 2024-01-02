@@ -1,7 +1,7 @@
 from enum import IntEnum, auto
 from typing import Optional
 
-from codenames.game.color import CardColor
+from codenames.game.color import CardColor, TeamColor
 from codenames.game.move import PASS_GUESS, QUIT_GAME
 from codenames.game.winner import WinningReason
 from pydantic import BaseModel
@@ -48,6 +48,7 @@ class GameConfig(BaseModel):  # Move to backend api?
     difficulty: Difficulty = Difficulty.EASY
     solver: Solver = Solver.NAIVE
     model_identifier: Optional[ModelIdentifier] = None
+    first_team: Optional[TeamColor] = TeamColor.BLUE
 
     class Config:
         frozen = True
