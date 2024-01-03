@@ -1,4 +1,4 @@
-from the_spymaster_solvers_client.structs import ModelIdentifier
+from the_spymaster_solvers_api.structs import ModelIdentifier
 from the_spymaster_util.logger import get_logger
 
 from bot.handlers.base import EventHandler

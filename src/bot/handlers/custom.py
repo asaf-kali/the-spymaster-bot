@@ -1,5 +1,5 @@
 from telegram import ReplyKeyboardMarkup
-from the_spymaster_solvers_client.structs import Difficulty
+from the_spymaster_solvers_api.structs import Difficulty
 
 from bot.handlers.base import EventHandler
 from bot.handlers.common import SUPPORTED_LANGUAGES, title_list
