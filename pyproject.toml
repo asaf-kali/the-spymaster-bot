@@ -11,18 +11,16 @@ readme = "README.md"
 # Core
 python = "^3.8"
 codenames = "^4.0.3"
-the-spymaster-util = "^3.0.11"
+the-spymaster-util = { version = "~3.2", extras = ["all"] }
 the-spymaster-api = "^2.1"
 # Telegram bot
 python-telegram-bot = "^13.11"
 # Models
-dynaconf = "^3.1.12"
 pydantic = "^1.9"
 pynamodb = "^5.4.1"
 # Utils
 requests = "^2.26.0"
 cachetools = "^4.2.2"
-boto3 = "1.34.11"
 urllib3 = "<2.0" # Specified due to dependency resolution issue
 # Monitor
 sentry-sdk = "^1.19.1"

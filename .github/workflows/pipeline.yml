@@ -74,6 +74,18 @@ jobs:
         run: |
           make check-pylint
 
+  check-poetry-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Set up CI
+        run: |
+          make install-ci
+      - name: Run poetry lock
+        run: |
+          make lock-check
+
   # Test
 
   unit-tests:
@@ -123,6 +135,7 @@ jobs:
       - check-isort
       - check-mypy
       - check-pylint
+      - check-poetry-lock
       - unit-tests
       - build-deployment
     steps:

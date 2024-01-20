@@ -8,7 +8,7 @@ upgrade-pip:
 	pip install --upgrade pip
 
 install-ci: upgrade-pip
-	pip install poetry==1.5.1
+	pip install poetry==1.7.1
 	poetry config virtualenvs.create false
 
 install-run:
@@ -21,7 +21,7 @@ install-lint:
 	poetry install --only lint
 
 install-dev: upgrade-pip
-	poetry install $(SYNC)
+	poetry install --no-root $(SYNC)
 	pre-commit install
 
 install: lock-check install-dev lint cover
@@ -32,7 +32,7 @@ lock:
 	poetry lock --no-update
 
 lock-check:
-	poetry lock --check
+	poetry check --lock
 
 lock-export: lock-check
 	poetry export -f requirements.txt --output requirements.lock --only main --without-hashes
