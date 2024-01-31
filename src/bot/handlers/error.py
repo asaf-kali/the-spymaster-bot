@@ -8,4 +8,4 @@ log = get_logger(__name__)
 class ErrorHandler(EventHandler):
     def handle(self):
         log.warning("Using telegram bot handling mechanism, check why error was not handled in callback.")
-        self.handle_error(self.context.error)
+        self.on_error(self.context.error)

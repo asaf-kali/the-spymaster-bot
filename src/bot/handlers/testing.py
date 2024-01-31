@@ -12,12 +12,18 @@ class TestingHandler(EventHandler):
         log.info(f"Testing handler with text: '{text}'")
         if "error" in text:
             raise ValueError(f"This is an error: {text}")
-        self.send_text(f"Hello, {text}!")
+        if not text:
+            self.send_text("Hello!")
+        else:
+            self.send_text(f"Hello, {text}!")
         return BotState.CONFIG_SOLVER
 
 
 def remove_command(text: str) -> str:
     """
-    Given a text like "/example 123 xyz", returns "123 xyz"
+    Given a text like "/example 123 xyz", returns "123 xyz".
     """
-    return text.split(maxsplit=1)[1]
+    split = text.split(maxsplit=1)
+    if len(split) == 1:
+        return ""
+    return split[1]

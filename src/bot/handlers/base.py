@@ -12,6 +12,7 @@ from requests import HTTPError
 from telegram import Message, ReplyKeyboardMarkup, Update
 from telegram import User as TelegramUser
 from telegram.error import BadRequest as TelegramBadRequest
+from telegram.error import Unauthorized
 from telegram.ext import CallbackContext
 from the_spymaster_api import TheSpymasterClient
 from the_spymaster_api.structs import (
@@ -110,13 +111,13 @@ class EventHandler:  # pylint: disable=too-many-public-methods
             try:
                 game_id = session.game_id if session else None
                 log.update_context(telegram_user_id=instance.user_id, game_id=game_id)
-            except Exception as e:  # pylint: disable=invalid-name
+            except Exception as e:
                 log.warning(f"Failed to update context: {e}")
             try:
                 log.debug(f"Dispatching to event handler: {cls.__name__}")
                 return instance.handle()
-            except Exception as e:  # pylint: disable=invalid-name
-                instance.handle_error(e)
+            except Exception as e:
+                instance.on_error(e)
             finally:
                 log.reset_context()
             return None
@@ -256,35 +257,49 @@ class EventHandler:  # pylint: disable=too-many-public-methods
         return self.api_client.get_game_state(request=request).game_state
         # self.set_state(new_state=response.game_state)
 
-    def handle_error(self, error: Exception):
+    def on_error(self, error: Exception):
         log.debug(f"Handling error: {error}")
-        try:
-            enrich_sentry_context(user_name=self.user_full_name)
-        except Exception as e:  # pylint: disable=invalid-name
-            log.warning(f"Failed to enrich sentry context: {e}")
+        self._enrich_context()
+        if self._handle_familiar_errors(error):
+            return
+        sentry_sdk.capture_exception(error)
+        log.exception("Unhandled error")
+        self._notify_user_on_error()
+
+    def _handle_familiar_errors(self, error: Exception) -> bool:
         try:
             if self._handle_http_error(error):
-                return
+                return True
             if self._handle_bad_message(error):
-                return
+                return True
             if self._handle_bad_move(error):
-                return
+                return True
+            if self._handle_bot_blocked(error):
+                return True
         except Exception as handling_error:
             sentry_sdk.capture_exception(handling_error)
-            log.exception("Failed to handle error")
-        sentry_sdk.capture_exception(error)
-        log.exception(error)
-        try:
-            self.send_text(f"💔 Something went wrong: {error}")
-        except:  # noqa  # pylint: disable=bare-except
-            pass
-        # Try refreshing the state
-        # try:
-        #     self._refresh_game_state()
-        # except:  # noqa
-        #     log.exception("Failed to refresh game state")
+            log.exception("Error handling failed")
+        return False
 
-    def _handle_http_error(self, e: Exception) -> bool:  # pylint: disable=invalid-name
+    def _notify_user_on_error(self):
+        try:
+            self.send_text("💔 Something went wrong, please try again")
+        except Exception as e:
+            log.warning(f"Failed to notify user on error: {e}")
+
+    def _enrich_context(self):
+        try:
+            enrich_sentry_context(user_name=self.user_full_name)
+        except Exception as e:
+            log.warning(f"Failed to enrich sentry context: {e}")
+
+    def _handle_bot_blocked(self, e: Exception) -> bool:
+        if not isinstance(e, Unauthorized):
+            return False
+        log.info("Bot was blocked by the user")
+        return True
+
+    def _handle_http_error(self, e: Exception) -> bool:
         if not isinstance(e, HTTPError):
             return False
         response = e.response
@@ -300,13 +315,13 @@ class EventHandler:  # pylint: disable=too-many-public-methods
         self.send_text(text, put_log=True)
         return True
 
-    def _handle_bad_message(self, e: Exception) -> bool:  # pylint: disable=invalid-name
+    def _handle_bad_message(self, e: Exception) -> bool:
         if not isinstance(e, BadMessageError):
             return False
         self.send_markdown(f"🧐 {e}", put_log=True)
         return True
 
-    def _handle_bad_move(self, e: Exception) -> bool:  # pylint: disable=invalid-name
+    def _handle_bad_move(self, e: Exception) -> bool:
         if not isinstance(e, APIGameRuleError):
             return False
         self.send_text(f"🤬 {e.message}", put_log=True)
