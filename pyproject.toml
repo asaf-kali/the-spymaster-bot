@@ -2,7 +2,7 @@
 
 [tool.poetry]
 name = "the-spymaster-bot"
-version = "0.1.0"
+package-mode = false
 description = "Telegram bot service for Codenames board game."
 authors = ["Asaf Kali <asaf.kali@mail.huji.ac.il>"]
 readme = "README.md"
