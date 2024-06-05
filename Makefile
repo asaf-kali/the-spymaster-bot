@@ -8,7 +8,7 @@ upgrade-pip:
 	pip install --upgrade pip
 
 install-ci: upgrade-pip
-	pip install poetry==1.7.1
+	pip install poetry==1.8.3
 	poetry config virtualenvs.create false
 
 install-run:
@@ -21,7 +21,7 @@ install-lint:
 	poetry install --only lint
 
 install-dev: upgrade-pip
-	poetry install --no-root $(SYNC)
+	poetry install $(SYNC)
 	pre-commit install
 
 install: lock-check install-dev lint cover
