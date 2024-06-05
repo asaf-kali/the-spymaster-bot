@@ -172,7 +172,7 @@ jobs:
       - name: Install dependencies
         run: cd automation; make install-test
       - name: Run automation
-        run: cd automation; make test
+        run: cd automation; make test ENV=dev
 
   deploy-prod:
     if: ${{ github.ref == 'refs/heads/main' }}
