@@ -1,4 +1,4 @@
-from enum import IntEnum, auto
+from enum import IntEnum
 from typing import Optional
 
 from codenames.game.color import CardColor, TeamColor
@@ -34,13 +34,15 @@ class BadMessageError(Exception):
 
 
 class BotState(IntEnum):
-    ENTRY = auto()
-    CONFIG_LANGUAGE = auto()
-    CONFIG_SOLVER = auto()
-    CONFIG_DIFFICULTY = auto()
-    CONFIG_MODEL = auto()
-    CONTINUE_GET_ID = auto()
-    PLAYING = auto()
+    ENTRY = 0
+    CONFIG_LANGUAGE = 10
+    CONFIG_SOLVER = 11
+    CONFIG_DIFFICULTY = 12
+    CONFIG_MODEL = 13
+    CONTINUE_GET_ID = 20
+    PLAYING = 30
+    PARSE_MAP = 40
+    PARSE_BOARD = 41
 
 
 class GameConfig(BaseModel):  # Move to backend api?

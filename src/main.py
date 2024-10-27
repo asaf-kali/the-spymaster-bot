@@ -2,7 +2,6 @@ import json
 
 from bot.config import configure_logging, get_config
 from bot.the_spymaster_bot import TheSpymasterBot
-from lambda_handler import handle
 
 
 def main():
@@ -18,6 +17,8 @@ def main():
 
 
 def example_event():
+    from lambda_handler import handle  # pylint: disable=import-outside-toplevel
+
     telegram_update = {
         "update_id": 617241338,
         "message": {
@@ -34,6 +35,8 @@ def example_event():
 
 
 def example_warmup():
+    from lambda_handler import handle  # pylint: disable=import-outside-toplevel
+
     update = {"action": "warmup"}
     event = {"body": json.dumps(update)}
     handle(event)

@@ -34,6 +34,7 @@ from bot.handlers import (
     StartEventHandler,
     TestingHandler,
 )
+from bot.handlers.parse_handler import ParseBoardHandler, ParseHandler, ParseMapHandler
 from bot.models import AVAILABLE_MODELS, BotState
 from persistence.dynamo_db_persistence import DynamoDbPersistence
 
@@ -77,24 +78,34 @@ class TheSpymasterBot:
 
     def _construct_updater(self):  # pylint: disable=too-many-locals
         log.info("Setting up bot...")
+        # Start
         start_handler = CommandHandler("start", self.generate_callback(StartEventHandler))
         custom_handler = CommandHandler("custom", self.generate_callback(CustomHandler))
+        # Config
         config_language_handler = MessageHandler(Filters.text, self.generate_callback(ConfigLanguageHandler))
         config_solver_handler = MessageHandler(Filters.text, self.generate_callback(ConfigSolverHandler))
         config_difficulty_handler = MessageHandler(Filters.text, self.generate_callback(ConfigDifficultyHandler))
         config_model_handler = MessageHandler(Filters.text, self.generate_callback(ConfigModelHandler))
-        continue_game_handler = CommandHandler("continue", self.generate_callback(ContinueHandler))
-        continue_get_id_handler = MessageHandler(Filters.text, self.generate_callback(ContinueGetIdHandler))
-        fallback_handler = CommandHandler("quit", self.generate_callback(FallbackHandler))
-        help_message_handler = CommandHandler("help", self.generate_callback(HelpMessageHandler))
-        get_sessions_handler = CommandHandler("sessions", self.generate_callback(GetSessionsHandler))
-        load_models_handler = CommandHandler("load_models", self.generate_callback(LoadModelsHandler))
-        testing_handler = CommandHandler("test", self.generate_callback(TestingHandler))
+        # Game
         process_message_handler = MessageHandler(
             Filters.text & ~Filters.command, self.generate_callback(ProcessMessageHandler)
         )
         next_move_handler = CommandHandler("next_move", self.generate_callback(NextMoveHandler))
+        # Parsing
+        parse_handler = CommandHandler("parse", self.generate_callback(ParseHandler))
+        parse_map_handler = MessageHandler(Filters.photo, self.generate_callback(ParseMapHandler))
+        parse_board_handler = MessageHandler(Filters.photo, self.generate_callback(ParseBoardHandler))
+        # Util
+        fallback_handler = CommandHandler("quit", self.generate_callback(FallbackHandler))
+        help_message_handler = CommandHandler("help", self.generate_callback(HelpMessageHandler))
         error_handler = self.generate_callback(ErrorHandler)
+        # Internal
+        load_models_handler = CommandHandler("load_models", self.generate_callback(LoadModelsHandler))
+        testing_handler = CommandHandler("test", self.generate_callback(TestingHandler))
+        # Not supported
+        continue_game_handler = CommandHandler("continue", self.generate_callback(ContinueHandler))
+        continue_get_id_handler = MessageHandler(Filters.text, self.generate_callback(ContinueGetIdHandler))
+        get_sessions_handler = CommandHandler("sessions", self.generate_callback(GetSessionsHandler))
 
         conv_handler = ConversationHandler(
             name="main",
@@ -107,6 +118,7 @@ class TheSpymasterBot:
                 testing_handler,
                 get_sessions_handler,
                 continue_game_handler,
+                parse_handler,
             ],
             states={
                 BotState.CONFIG_LANGUAGE: [config_language_handler],
@@ -115,6 +127,8 @@ class TheSpymasterBot:
                 BotState.CONFIG_MODEL: [config_model_handler, fallback_handler],
                 BotState.CONTINUE_GET_ID: [continue_get_id_handler],
                 BotState.PLAYING: [process_message_handler],
+                BotState.PARSE_MAP: [parse_map_handler, fallback_handler],
+                BotState.PARSE_BOARD: [parse_board_handler, fallback_handler],
             },
             fallbacks=[fallback_handler],
             allow_reentry=True,

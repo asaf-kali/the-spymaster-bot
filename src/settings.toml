@@ -21,10 +21,11 @@ should_load_ssm_parameters = false
 std_formatter = "simple"
 bot_log_level = "DEBUG"
 persistence_db_table_name = "the-spymaster-bot-dev-persistence-table"
+base_parser_url = "http://localhost:5000"
 
 [dev]
 env_verbose_name = "Dev"
-base_backend_url = "https://backend.dev.303707.xyz"
+base_parser_url = "https://parser.dev.303707.xyz"
 
 [stage]
 env_verbose_name = "Staging"
@@ -32,6 +33,7 @@ env_verbose_name = "Staging"
 [prod]
 env_verbose_name = "Production"
 base_backend_url = "https://backend.303707.xyz"
+base_parser_url = "https://parser.303707.xyz"
 
 [rsbpi]
 env_verbose_name = "Raspberry Pi"
