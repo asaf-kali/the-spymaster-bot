@@ -45,6 +45,10 @@ class Config(LazyConfig):
         return self.get("BASE_BACKEND_URL")
 
     @property
+    def base_parser_url(self) -> str:
+        return self.get("BASE_PARSER_URL")
+
+    @property
     def bot_log_level(self) -> str:
         return self.get("BOT_LOG_LEVEL")
 
