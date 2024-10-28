@@ -33,15 +33,16 @@ variable "skip_destroy" {
   description = "Skip destroy for the Lambda Layer"
 }
 
-locals {
-  zip_path = abspath("${path.module}/../layer-${var.layer_name}.zip")
+variable "temp_zip_path" {
+  default     = "lambda_layer.zip"
+  description = "Path to the temporary Lambda Layer ZIP file"
 }
 
 # Generate Lambda Layer ZIP and upload to S3
 
-resource "null_resource" "lambda_layer" {
+resource "null_resource" "build_layer" {
   triggers = {
-    requirements_file = filesha256(var.lock_file)
+    lock_file = filesha256(var.lock_file)
   }
 
   # provisioner "local-exec" {
@@ -57,36 +58,42 @@ resource "null_resource" "lambda_layer" {
     command = <<EOT
       image_name="public.ecr.aws/sam/build-${var.runtime}"
       export_folder=$(mktemp -d)
+      cp ${var.requirements_file} $export_folder/requirements.txt
+      cd $export_folder
       update_pip_cmd="pip install --upgrade pip"
-      install_dependencies_cmd="pip install -r ${var.requirements_file} -t $export_folder"
+      install_dependencies_cmd="pip install -r requirements.txt -t ."
       docker_cmd="$update_pip_cmd; $install_dependencies_cmd; exit"
       docker run -v "$PWD":/var/task "$image_name" /bin/sh -c "$docker_cmd"
-      zip -r ${local.zip_path} $export_folder
+      zip -r ${var.temp_zip_path} $export_folder
     EOT
   }
 
   provisioner "local-exec" {
     command = <<EOT
-      aws s3 cp ${local.zip_path} s3://${var.s3_bucket}/${var.s3_key_prefix}${var.layer_name}.zip
+      aws s3 cp ${var.temp_zip_path} s3://${var.s3_bucket}/${var.s3_key_prefix}${var.layer_name}.zip
     EOT
   }
 }
 
 # Create Lambda Layer
 
-resource "aws_lambda_layer_version" "layer" {
+resource "aws_lambda_layer_version" "layer_version" {
   layer_name   = var.layer_name
   s3_bucket    = var.s3_bucket
   s3_key       = "${var.s3_key_prefix}${var.layer_name}.zip"
   skip_destroy = var.skip_destroy
+  source_code_hash = filebase64sha256(var.lock_file)
+  depends_on = [
+    null_resource.build_layer
+  ]
 }
 
 # Outputs
 
 output "arn" {
-  value = aws_lambda_layer_version.layer.arn
+  value = aws_lambda_layer_version.layer_version.arn
 }
 
 output "version" {
-  value = aws_lambda_layer_version.layer.version
+  value = aws_lambda_layer_version.layer_version.version
 }
