@@ -108,13 +108,14 @@ class EventHandler:  # pylint: disable=too-many-public-methods
             session_data = context.chat_data
             session = Session(**session_data) if session_data else None
             instance = cls(bot=bot, update=update, context=context, chat_id=chat_id, session=session)
+            handler_name = cls.__name__
             try:
                 game_id = session.game_id if session else None
-                log.update_context(telegram_user_id=instance.user_id, game_id=game_id)
+                log.update_context(telegram_user_id=instance.user_id, game_id=game_id, handler=handler_name)
             except Exception as e:
                 log.warning(f"Failed to update context: {e}")
             try:
-                log.debug(f"Dispatching to event handler: {cls.__name__}")
+                log.debug(f"Dispatching to event handler: {handler_name}")
                 return instance.handle()
             except Exception as e:
                 instance.on_error(e)

@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, Type
+from typing import Any, Callable, Dict, Optional, Type
 
 from telegram import Update
 from telegram.ext import (
@@ -12,7 +12,6 @@ from telegram.ext import (
     Updater,
 )
 from the_spymaster_api import TheSpymasterClient
-from the_spymaster_solvers_api.structs import LoadModelsRequest, LoadModelsResponse
 from the_spymaster_util.logger import get_logger
 
 from bot.handlers import (
@@ -28,14 +27,15 @@ from bot.handlers import (
     FallbackHandler,
     GetSessionsHandler,
     HelpMessageHandler,
-    LoadModelsHandler,
     NextMoveHandler,
     ProcessMessageHandler,
     StartEventHandler,
     TestingHandler,
+    WarmupHandler,
 )
 from bot.handlers.parse_handler import ParseBoardHandler, ParseHandler, ParseMapHandler
-from bot.models import AVAILABLE_MODELS, BotState
+from bot.handlers.warmup import handle_warmup
+from bot.models import BotState
 from persistence.dynamo_db_persistence import DynamoDbPersistence
 
 log = get_logger(__name__)
@@ -62,16 +62,9 @@ class TheSpymasterBot:
         parsed_update = self.parse_update(update)
         return self.dispatcher.process_update(parsed_update)
 
-    def handle_warmup(self) -> dict:
-        log.update_context(action="warmup")
-        log.info("Warming up...")
-        response = self.send_load_models_request()
-        return response.dict()
-
-    def send_load_models_request(self) -> LoadModelsResponse:
-        request = LoadModelsRequest(model_identifiers=AVAILABLE_MODELS, load_default_models=False)
-        response = self.api_client.load_models(request)
-        return response
+    def handle_warmup(self) -> Dict[str, float]:
+        task_results = handle_warmup(self)
+        return {task.name: task.duration for task in task_results}
 
     def parse_update(self, update: dict) -> Optional[Update]:
         return Update.de_json(update, bot=self.updater.bot)  # type: ignore
@@ -100,7 +93,7 @@ class TheSpymasterBot:
         help_message_handler = CommandHandler("help", self.generate_callback(HelpMessageHandler))
         error_handler = self.generate_callback(ErrorHandler)
         # Internal
-        load_models_handler = CommandHandler("load_models", self.generate_callback(LoadModelsHandler))
+        load_models_handler = CommandHandler("warmup", self.generate_callback(WarmupHandler))
         testing_handler = CommandHandler("test", self.generate_callback(TestingHandler))
         # Not supported
         continue_game_handler = CommandHandler("continue", self.generate_callback(ContinueHandler))
