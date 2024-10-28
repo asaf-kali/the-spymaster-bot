@@ -30,10 +30,6 @@ module "lambda_archive" {
   ]
 }
 
-output "lambda_archive_hash" {
-  value = filebase64sha256(module.lambda_archive.output_path)
-}
-
 resource "aws_lambda_function" "service_lambda" {
   function_name                  = "${local.service_name}-lambda"
   role                           = aws_iam_role.lambda_exec_role.arn

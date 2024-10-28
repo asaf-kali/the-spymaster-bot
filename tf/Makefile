@@ -11,9 +11,14 @@ update:
 plan:
 	terraform workspace select $(WORKSPACE)
 	terraform plan \
-	-out $(TERRAFORM_PLAN_FILE) \
-	-var-file="$(WORKSPACE).tfvars" \
-	-var="aws_region=$(AWS_REGION)"
+		-out $(TERRAFORM_PLAN_FILE) \
+		-var-file="$(WORKSPACE).tfvars" \
+		-var="aws_region=$(AWS_REGION)"
+
+refresh:
+	terraform workspace select $(WORKSPACE)
+	terraform refresh \
+		-var-file="$(WORKSPACE).tfvars" \
 
 apply:
 	terraform apply $(TERRAFORM_PLAN_FILE)
