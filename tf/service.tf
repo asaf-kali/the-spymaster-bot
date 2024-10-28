@@ -1,22 +1,3 @@
-# Layer
-
-module "layer_archive" {
-  source     = "github.com/asaf-kali/resources//tf/filtered_archive"
-  source_dir = local.layer_src_root
-  name       = "layer"
-}
-
-output "layer_archive_hash" {
-  value = filebase64sha256(module.layer_archive.output_path)
-}
-
-resource "aws_lambda_layer_version" "dependencies_layer" {
-  layer_name       = "${local.service_name}-layer"
-  filename         = module.layer_archive.output_path
-  source_code_hash = filebase64sha256(module.layer_archive.output_path)
-  skip_destroy     = true
-}
-
 # Lambda
 
 module "lambda_archive" {
@@ -45,7 +26,7 @@ resource "aws_lambda_function" "service_lambda" {
   memory_size                    = 200
   reserved_concurrent_executions = 2
   layers                         = [
-    aws_lambda_layer_version.dependencies_layer.arn
+    module.dependencies_layer.arn
   ]
   environment {
     variables = {

@@ -84,9 +84,6 @@ kill:
 
 # Deploy
 
-build-layer:
-	./scripts/build_layer.sh
-
 update:
 	cd tf; make update;
 

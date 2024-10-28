@@ -2,9 +2,6 @@ TERRAFORM_PLAN_FILE=deploy.tfplan
 WORKSPACE=default
 AWS_REGION=us-east-1
 
-build-layer:
-	cd ../; make build-layer
-
 update:
 	terraform get -update
 
@@ -18,4 +15,4 @@ plan:
 apply:
 	terraform apply $(TERRAFORM_PLAN_FILE)
 
-deploy: build-layer plan apply
+deploy: plan apply

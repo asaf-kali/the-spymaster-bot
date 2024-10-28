@@ -49,9 +49,7 @@ locals {
   service_name    = "${local.project_name}-${local.env}"
   aws_account_id = data.aws_caller_identity.current.account_id
   # Paths
-  tf_root = abspath(path.module)
   project_root = abspath("${path.module}/../")
-  layer_src_root  = "${local.project_root}/.deployment/layer-dependencies"
   lambda_src_root = "${local.project_root}/src/"
   # Domain
   base_app_domain = "303707.xyz"
