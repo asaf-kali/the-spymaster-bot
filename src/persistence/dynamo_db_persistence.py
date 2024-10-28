@@ -40,7 +40,7 @@ class DynamoPersistencyStore:
         try:
             self._cache[key] = self._read(key=key)
             return self._cache[key]
-        except DoesNotExist as e:  # pylint: disable=invalid-name
+        except DoesNotExist as e:
             log.info(f"Item {e.item_id} does not exist")
             return None
 
@@ -59,10 +59,10 @@ class DynamoPersistencyStore:
     def _read(self, key: Any) -> Optional[Any]:
         item_id = self.get_item_id(key=key)
         log.debug("Reading from Dynamo", extra={"item_id": item_id})
-        with MeasureTime() as mt:  # pylint: disable=invalid-name
+        with MeasureTime() as mt:
             try:
                 persistence_item = PersistenceItem.get(hash_key=item_id)
-            except PynamoDoesNotExist as e:  # pylint: disable=invalid-name
+            except PynamoDoesNotExist as e:
                 raise DoesNotExist(item_id=item_id) from e
         data = persistence_item.item_data
         log.debug("Read complete", extra={"item_id": item_id, "duration_ms": mt.delta * SEC_TO_MS, "data": data})
@@ -73,7 +73,7 @@ class DynamoPersistencyStore:
         item_type = self.get_item_type()
         item = PersistenceItem(item_id=item_id, item_type=item_type, item_data=data)
         log.debug("Writing to Dynamo", extra={"item_id": item_id, "item_data": data})
-        with MeasureTime() as mt:  # pylint: disable=invalid-name
+        with MeasureTime() as mt:
             item.save()
         log.debug("Write complete", extra={"item_id": item_id, "duration_ms": mt.delta * SEC_TO_MS})
 
@@ -95,10 +95,10 @@ class DynamoPersistencyStore:
         del self._cache[key]
 
     def get_item_id(self, key: Any) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_item_type(self) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class DynamoStoredConversations(DynamoPersistencyStore, ConversationDict):  # type: ignore
@@ -171,29 +171,29 @@ class DynamoDbPersistence(BasePersistence):
         return self.conversation_store_dict[name]
 
     def get_user_data(self) -> UserDataDict:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_chat_data(self) -> DynamoStoredChatData:
         return self.chat_data_store
 
     def get_bot_data(self) -> BD:  # type: ignore
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_callback_data(self) -> Optional[CDCData]:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def update_conversation(self, name: str, key: ConversationKey, new_state: Optional[object]) -> None:
         conversation_store = self.get_conversations(name=name)
         conversation_store.set(key=key, data=new_state, commit=True)
 
     def update_user_data(self, user_id: int, data: UD) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def update_chat_data(self, chat_id: int, data: CD) -> None:
         self.chat_data_store.set(key=chat_id, data=data, commit=True)
 
     def update_bot_data(self, data: BD) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def update_callback_data(self, data: CDCData) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError

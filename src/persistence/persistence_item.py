@@ -26,7 +26,10 @@ class PersistenceItem(Model):
     updated_ts = NumberAttribute()
 
     def save(
-        self, condition: Optional[Condition] = None, settings: OperationSettings = OperationSettings.default, **kwargs
+        self,
+        condition: Optional[Condition] = None,
+        settings: OperationSettings = OperationSettings.default,
+        **kwargs,
     ) -> Dict[str, Any]:
         self.updated_ts = int(time.time())
         return super().save(condition=condition, settings=settings, **kwargs)

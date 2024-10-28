@@ -29,5 +29,5 @@ def build_models_keyboard(language: str):
 def parse_difficulty(text: str) -> Difficulty:
     try:
         return Difficulty(text)
-    except ValueError as e:  # pylint: disable=invalid-name
+    except ValueError as e:
         raise BadMessageError(f"Unknown difficulty: '*{text}*'") from e

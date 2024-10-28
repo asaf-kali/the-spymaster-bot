@@ -28,7 +28,7 @@ class ProcessMessageHandler(EventHandler):
         try:
             command = COMMAND_TO_INDEX.get(text, text)
             card_index = _get_card_index(board=state.board, text=command)
-        except:  # noqa  # pylint: disable=bare-except
+        except:  # noqa
             self.send_board(
                 state=state,
                 message=f"Card '*{text}*' not found. Please reply with card index (1-25) or a word on the board.",

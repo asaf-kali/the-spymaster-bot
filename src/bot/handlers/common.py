@@ -27,7 +27,7 @@ def title_list(strings: List[str]) -> List[str]:
 
 
 def enrich_sentry_context(**kwargs):
-    for k, v in log.context.items():  # pylint: disable=invalid-name
+    for k, v in log.context.items():
         sentry_sdk.set_tag(k, v)
-    for k, v in kwargs.items():  # pylint: disable=invalid-name
+    for k, v in kwargs.items():
         sentry_sdk.set_tag(k, v)

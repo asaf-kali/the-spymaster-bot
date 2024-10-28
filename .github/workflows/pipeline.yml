@@ -61,19 +61,6 @@ jobs:
         run: |
           make check-mypy
 
-  check-pylint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - uses: ./.github/actions/lint-install
-      - name: Install dependencies
-        run: |
-          make install-dev SYNC=""
-      - name: Run pylint
-        run: |
-          make check-pylint
-
   check-poetry-lock:
     runs-on: ubuntu-latest
     steps:
@@ -134,7 +121,6 @@ jobs:
       - check-black
       - check-isort
       - check-mypy
-      - check-pylint
       - check-poetry-lock
       - unit-tests
       - build-deployment

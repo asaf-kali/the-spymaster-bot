@@ -63,7 +63,7 @@ def warmup_task(func):
             message = func(*args, **kwargs)
         except Exception as e:
             log.exception(f"Error in warmup task {func.__name__}")
-            message = f"Failed with error: `{str(e)}`"
+            message = f"Failed with error: `{e!s}`"
         end_ts = time.time()
         delta = round(end_ts - start_ts, 3)
         return WarmupTaskResult(name=func.__name__, message=message, duration=delta)

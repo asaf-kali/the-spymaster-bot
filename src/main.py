@@ -17,7 +17,7 @@ def main():
 
 
 def example_event():
-    from lambda_handler import handle  # pylint: disable=import-outside-toplevel
+    from lambda_handler import handle
 
     telegram_update = {
         "update_id": 617241338,
@@ -35,7 +35,7 @@ def example_event():
 
 
 def example_warmup():
-    from lambda_handler import handle  # pylint: disable=import-outside-toplevel
+    from lambda_handler import handle
 
     update = {"action": "warmup"}
     event = {"body": json.dumps(update)}

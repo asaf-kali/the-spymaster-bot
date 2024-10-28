@@ -54,12 +54,12 @@ cover:
 # Lint
 
 format:
-	ruff . --fix
+	ruff check . --fix
 	black .
 	isort .
 
 check-ruff:
-	ruff .
+	ruff check .
 
 check-black:
 	black --check .
@@ -70,12 +70,8 @@ check-isort:
 check-mypy:
 	mypy .
 
-check-pylint:
-	pylint src/ --fail-under=10
-
 lint: format
 	pre-commit run --all-files
-	@make check-pylint --no-print-directory
 
 # Run
 

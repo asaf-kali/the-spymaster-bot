@@ -50,7 +50,7 @@ class NoneValueError(Exception):
     pass
 
 
-class EventHandler:  # pylint: disable=too-many-public-methods
+class EventHandler:
     def __init__(
         self,
         bot: "TheSpymasterBot",
@@ -148,11 +148,15 @@ class EventHandler:  # pylint: disable=too-many-public-methods
         return self.update_session(config=new_config)
 
     def handle(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def trigger(self, other: Type["EventHandler"]) -> Any:
         return other(
-            bot=self.bot, update=self.update, context=self.context, chat_id=self.chat_id, session=self.session
+            bot=self.bot,
+            update=self.update,
+            context=self.context,
+            chat_id=self.chat_id,
+            session=self.session,
         ).handle()
 
     def send_text(self, text: str, put_log: bool = False, **kwargs) -> Message:
@@ -173,9 +177,7 @@ class EventHandler:  # pylint: disable=too-many-public-methods
             self.send_game_summary(state=state)
             log.update_context(game_id=None)
             self.update_session(game_id=None)
-            from bot.handlers import (  # pylint: disable=import-outside-toplevel
-                HelpMessageHandler,
-            )
+            from bot.handlers import HelpMessageHandler
 
             self.trigger(HelpMessageHandler)
             return None

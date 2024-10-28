@@ -87,15 +87,11 @@ def configure_logging(config: Optional[Config] = None):
 
 
 def configure_sentry(config: Config):
-    import sentry_sdk  # pylint: disable=import-outside-toplevel
-    from sentry_sdk.integrations.aws_lambda import (  # pylint: disable=import-outside-toplevel
-        AwsLambdaIntegration,
-    )
-    from sentry_sdk.integrations.logging import (  # pylint: disable=import-outside-toplevel
-        LoggingIntegration,
-    )
+    import sentry_sdk
+    from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
 
-    sentry_sdk.init(  # type: ignore  # pylint: disable=abstract-class-instantiated
+    sentry_sdk.init(  # type: ignore
         dsn=config.sentry_dsn,
         integrations=[LoggingIntegration(event_level=None), AwsLambdaIntegration()],
         environment=config.env_verbose_name,

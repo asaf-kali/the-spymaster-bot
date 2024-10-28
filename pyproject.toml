@@ -35,11 +35,10 @@ freezegun = "^1.2.1"
 coverage = "^6.3.2"
 
 [tool.poetry.group.lint.dependencies]
-ruff = "^0.0.236"
+ruff = "^0.7.1"
 black = "^24.3"
 isort = "^5.11.4"
 mypy = "^0.991"
-pylint = "^2.15.10"
 types-requests = "^2.28.11.8"
 types-cachetools = "^5.2.1"
 
@@ -62,9 +61,11 @@ source = ["bot"]
 
 [tool.ruff]
 line-length = 120
+exclude = ["local", "tf", ".deployment"]
+
+[tool.ruff.lint]
 select = ["B", "C", "E", "F", "W"]
 ignore = []
-exclude = ["local", "tf", ".deployment"]
 
 [tool.black]
 line-length = 120
@@ -77,24 +78,3 @@ skip = ["__init__.py", "tf/", ".deployment/"]
 ignore_missing_imports = true
 explicit_package_bases = true
 exclude = ["local/", "tf/", "dist/", "build/", ".deployment/"]
-
-[tool.pylint]
-max-line-length = 120
-good-names = [
-    "e",
-    "i",
-]
-disable = [
-    "C0114",
-    "C0115",
-    "C0116",
-    "C0411",
-    "C0412",
-    "C0413",
-    "W0703",
-    "R0902",
-    "R0903",
-    "R0913",
-    "W1203",
-]
-extension-pkg-allow-list = ["pydantic"]
