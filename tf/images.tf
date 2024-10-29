@@ -3,7 +3,7 @@
 locals {
   lock_file      = "${local.project_root}/poetry.lock"
   lock_file_sha = filebase64sha256(local.lock_file)
-  app_dockerfile = "${local.tf_root}/app.Dockerfile"
+  app_dockerfile = "${local.project_root}/Dockerfile"
 }
 
 # ECR Repo
