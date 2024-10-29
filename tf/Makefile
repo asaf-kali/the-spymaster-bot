@@ -2,11 +2,16 @@ TERRAFORM_PLAN_FILE=deploy.tfplan
 WORKSPACE=default
 AWS_REGION=us-east-1
 
-build-layer:
-	cd ../; make build-layer
-
 update:
 	terraform get -update
+
+upgrade:
+	terraform init -upgrade
+
+refresh:
+	terraform workspace select $(WORKSPACE)
+	terraform refresh \
+		-var-file="$(WORKSPACE).tfvars" \
 
 plan:
 	terraform workspace select $(WORKSPACE)
@@ -15,12 +20,7 @@ plan:
 		-var-file="$(WORKSPACE).tfvars" \
 		-var="aws_region=$(AWS_REGION)"
 
-refresh:
-	terraform workspace select $(WORKSPACE)
-	terraform refresh \
-		-var-file="$(WORKSPACE).tfvars" \
-
 apply:
 	terraform apply $(TERRAFORM_PLAN_FILE)
 
-deploy: build-layer plan apply
+deploy: plan apply

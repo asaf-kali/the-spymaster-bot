@@ -84,9 +84,6 @@ kill:
 
 # Deploy
 
-build-layer:
-	./scripts/build_layer.sh
-
 update:
 	cd tf; make update;
 
@@ -101,8 +98,10 @@ deploy:
 
 # Quick and dirty
 
-wip:
-	make format
+wip: format
 	git add .
 	git commit -m "Auto commit" --no-verify
-	git push
+
+amend: format
+	git add .
+	git commit --amend --no-edit --no-verify
