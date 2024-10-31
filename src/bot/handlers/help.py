@@ -11,8 +11,10 @@ class HelpMessageHandler(EventHandler):
         text = """Welcome! I'm *The Spymaster* 🕵🏼‍♂️
 /start - start a new game.
 /custom - start a new game with custom configurations.
-/continue - continue an old game.
 /help - show this message.
+Under development: 👨🏻‍💻
+/parse - get help with your camera.
+/continue - continue an old game.
 
 How to play:
 You are the blue guesser. The bot will play all other roles. \
