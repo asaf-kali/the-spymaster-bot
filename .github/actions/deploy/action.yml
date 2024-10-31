@@ -42,13 +42,16 @@ runs:
         echo "sentry_dsn = \"${{ inputs.sentry_dsn }}\"" > ${TF_VAR_FILE}
         echo "telegram_token = \"${{ inputs.telegram_token }}\"" >> ${TF_VAR_FILE}
       shell: bash
-    - name: Download deploy artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: deployment-${{ inputs.sha }}
-        path: ./.deployment
+#    - name: Download deploy artifact
+#      uses: actions/download-artifact@v4
+#      with:
+#        name: deployment-${{ inputs.sha }}
+#        path: ./.deployment
     - name: Install CI dependencies
       run: make install-ci
+      shell: bash
+    - name: Export artifacts
+      run: make export
       shell: bash
     - name: Terraform init
       run: cd tf; terraform init
