@@ -26,3 +26,5 @@ Key aspects of this project include:
 5. Deployed on AWS infrastructure using `Terraform`.
 6. Operates on AWS `Lambda`, triggered via `API Gateway`.
 7. Continuous delivery and linting pipeline using `GitHub Actions`.
+
+[//]: # (This is a test: should not affect docker push.)
