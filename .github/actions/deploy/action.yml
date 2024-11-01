@@ -51,7 +51,7 @@ runs:
       run: make install-ci
       shell: bash
     - name: Export artifacts
-      run: make export
+      run: make artifacts
       shell: bash
     - name: Terraform init
       run: cd tf; terraform init

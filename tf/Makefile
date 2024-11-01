@@ -11,9 +11,12 @@ upgrade:
 refresh:
 	terraform workspace select $(WORKSPACE)
 	terraform refresh \
-		-var-file="$(WORKSPACE).tfvars" \
+		-var-file="$(WORKSPACE).tfvars"
 
-plan:
+artifacts:
+	cd ../ && make artifacts
+
+plan: artifacts
 	terraform workspace select $(WORKSPACE)
 	terraform plan \
 		-out $(TERRAFORM_PLAN_FILE) \

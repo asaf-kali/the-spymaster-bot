@@ -37,7 +37,7 @@ lock-check:
 lock-export: lock-check
 	poetry export -f requirements.txt --output requirements.lock --only main --without-hashes
 
-export: lock-export
+artifacts: lock-export
 
 # Test
 

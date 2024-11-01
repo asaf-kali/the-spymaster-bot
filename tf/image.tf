@@ -36,18 +36,6 @@ EOF
 
 # Prepare
 
-resource "null_resource" "lock_export" {
-  triggers = {
-    lock_file = local.lock_file_sha
-  }
-
-  provisioner "local-exec" {
-    command = <<EOF
-           cd ${local.project_root}; make lock-export || exit 1
-       EOF
-  }
-}
-
 module "app_archive" {
   source     = "github.com/asaf-kali/resources//tf/filtered_archive"
   name       = "service"
@@ -77,7 +65,4 @@ module "app_image" {
     lock_file  = local.lock_file_sha
     source_dir = module.app_archive.output_sha
   }
-  depends_on = [
-    null_resource.lock_export
-  ]
 }
