@@ -12,6 +12,6 @@ def test_config_loads():
 
 
 def test_main_modules_load():
-    from lambda_handler import handle  # noqa
-    from main import main  # noqa
-    from util import create_response  # noqa
+    from lambda_handler import handle  # noqa: F401
+    from main import main  # noqa: F401
+    from util import create_response  # noqa: F401

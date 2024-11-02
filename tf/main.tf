@@ -52,7 +52,7 @@ locals {
   # Paths
   tf_root = abspath(path.module)
   project_root = abspath("${path.module}/../")
-  lambda_src_root = "${local.project_root}/src/"
+  lambda_src_root = "${local.project_root}/app/"
   # Domain
   base_app_domain = "303707.xyz"
   hosted_zone_id  = "Z0883104W79ZV11TF62Q"

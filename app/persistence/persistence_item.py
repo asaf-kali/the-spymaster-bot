@@ -1,13 +1,12 @@
 import time
 from typing import Any, DefaultDict, Dict, Optional, Tuple
 
+from bot.config import get_config
 from pynamodb.attributes import JSONAttribute, NumberAttribute, UnicodeAttribute
 from pynamodb.expressions.condition import Condition
 from pynamodb.models import Model
 from pynamodb.settings import OperationSettings
 from telegram.ext.utils.types import CD, UD
-
-from bot.config import get_config
 
 config = get_config()
 

@@ -48,6 +48,7 @@ test:
 
 cover:
 	export ENV_FOR_DYNACONF=test; \
+	export TELEGRAM_TOKEN="123:ABC"; \
 	coverage run -m $(PYTHON_TEST_COMMAND)
 	coverage html
 	xdg-open htmlcov/index.html &

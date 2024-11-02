@@ -1,9 +1,8 @@
-from telegram import ReplyKeyboardMarkup
-from the_spymaster_solvers_api.structs import Difficulty
-
 from bot.handlers.base import EventHandler
 from bot.handlers.common import SUPPORTED_LANGUAGES, title_list
 from bot.models import BotState, GameConfig, Session
+from telegram import ReplyKeyboardMarkup
+from the_spymaster_solvers_api.structs import Difficulty
 
 
 class CustomHandler(EventHandler):

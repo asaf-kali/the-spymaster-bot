@@ -1,11 +1,6 @@
 import logging
 from typing import Any, Dict, Optional
 
-from pynamodb.exceptions import DoesNotExist as PynamoDoesNotExist
-from telegram.ext import BasePersistence
-from telegram.ext.utils.types import BD, CD, UD, CDCData, ConversationDict
-from the_spymaster_util.measure_time import MeasureTime
-
 from persistence.persistence_item import (
     ChatDataDict,
     ConversationKey,
@@ -16,6 +11,10 @@ from persistence.persistence_item import (
     get_conversation_id,
     get_user_id,
 )
+from pynamodb.exceptions import DoesNotExist as PynamoDoesNotExist
+from telegram.ext import BasePersistence
+from telegram.ext.utils.types import BD, CD, UD, CDCData, ConversationDict
+from the_spymaster_util.measure_time import MeasureTime
 
 log = logging.getLogger(__name__)
 SEC_TO_MS = 1000

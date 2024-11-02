@@ -1,13 +1,12 @@
 import base64
 
 import requests
-from codenames.game.color import CardColor
-from telegram import PhotoSize
-from the_spymaster_util.logger import get_logger
-
 from bot.config import get_config
 from bot.handlers.base import EventHandler
 from bot.models import BadMessageError, BotState
+from codenames.game.color import CardColor
+from telegram import PhotoSize
+from the_spymaster_util.logger import get_logger
 
 log = get_logger(__name__)
 

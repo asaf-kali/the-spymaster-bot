@@ -1,19 +1,5 @@
 from typing import Any, Callable, Dict, Optional, Type
 
-from telegram import Update
-from telegram.ext import (
-    CallbackContext,
-    CommandHandler,
-    ConversationHandler,
-    DictPersistence,
-    Dispatcher,
-    Filters,
-    MessageHandler,
-    Updater,
-)
-from the_spymaster_api import TheSpymasterClient
-from the_spymaster_util.logger import get_logger
-
 from bot.handlers import (
     ConfigDifficultyHandler,
     ConfigLanguageHandler,
@@ -37,6 +23,19 @@ from bot.handlers.parse_handler import ParseBoardHandler, ParseHandler, ParseMap
 from bot.handlers.warmup import handle_warmup
 from bot.models import BotState
 from persistence.dynamo_db_persistence import DynamoDbPersistence
+from telegram import Update
+from telegram.ext import (
+    CallbackContext,
+    CommandHandler,
+    ConversationHandler,
+    DictPersistence,
+    Dispatcher,
+    Filters,
+    MessageHandler,
+    Updater,
+)
+from the_spymaster_api import TheSpymasterClient
+from the_spymaster_util.logger import get_logger
 
 log = get_logger(__name__)
 

@@ -1,6 +1,5 @@
-from the_spymaster_util.logger import get_logger
-
 from bot.handlers.base import EventHandler
+from the_spymaster_util.logger import get_logger
 
 log = get_logger(__name__)
 

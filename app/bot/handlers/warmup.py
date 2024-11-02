@@ -6,11 +6,10 @@ from functools import wraps
 from typing import TYPE_CHECKING, Dict, List
 
 import requests
-from the_spymaster_solvers_api.structs import LoadModelsRequest, LoadModelsResponse
-
 from bot.config import get_config
 from bot.handlers.base import EventHandler
 from bot.models import AVAILABLE_MODELS
+from the_spymaster_solvers_api.structs import LoadModelsRequest, LoadModelsResponse
 
 if TYPE_CHECKING:
     from bot.the_spymaster_bot import TheSpymasterBot

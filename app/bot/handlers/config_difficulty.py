@@ -1,9 +1,8 @@
+from bot.handlers.base import EventHandler
+from bot.models import AVAILABLE_MODELS, BadMessageError, BotState
 from telegram import ReplyKeyboardMarkup
 from the_spymaster_solvers_api.structs import Difficulty
 from the_spymaster_util.logger import get_logger
-
-from bot.handlers.base import EventHandler
-from bot.models import AVAILABLE_MODELS, BadMessageError, BotState
 
 log = get_logger(__name__)
 

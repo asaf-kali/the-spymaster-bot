@@ -3,6 +3,21 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Type
 
 import sentry_sdk
 from beautifultable import BeautifulTable
+from bot.handlers.common import (
+    enrich_sentry_context,
+    get_given_guess_result_message_text,
+    is_blue_guesser_turn,
+)
+from bot.models import (
+    BLUE_EMOJI,
+    COMMAND_TO_INDEX,
+    RED_EMOJI,
+    WIN_REASON_TO_EMOJI,
+    BadMessageError,
+    BotState,
+    GameConfig,
+    Session,
+)
 from codenames.game.card import Card
 from codenames.game.color import TeamColor
 from codenames.game.move import PASS_GUESS, Hint
@@ -23,22 +38,6 @@ from the_spymaster_api.structs import (
     NextMoveRequest,
 )
 from the_spymaster_util.logger import get_logger
-
-from bot.handlers.common import (
-    enrich_sentry_context,
-    get_given_guess_result_message_text,
-    is_blue_guesser_turn,
-)
-from bot.models import (
-    BLUE_EMOJI,
-    COMMAND_TO_INDEX,
-    RED_EMOJI,
-    WIN_REASON_TO_EMOJI,
-    BadMessageError,
-    BotState,
-    GameConfig,
-    Session,
-)
 
 if TYPE_CHECKING:
     from bot.the_spymaster_bot import TheSpymasterBot

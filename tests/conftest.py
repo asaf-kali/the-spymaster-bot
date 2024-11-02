@@ -1,10 +1,9 @@
-import os
-import sys
+import pytest
+from bot.config import configure_logging, get_config
 
-os.chdir("src")
-sys.path.insert(0, "./")
-from bot.config import configure_logging, get_config  # noqa: E402
 
-config = get_config()
-config.load()
-configure_logging(config=config)
+@pytest.fixture(scope="session", autouse=True)
+def _configure_logging():
+    config = get_config()
+    config.load()
+    configure_logging(config=config)

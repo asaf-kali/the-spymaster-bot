@@ -1,7 +1,3 @@
-from codenames.game.board import Board
-from the_spymaster_api.structs import GuessRequest, GuessResponse
-from the_spymaster_util.logger import get_logger
-
 from bot.handlers import HelpMessageHandler
 from bot.handlers.base import EventHandler
 from bot.handlers.common import (
@@ -9,6 +5,9 @@ from bot.handlers.common import (
     is_blue_guesser_turn,
 )
 from bot.models import COMMAND_TO_INDEX
+from codenames.game.board import Board
+from the_spymaster_api.structs import GuessRequest, GuessResponse
+from the_spymaster_util.logger import get_logger
 
 log = get_logger(__name__)
 
