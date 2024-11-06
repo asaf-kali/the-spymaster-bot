@@ -246,7 +246,7 @@ class EventHandler:
     def send_board(self, state: GameState, message: Optional[str] = None):
         board_to_send = state.board if state.is_game_over else state.board.censured
         table = board_to_send.as_table
-        keyboard = _build_board_keyboard(table, is_game_over=state.is_game_over)
+        keyboard = build_board_keyboard(table, is_game_over=state.is_game_over)
         if message is None:
             message = "Game over!" if state.is_game_over else "Pick your guess!"
         if state.left_guesses == 1:
@@ -338,7 +338,7 @@ def _should_skip_turn(current_player_role: PlayerRole, config: GameConfig) -> bo
     return dice < pass_probability
 
 
-def _build_board_keyboard(table: BeautifulTable, is_game_over: bool) -> ReplyKeyboardMarkup:
+def build_board_keyboard(table: BeautifulTable, is_game_over: bool) -> ReplyKeyboardMarkup:
     reply_keyboard = []
     for row in table.rows:
         row_keyboard = []

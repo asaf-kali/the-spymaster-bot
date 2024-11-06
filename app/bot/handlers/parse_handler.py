@@ -2,8 +2,10 @@ import base64
 
 import requests
 from bot.config import get_config
-from bot.handlers.base import EventHandler
-from bot.models import BadMessageError, BotState
+from bot.handlers.base import EventHandler, build_board_keyboard
+from bot.models import BadMessageError, BotState, ParsingState
+from codenames.game.board import Board
+from codenames.game.card import Card
 from codenames.game.color import CardColor
 from telegram import PhotoSize
 from the_spymaster_util.logger import get_logger
@@ -22,6 +24,8 @@ class ParseMapHandler(EventHandler):
         photo_base64 = _get_base64_photo(photos=self.update.message.photo)
         card_colors = _parse_map_colors(photo_base64)
         self._send_as_emoji_table(card_colors)
+        parsing_state = ParsingState(language="heb", card_colors=card_colors)
+        self.update_session(parsing_state=parsing_state)
         self.send_text("🧩 Please send me a picture of the board:")
         return BotState.PARSE_BOARD
 
@@ -39,8 +43,14 @@ class ParseBoardHandler(EventHandler):
     def handle(self):
         photo_base64 = _get_base64_photo(photos=self.update.message.photo)
         self.send_text("Working on it. This might take a minute ⏳️")
-        words = _parse_board_words(photo_base64)
-        self._send_as_table(words)
+        parsing_state = self.session.parsing_state
+        words = _parse_board_words(photo_base64=photo_base64, language=parsing_state.language)
+        words = [word if word else "???" for word in words]
+        cards = [Card(word=word, color=color) for word, color in zip(words, parsing_state.card_colors)]
+        parsed_board = Board(language=parsing_state.language, cards=cards)
+        keyboard = build_board_keyboard(table=parsed_board.as_table, is_game_over=True)
+        text = self.send_markdown("🎉 Done! Here's the board:", reply_markup=keyboard)
+        self.update_session(last_keyboard_message_id=text.message_id, parsing_state=None)
         return BotState.PARSE_BOARD
 
     def _send_as_table(self, words: list[str]):
@@ -69,10 +79,10 @@ def _parse_map_colors(photo_base64: str) -> list[CardColor]:
     return card_colors
 
 
-def _parse_board_words(photo_base64: str) -> list[str]:
+def _parse_board_words(photo_base64: str, language: str) -> list[str]:
     env_config = get_config()
     url = f"{env_config.base_parser_url}/parse-board"
-    payload = {"board_image_b64": photo_base64, "language": "heb"}
+    payload = {"board_image_b64": photo_base64, "language": language}
     response = requests.get(url=url, json=payload, timeout=80)
     response.raise_for_status()
     response_json = response.json()

@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Optional
+from typing import List, Optional
 
 from codenames.game.color import CardColor, TeamColor
 from codenames.game.move import PASS_GUESS, QUIT_GAME
@@ -56,9 +56,16 @@ class GameConfig(BaseModel):  # Move to backend api?
         frozen = True
 
 
+class ParsingState(BaseModel):
+    language: Optional[str] = None
+    card_colors: Optional[List[CardColor]] = None
+    words: Optional[List[str]] = None
+
+
 class Session(BaseModel):
     game_id: Optional[str]
     config: Optional[GameConfig]
+    parsing_state: Optional[ParsingState]
     last_keyboard_message_id: Optional[int]
 
     class Config:
