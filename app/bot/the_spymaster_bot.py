@@ -22,7 +22,7 @@ from bot.handlers.parse.parse_handler import ParseHandler
 from bot.handlers.parse.parse_language_handler import ParseLanguageHandler
 from bot.handlers.parse.parse_map_handler import ParseMapHandler
 from bot.models import BotState
-from persistence.dynamo_db_persistence import DynamoDbPersistence
+from dynamo_persistence.persistence import DynamoPersistence
 from telegram import Update
 from telegram.ext import (
     CallbackContext,
@@ -43,7 +43,7 @@ log = get_logger(__name__)
 class TheSpymasterBot:
     def __init__(self, telegram_token: str, base_url: Optional[str] = None, dynamo_persistence: bool = False):
         self.api_client = TheSpymasterClient(base_url=base_url)
-        persistence = DynamoDbPersistence() if dynamo_persistence else DictPersistence()
+        persistence = DynamoPersistence() if dynamo_persistence else DictPersistence()
         self.updater = Updater(token=telegram_token, persistence=persistence)
         self._construct_updater()
 
