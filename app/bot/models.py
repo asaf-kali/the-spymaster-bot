@@ -45,6 +45,7 @@ class BotState(IntEnum):
     PARSE_MAP = 41
     PARSE_BOARD = 42
     PARSE_FIXES = 43
+    PARSE_FIX = 44
     # Other
     CONTINUE_GET_ID = 20
 
@@ -64,6 +65,7 @@ class ParsingState(BaseModel):
     language: Optional[str] = None
     card_colors: Optional[List[CardColor]] = None
     words: Optional[List[str]] = None
+    fix_index: Optional[int] = None
 
 
 class Session(BaseModel):

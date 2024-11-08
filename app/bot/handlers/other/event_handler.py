@@ -19,6 +19,7 @@ from bot.models import (
     ParsingState,
     Session,
 )
+from codenames.game.board import Board
 from codenames.game.card import Card
 from codenames.game.color import TeamColor
 from codenames.game.move import PASS_GUESS, Hint
@@ -102,9 +103,9 @@ class EventHandler:
         return self.session.config
 
     @property
-    def parsing_state(self) -> Optional[ParsingState]:
-        if not self.session:
-            return None
+    def parsing_state(self) -> ParsingState:
+        if not self.session or not self.session.parsing_state:
+            raise NoneValueError("parsing state is not set.")
         return self.session.parsing_state
 
     @classmethod
@@ -139,6 +140,9 @@ class EventHandler:
         self.bot.dispatcher.chat_data[self.chat_id] = chat_data
         return session
 
+    def reset_session(self) -> None:
+        self.set_session(session=None)
+
     def update_session(self, **kwargs) -> Session:
         if self.session is None:
             raise NoneValueError("session is not set, cannot update session.")
@@ -153,12 +157,13 @@ class EventHandler:
         new_config = old_config.copy(update=kwargs)
         return self.update_session(config=new_config)
 
-    def update_parsing_state(self, **kwargs) -> Session:
+    def update_parsing_state(self, **kwargs) -> ParsingState:
         old_parsing_state = self.parsing_state
         if not old_parsing_state:
             raise NoneValueError("parsing state is not set, cannot update parsing state.")
         new_parsing_state = old_parsing_state.copy(update=kwargs)
-        return self.update_session(parsing_state=new_parsing_state)
+        self.update_session(parsing_state=new_parsing_state)
+        return new_parsing_state
 
     def handle(self):
         raise NotImplementedError
@@ -342,6 +347,19 @@ class EventHandler:
             return False
         self.send_text(f"🤬 {e.message}", put_log=True)
         return True
+
+    def parsed_board(self) -> Board:
+        words = self.parsing_state.words
+        card_colors = self.parsing_state.card_colors
+        cards = [Card(word=word, color=color) for word, color in zip(words, card_colors)]
+        return Board(language=self.parsing_state.language, cards=cards)
+
+    def send_parsing_state(self):
+        parsed_board = self.parsed_board()
+        keyboard = build_board_keyboard(table=parsed_board.as_table, is_game_over=True)
+        message = "OK! Here's the board.\nClick on any card to fix it. When you are done, click /done."
+        text = self.send_markdown(text=message, reply_markup=keyboard)
+        self.update_session(last_keyboard_message_id=text.message_id)
 
 
 def _should_skip_turn(current_player_role: PlayerRole, config: GameConfig) -> bool:

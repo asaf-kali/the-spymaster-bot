@@ -15,6 +15,8 @@ from bot.handlers.other.event_handler import EventHandler
 from bot.handlers.other.fallback import FallbackHandler
 from bot.handlers.other.help import HelpMessageHandler
 from bot.handlers.parse.parse_board_handler import ParseBoardHandler
+from bot.handlers.parse.parse_done_handler import ParseDoneHandler
+from bot.handlers.parse.parse_fix_word_handler import ParseFixWordHandler
 from bot.handlers.parse.parse_fixing_handler import ParseFixesHandler
 from bot.handlers.parse.parse_handler import ParseHandler
 from bot.handlers.parse.parse_language_handler import ParseLanguageHandler
@@ -85,6 +87,8 @@ class TheSpymasterBot:
         parse_map = MessageHandler(Filters.photo, self.generate_callback(ParseMapHandler))
         parse_board = MessageHandler(Filters.photo, self.generate_callback(ParseBoardHandler))
         parse_fixes = MessageHandler(Filters.text, self.generate_callback(ParseFixesHandler))
+        parse_fix = MessageHandler(Filters.text, self.generate_callback(ParseFixWordHandler))
+        parse_done = CommandHandler("done", self.generate_callback(ParseDoneHandler))
         # Util
         fallback = CommandHandler("quit", self.generate_callback(FallbackHandler))
         help_message = CommandHandler("help", self.generate_callback(HelpMessageHandler))
@@ -116,7 +120,8 @@ class TheSpymasterBot:
                 BotState.PARSE_LANGUAGE: [parse_language],
                 BotState.PARSE_MAP: [parse_map],
                 BotState.PARSE_BOARD: [parse_board],
-                BotState.PARSE_FIXES: [parse_fixes],
+                BotState.PARSE_FIXES: [parse_fixes, parse_done],
+                BotState.PARSE_FIX: [parse_fix],
             },
             fallbacks=[fallback],
             allow_reentry=True,

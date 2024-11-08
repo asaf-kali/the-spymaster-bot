@@ -1,10 +1,8 @@
 import requests
 from bot.config import get_config
-from bot.handlers.other.event_handler import EventHandler, build_board_keyboard
+from bot.handlers.other.event_handler import EventHandler
 from bot.handlers.parse.photos import _get_base64_photo
 from bot.models import BotState
-from codenames.game.board import Board
-from codenames.game.card import Card
 
 # Board -> Fixing
 
@@ -12,16 +10,11 @@ from codenames.game.card import Card
 class ParseBoardHandler(EventHandler):
     def handle(self):
         photo_base64 = _get_base64_photo(photos=self.update.message.photo)
-        self.send_text("Working on it. This might take a minute ⏳️")
-        parsing_state = self.session.parsing_state
-        parsed_words = _parse_board_words(photo_base64=photo_base64, language=parsing_state.language)
+        self.send_text("Working on it, this might take a minute... 🔍️")
+        parsed_words = _parse_board_words(photo_base64=photo_base64, language=self.parsing_state.language)
         words = [word if word else str(i) for i, word in enumerate(parsed_words)]
-        cards = [Card(word=word, color=color) for word, color in zip(words, parsing_state.card_colors)]
-        parsed_board = Board(language=parsing_state.language, cards=cards)
-        keyboard = build_board_keyboard(table=parsed_board.as_table, is_game_over=True)
-        message = "🎉 Done! Here's the board.\nClick on any card to fix it. When you are done, send me /done."
-        text = self.send_markdown(text=message, reply_markup=keyboard)
-        self.update_session(last_keyboard_message_id=text.message_id, parsing_state=None)
+        self.update_parsing_state(words=words)
+        self.send_parsing_state()
         return BotState.PARSE_FIXES
 
 
