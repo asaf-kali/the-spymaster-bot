@@ -1,5 +1,6 @@
+from collections import defaultdict
 from random import random
-from typing import TYPE_CHECKING, Any, Callable, Optional, Type
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Type
 
 import sentry_sdk
 from beautifultable import BeautifulTable
@@ -21,7 +22,7 @@ from bot.models import (
 )
 from codenames.game.board import Board
 from codenames.game.card import Card
-from codenames.game.color import TeamColor
+from codenames.game.color import CardColor, TeamColor
 from codenames.game.move import PASS_GUESS, Hint
 from codenames.game.player import PlayerRole
 from codenames.game.state import GameState
@@ -194,7 +195,7 @@ class EventHandler:
         if state.is_game_over:
             self.send_game_summary(state=state)
             log.update_context(game_id=None)
-            self.update_session(game_id=None)
+            self.reset_session()
             from bot.handlers.other.help import HelpMessageHandler
 
             self.trigger(HelpMessageHandler)
@@ -357,9 +358,21 @@ class EventHandler:
     def send_parsing_state(self):
         parsed_board = self.parsed_board()
         keyboard = build_board_keyboard(table=parsed_board.as_table, is_game_over=True)
-        message = "OK! Here's the board.\nClick on any card to fix it. When you are done, click /done."
+        color_stats = _get_color_stats(board=parsed_board)
+        color_stats_str = "  ".join(rf"\[{count} {color.emoji}]" for color, count in color_stats.items())
+        message = f"""OK! Here's the board.
+Color stats: {color_stats_str}
+Click on any card to fix it. When you are done, click /done."""
         text = self.send_markdown(text=message, reply_markup=keyboard)
         self.update_session(last_keyboard_message_id=text.message_id)
+
+
+def _get_color_stats(board: Board) -> Dict[CardColor, int]:
+    stats: Dict[CardColor, int] = defaultdict(int)
+    for card in board.cards:
+        stats[card.color] += 1
+    stats = dict(sorted(stats.items(), key=lambda item: item[1], reverse=True))
+    return stats
 
 
 def _should_skip_turn(current_player_role: PlayerRole, config: GameConfig) -> bool:
