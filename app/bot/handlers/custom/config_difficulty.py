@@ -1,4 +1,4 @@
-from bot.handlers.base import EventHandler
+from bot.handlers.other.event_handler import EventHandler
 from bot.models import AVAILABLE_MODELS, BadMessageError, BotState
 from telegram import ReplyKeyboardMarkup
 from the_spymaster_solvers_api.structs import Difficulty

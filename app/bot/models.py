@@ -34,15 +34,19 @@ class BadMessageError(Exception):
 
 
 class BotState(IntEnum):
-    ENTRY = 0
+    PLAYING = 30
+    # Config
     CONFIG_LANGUAGE = 10
     CONFIG_SOLVER = 11
     CONFIG_DIFFICULTY = 12
     CONFIG_MODEL = 13
+    # Parsing
+    PARSE_LANGUAGE = 40
+    PARSE_MAP = 41
+    PARSE_BOARD = 42
+    PARSE_FIXES = 43
+    # Other
     CONTINUE_GET_ID = 20
-    PLAYING = 30
-    PARSE_MAP = 40
-    PARSE_BOARD = 41
 
 
 class GameConfig(BaseModel):  # Move to backend api?

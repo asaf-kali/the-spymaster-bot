@@ -1,5 +1,5 @@
-from bot.handlers.base import EventHandler
-from bot.handlers.start import StartEventHandler
+from bot.handlers.gameplay.start import StartEventHandler
+from bot.handlers.other.event_handler import EventHandler
 from bot.models import AVAILABLE_MODELS, BadMessageError
 from the_spymaster_solvers_api.structs import ModelIdentifier
 from the_spymaster_util.logger import get_logger

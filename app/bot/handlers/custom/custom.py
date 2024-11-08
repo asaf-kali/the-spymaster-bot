@@ -1,5 +1,5 @@
-from bot.handlers.base import EventHandler
-from bot.handlers.common import SUPPORTED_LANGUAGES, title_list
+from bot.handlers.other.common import SUPPORTED_LANGUAGES, title_list
+from bot.handlers.other.event_handler import EventHandler
 from bot.models import BotState, GameConfig, Session
 from telegram import ReplyKeyboardMarkup
 from the_spymaster_solvers_api.structs import Difficulty

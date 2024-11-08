@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Type
 
 import sentry_sdk
 from beautifultable import BeautifulTable
-from bot.handlers.common import (
+from bot.handlers.other.common import (
     enrich_sentry_context,
     get_given_guess_result_message_text,
     is_blue_guesser_turn,
@@ -16,6 +16,7 @@ from bot.models import (
     BadMessageError,
     BotState,
     GameConfig,
+    ParsingState,
     Session,
 )
 from codenames.game.card import Card
@@ -100,6 +101,12 @@ class EventHandler:
             return None
         return self.session.config
 
+    @property
+    def parsing_state(self) -> Optional[ParsingState]:
+        if not self.session:
+            return None
+        return self.session.parsing_state
+
     @classmethod
     def generate_callback(cls, bot: "TheSpymasterBot") -> Callable[[Update, CallbackContext], Any]:
         def callback(update: Update, context: CallbackContext) -> Any:
@@ -146,6 +153,13 @@ class EventHandler:
         new_config = old_config.copy(update=kwargs)
         return self.update_session(config=new_config)
 
+    def update_parsing_state(self, **kwargs) -> Session:
+        old_parsing_state = self.parsing_state
+        if not old_parsing_state:
+            raise NoneValueError("parsing state is not set, cannot update parsing state.")
+        new_parsing_state = old_parsing_state.copy(update=kwargs)
+        return self.update_session(parsing_state=new_parsing_state)
+
     def handle(self):
         raise NotImplementedError
 
@@ -176,7 +190,7 @@ class EventHandler:
             self.send_game_summary(state=state)
             log.update_context(game_id=None)
             self.update_session(game_id=None)
-            from bot.handlers import HelpMessageHandler
+            from bot.handlers.other.help import HelpMessageHandler
 
             self.trigger(HelpMessageHandler)
             return None

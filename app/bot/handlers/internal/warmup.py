@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Dict, List
 
 import requests
 from bot.config import get_config
-from bot.handlers.base import EventHandler
+from bot.handlers.other.event_handler import EventHandler
 from bot.models import AVAILABLE_MODELS
 from the_spymaster_solvers_api.structs import LoadModelsRequest, LoadModelsResponse
 

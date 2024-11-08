@@ -1,4 +1,4 @@
-from bot.handlers.base import EventHandler
+from bot.handlers.other.event_handler import EventHandler
 from bot.models import GameConfig, Session
 from the_spymaster_api.structs import StartGameRequest
 from the_spymaster_util.logger import get_logger

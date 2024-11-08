@@ -1,4 +1,4 @@
-from bot.handlers.base import EventHandler
+from bot.handlers.other.event_handler import EventHandler
 from the_spymaster_util.logger import get_logger
 
 log = get_logger(__name__)
@@ -11,9 +11,8 @@ class HelpMessageHandler(EventHandler):
 /start - start a new game.
 /custom - start a new game with custom configurations.
 /help - show this message.
-Under development: 👨🏻‍💻
+In development: 👨🏻‍💻
 /parse - get help with your camera.
-/continue - continue an old game.
 
 How to play:
 You are the blue guesser. The bot will play all other roles. \

@@ -1,4 +1,4 @@
-from bot.handlers.base import EventHandler
+from bot.handlers.other.event_handler import EventHandler
 
 
 class FallbackHandler(EventHandler):

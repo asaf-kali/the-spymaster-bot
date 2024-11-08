@@ -1,26 +1,23 @@
 from typing import Any, Callable, Dict, Optional, Type
 
-from bot.handlers import (
-    ConfigDifficultyHandler,
-    ConfigLanguageHandler,
-    ConfigModelHandler,
-    ConfigSolverHandler,
-    ContinueGetIdHandler,
-    ContinueHandler,
-    CustomHandler,
-    ErrorHandler,
-    EventHandler,
-    FallbackHandler,
-    GetSessionsHandler,
-    HelpMessageHandler,
-    NextMoveHandler,
-    ProcessMessageHandler,
-    StartEventHandler,
-    TestingHandler,
-    WarmupHandler,
-)
-from bot.handlers.parse_handler import ParseBoardHandler, ParseHandler, ParseMapHandler
-from bot.handlers.warmup import handle_warmup
+from bot.handlers.custom.config_difficulty import ConfigDifficultyHandler
+from bot.handlers.custom.config_language import ConfigLanguageHandler
+from bot.handlers.custom.config_model import ConfigModelHandler
+from bot.handlers.custom.config_solvers import ConfigSolverHandler
+from bot.handlers.custom.custom import CustomHandler
+from bot.handlers.gameplay.next_move import NextMoveHandler
+from bot.handlers.gameplay.process_message import ProcessMessageHandler
+from bot.handlers.gameplay.start import StartEventHandler
+from bot.handlers.internal.testing import TestingHandler
+from bot.handlers.internal.warmup import WarmupHandler, handle_warmup
+from bot.handlers.other.error import ErrorHandler
+from bot.handlers.other.event_handler import EventHandler
+from bot.handlers.other.fallback import FallbackHandler
+from bot.handlers.other.help import HelpMessageHandler
+from bot.handlers.parse.parse_board_handler import ParseBoardHandler
+from bot.handlers.parse.parse_handler import ParseHandler
+from bot.handlers.parse.parse_language_handler import ParseLanguageHandler
+from bot.handlers.parse.parse_map_handler import ParseMapHandler
 from bot.models import BotState
 from persistence.dynamo_db_persistence import DynamoDbPersistence
 from telegram import Update
@@ -86,6 +83,7 @@ class TheSpymasterBot:
         next_move_handler = CommandHandler("next_move", self.generate_callback(NextMoveHandler))
         # Parsing
         parse_handler = CommandHandler("parse", self.generate_callback(ParseHandler))
+        parse_language_handler = MessageHandler(Filters.text, self.generate_callback(ParseLanguageHandler))
         parse_map_handler = MessageHandler(Filters.photo, self.generate_callback(ParseMapHandler))
         parse_board_handler = MessageHandler(Filters.photo, self.generate_callback(ParseBoardHandler))
         # Util
@@ -95,10 +93,6 @@ class TheSpymasterBot:
         # Internal
         load_models_handler = CommandHandler("warmup", self.generate_callback(WarmupHandler))
         testing_handler = CommandHandler("test", self.generate_callback(TestingHandler))
-        # Not supported
-        continue_game_handler = CommandHandler("continue", self.generate_callback(ContinueHandler))
-        continue_get_id_handler = MessageHandler(Filters.text, self.generate_callback(ContinueGetIdHandler))
-        get_sessions_handler = CommandHandler("sessions", self.generate_callback(GetSessionsHandler))
 
         conv_handler = ConversationHandler(
             name="main",
@@ -109,19 +103,20 @@ class TheSpymasterBot:
                 next_move_handler,
                 load_models_handler,
                 testing_handler,
-                get_sessions_handler,
-                continue_game_handler,
                 parse_handler,
             ],
             states={
+                # Custom
                 BotState.CONFIG_LANGUAGE: [config_language_handler],
-                BotState.CONFIG_SOLVER: [config_solver_handler, fallback_handler],
-                BotState.CONFIG_DIFFICULTY: [config_difficulty_handler, fallback_handler],
-                BotState.CONFIG_MODEL: [config_model_handler, fallback_handler],
-                BotState.CONTINUE_GET_ID: [continue_get_id_handler],
+                BotState.CONFIG_SOLVER: [config_solver_handler],
+                BotState.CONFIG_DIFFICULTY: [config_difficulty_handler],
+                BotState.CONFIG_MODEL: [config_model_handler],
+                # Game
                 BotState.PLAYING: [process_message_handler],
-                BotState.PARSE_MAP: [parse_map_handler, fallback_handler],
-                BotState.PARSE_BOARD: [parse_board_handler, fallback_handler],
+                # Parse
+                BotState.PARSE_LANGUAGE: [parse_language_handler],
+                BotState.PARSE_MAP: [parse_map_handler],
+                BotState.PARSE_BOARD: [parse_board_handler],
             },
             fallbacks=[fallback_handler],
             allow_reentry=True,

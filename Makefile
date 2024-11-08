@@ -57,9 +57,9 @@ cover:
 # Lint
 
 format:
-	ruff check . --fix
 	black .
 	isort .
+	ruff check . --fix
 
 check-ruff:
 	ruff check .

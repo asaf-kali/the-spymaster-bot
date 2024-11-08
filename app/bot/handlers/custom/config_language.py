@@ -1,5 +1,5 @@
-from bot.handlers.base import EventHandler
-from bot.handlers.common import SUPPORTED_LANGUAGES
+from bot.handlers.other.common import SUPPORTED_LANGUAGES
+from bot.handlers.other.event_handler import EventHandler
 from bot.models import BadMessageError, BotState
 from telegram import ReplyKeyboardMarkup
 from the_spymaster_util.logger import get_logger

@@ -1,9 +1,9 @@
-from bot.handlers import HelpMessageHandler
-from bot.handlers.base import EventHandler
-from bot.handlers.common import (
+from bot.handlers.other.common import (
     get_given_guess_result_message_text,
     is_blue_guesser_turn,
 )
+from bot.handlers.other.event_handler import EventHandler
+from bot.handlers.other.help import HelpMessageHandler
 from bot.models import COMMAND_TO_INDEX
 from codenames.game.board import Board
 from the_spymaster_api.structs import GuessRequest, GuessResponse
