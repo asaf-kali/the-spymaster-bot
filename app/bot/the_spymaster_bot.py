@@ -15,6 +15,7 @@ from bot.handlers.other.event_handler import EventHandler
 from bot.handlers.other.fallback import FallbackHandler
 from bot.handlers.other.help import HelpMessageHandler
 from bot.handlers.parse.parse_board_handler import ParseBoardHandler
+from bot.handlers.parse.parse_fixing_handler import ParseFixesHandler
 from bot.handlers.parse.parse_handler import ParseHandler
 from bot.handlers.parse.parse_language_handler import ParseLanguageHandler
 from bot.handlers.parse.parse_map_handler import ParseMapHandler
@@ -68,63 +69,62 @@ class TheSpymasterBot:
     def _construct_updater(self):
         log.info("Setting up bot...")
         # Start
-        start_handler = CommandHandler("start", self.generate_callback(StartEventHandler))
-        custom_handler = CommandHandler("custom", self.generate_callback(CustomHandler))
+        start = CommandHandler("start", self.generate_callback(StartEventHandler))
+        custom = CommandHandler("custom", self.generate_callback(CustomHandler))
         # Config
-        config_language_handler = MessageHandler(Filters.text, self.generate_callback(ConfigLanguageHandler))
-        config_solver_handler = MessageHandler(Filters.text, self.generate_callback(ConfigSolverHandler))
-        config_difficulty_handler = MessageHandler(Filters.text, self.generate_callback(ConfigDifficultyHandler))
-        config_model_handler = MessageHandler(Filters.text, self.generate_callback(ConfigModelHandler))
+        config_language = MessageHandler(Filters.text, self.generate_callback(ConfigLanguageHandler))
+        config_solver = MessageHandler(Filters.text, self.generate_callback(ConfigSolverHandler))
+        config_difficulty = MessageHandler(Filters.text, self.generate_callback(ConfigDifficultyHandler))
+        config_model = MessageHandler(Filters.text, self.generate_callback(ConfigModelHandler))
         # Game
-        process_message_handler = MessageHandler(
-            Filters.text & ~Filters.command,
-            self.generate_callback(ProcessMessageHandler),
-        )
-        next_move_handler = CommandHandler("next_move", self.generate_callback(NextMoveHandler))
+        process_message = MessageHandler(Filters.text & ~Filters.command, self.generate_callback(ProcessMessageHandler))
+        next_move = CommandHandler("next_move", self.generate_callback(NextMoveHandler))
         # Parsing
-        parse_handler = CommandHandler("parse", self.generate_callback(ParseHandler))
-        parse_language_handler = MessageHandler(Filters.text, self.generate_callback(ParseLanguageHandler))
-        parse_map_handler = MessageHandler(Filters.photo, self.generate_callback(ParseMapHandler))
-        parse_board_handler = MessageHandler(Filters.photo, self.generate_callback(ParseBoardHandler))
+        parse = CommandHandler("parse", self.generate_callback(ParseHandler))
+        parse_language = MessageHandler(Filters.text, self.generate_callback(ParseLanguageHandler))
+        parse_map = MessageHandler(Filters.photo, self.generate_callback(ParseMapHandler))
+        parse_board = MessageHandler(Filters.photo, self.generate_callback(ParseBoardHandler))
+        parse_fixes = MessageHandler(Filters.text, self.generate_callback(ParseFixesHandler))
         # Util
-        fallback_handler = CommandHandler("quit", self.generate_callback(FallbackHandler))
-        help_message_handler = CommandHandler("help", self.generate_callback(HelpMessageHandler))
+        fallback = CommandHandler("quit", self.generate_callback(FallbackHandler))
+        help_message = CommandHandler("help", self.generate_callback(HelpMessageHandler))
         error_handler = self.generate_callback(ErrorHandler)
         # Internal
-        load_models_handler = CommandHandler("warmup", self.generate_callback(WarmupHandler))
-        testing_handler = CommandHandler("test", self.generate_callback(TestingHandler))
+        load_models = CommandHandler("warmup", self.generate_callback(WarmupHandler))
+        testing = CommandHandler("test", self.generate_callback(TestingHandler))
 
         conv_handler = ConversationHandler(
             name="main",
             entry_points=[
-                help_message_handler,
-                start_handler,
-                custom_handler,
-                next_move_handler,
-                load_models_handler,
-                testing_handler,
-                parse_handler,
+                help_message,
+                start,
+                custom,
+                next_move,
+                load_models,
+                testing,
+                parse,
             ],
             states={
                 # Custom
-                BotState.CONFIG_LANGUAGE: [config_language_handler],
-                BotState.CONFIG_SOLVER: [config_solver_handler],
-                BotState.CONFIG_DIFFICULTY: [config_difficulty_handler],
-                BotState.CONFIG_MODEL: [config_model_handler],
+                BotState.CONFIG_LANGUAGE: [config_language],
+                BotState.CONFIG_SOLVER: [config_solver],
+                BotState.CONFIG_DIFFICULTY: [config_difficulty],
+                BotState.CONFIG_MODEL: [config_model],
                 # Game
-                BotState.PLAYING: [process_message_handler],
+                BotState.PLAYING: [process_message],
                 # Parse
-                BotState.PARSE_LANGUAGE: [parse_language_handler],
-                BotState.PARSE_MAP: [parse_map_handler],
-                BotState.PARSE_BOARD: [parse_board_handler],
+                BotState.PARSE_LANGUAGE: [parse_language],
+                BotState.PARSE_MAP: [parse_map],
+                BotState.PARSE_BOARD: [parse_board],
+                BotState.PARSE_FIXES: [parse_fixes],
             },
-            fallbacks=[fallback_handler],
+            fallbacks=[fallback],
             allow_reentry=True,
             persistent=True,
         )
 
         self.dispatcher.add_handler(conv_handler)
-        self.dispatcher.add_handler(process_message_handler)
+        self.dispatcher.add_handler(process_message)
         self.dispatcher.add_error_handler(error_handler)  # type: ignore
 
     def poll(self) -> None:
