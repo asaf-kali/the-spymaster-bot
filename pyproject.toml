@@ -22,7 +22,7 @@ pynamodb = "^5.4.1"
 requests = "^2.26.0"
 cachetools = "^4.2.2"
 # Monitor
-sentry-sdk = "^1.19"
+sentry-sdk = ">=2.8"
 
 [tool.poetry.group.security.dependencies]
 tornado = "^6.3.3"
