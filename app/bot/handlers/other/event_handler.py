@@ -114,7 +114,11 @@ class EventHandler:
         def callback(update: Update, context: CallbackContext) -> Any:
             chat_id = update.effective_chat.id if update.effective_chat else None
             session_data = context.chat_data
-            session = Session(**session_data) if session_data else None
+            try:
+                session = Session(**session_data) if session_data else None
+            except Exception as e:
+                log.warning(f"Failed to parse session {session_data}: {e}")
+                session = None
             instance = cls(bot=bot, update=update, context=context, chat_id=chat_id, session=session)
             handler_name = cls.__name__
             try:

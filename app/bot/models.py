@@ -68,10 +68,10 @@ class ParsingState(BaseModel):
 
 
 class Session(BaseModel):
-    game_id: Optional[str]
-    config: Optional[GameConfig]
-    parsing_state: Optional[ParsingState]
-    last_keyboard_message_id: Optional[int]
+    game_id: Optional[str] = None
+    config: Optional[GameConfig] = None
+    parsing_state: Optional[ParsingState] = None
+    last_keyboard_message_id: Optional[int] = None
 
     class Config:
         frozen = True
