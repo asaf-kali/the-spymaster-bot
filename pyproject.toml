@@ -21,6 +21,7 @@ pynamodb = "^5.4.1"
 # Utils
 requests = "^2.26.0"
 cachetools = "^4.2.2"
+urllib3 = "<2.0" # Specified due to telegram package issue
 # Monitor
 sentry-sdk = ">=2.8"
 
