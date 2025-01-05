@@ -75,4 +75,9 @@ profile = "black"
 skip = ["__init__.py", "tf/", ".deployment/"]
 
 [tool.mypy]
+files = ["app/"]
 exclude = ["local/", "tf/", "dist/", "build/", ".deployment/"]
+
+[[tool.mypy.overrides]]
+module = "beautifultable"
+ignore_missing_imports = true

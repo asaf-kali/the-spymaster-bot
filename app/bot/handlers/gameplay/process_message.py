@@ -1,12 +1,13 @@
 from bot.handlers.other.common import (
     get_given_guess_result_message_text,
-    is_blue_guesser_turn,
+    is_blue_operative_turn,
 )
 from bot.handlers.other.event_handler import EventHandler
 from bot.handlers.other.help import HelpMessageHandler
 from bot.models import COMMAND_TO_INDEX
-from codenames.game.board import Board
-from the_spymaster_api.structs import GuessRequest, GuessResponse
+from codenames.classic.board import Board
+from the_spymaster_api.structs import GuessRequest
+from the_spymaster_api.structs.classic.responses import GuessResponse
 from the_spymaster_util.logger import get_logger
 
 log = get_logger(__name__)
@@ -22,7 +23,7 @@ class ProcessMessageHandler(EventHandler):
         if not self.session.is_game_active:
             return self.trigger(HelpMessageHandler)
         state = self._get_game_state(game_id=self.game_id)
-        if state and not is_blue_guesser_turn(state):
+        if state and not is_blue_operative_turn(state):
             return self.fast_forward(state)
         try:
             command = COMMAND_TO_INDEX.get(text, text)
@@ -30,7 +31,8 @@ class ProcessMessageHandler(EventHandler):
         except:  # noqa
             self.send_board(
                 state=state,
-                message=f"Card '*{text}*' not found. Please reply with card index (1-25) or a word on the board.",
+                message=f"ClassicCard '*{text}*' not found. "
+                f"Please reply with card index (1-25) or a word on the board.",
             )
             return None
         response = self._guess(card_index)
@@ -43,6 +45,7 @@ class ProcessMessageHandler(EventHandler):
         return self.fast_forward(response.game_state)
 
     def _guess(self, card_index: int) -> GuessResponse:
+        assert self.game_id
         request = GuessRequest(game_id=self.game_id, card_index=card_index)
         return self.api_client.guess(request)
 

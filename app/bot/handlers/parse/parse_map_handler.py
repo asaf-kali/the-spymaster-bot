@@ -3,7 +3,7 @@ from bot.config import get_config
 from bot.handlers.other.event_handler import EventHandler
 from bot.handlers.parse.photos import _get_base64_photo
 from bot.models import BotState
-from codenames.game.color import CardColor
+from codenames.classic.color import ClassicColor
 
 # Map -> Board
 
@@ -24,7 +24,7 @@ You will have a chance to fix any mistakes later.
         self.send_text(message)
         return BotState.PARSE_BOARD
 
-    def _as_emoji_table(self, card_colors: list[CardColor]) -> str:
+    def _as_emoji_table(self, card_colors: list[ClassicColor]) -> str:
         result = ""
         for i in range(0, len(card_colors), 5):
             row = card_colors[i : i + 5]
@@ -33,7 +33,7 @@ You will have a chance to fix any mistakes later.
         return result
 
 
-def _parse_map_colors(photo_base64: str) -> list[CardColor]:
+def _parse_map_colors(photo_base64: str) -> list[ClassicColor]:
     env_config = get_config()
     url = f"{env_config.base_parser_url}/parse-color-map"
     payload = {"map_image_b64": photo_base64}
@@ -41,5 +41,5 @@ def _parse_map_colors(photo_base64: str) -> list[CardColor]:
     response.raise_for_status()
     response_json = response.json()
     map_colors = response_json.get("map_colors")
-    card_colors = [CardColor(color) for color in map_colors]
+    card_colors = [ClassicColor(color) for color in map_colors]
     return card_colors

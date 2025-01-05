@@ -7,7 +7,7 @@ from beautifultable import BeautifulTable
 from bot.handlers.other.common import (
     enrich_sentry_context,
     get_given_guess_result_message_text,
-    is_blue_guesser_turn,
+    is_blue_operative_turn,
 )
 from bot.models import (
     BLUE_EMOJI,
@@ -20,12 +20,12 @@ from bot.models import (
     ParsingState,
     Session,
 )
-from codenames.game.board import Board
-from codenames.game.card import Card
-from codenames.game.color import CardColor, TeamColor
-from codenames.game.move import PASS_GUESS, Hint
-from codenames.game.player import PlayerRole
-from codenames.game.state import GameState
+from codenames.classic.board import ClassicBoard
+from codenames.classic.color import ClassicColor, ClassicTeam
+from codenames.classic.state import ClassicGameState
+from codenames.classic.types import ClassicCard
+from codenames.generic.move import PASS_GUESS, Clue
+from codenames.generic.player import PlayerRole
 from requests import HTTPError
 from telegram import Message, ReplyKeyboardMarkup, Update
 from telegram import User as TelegramUser
@@ -186,10 +186,10 @@ class EventHandler:
     def send_markdown(self, text: str, **kwargs) -> Message:
         return self.send_text(text=text, parse_mode="Markdown", **kwargs)
 
-    def fast_forward(self, state: GameState):
+    def fast_forward(self, state: ClassicGameState):
         if not state:
             raise NoneValueError("state is not set, cannot fast forward.")
-        while not state.is_game_over and not is_blue_guesser_turn(state=state):
+        while not state.is_game_over and not is_blue_operative_turn(state=state):
             state = self._next_move(state=state)
         self.send_board(state=state)
         if state.is_game_over:
@@ -212,59 +212,65 @@ class EventHandler:
             pass
         self.update_session(last_keyboard_message_id=None)
 
-    def send_game_summary(self, state: GameState):
-        self._send_hinters_intents(state=state)
+    def send_game_summary(self, state: ClassicGameState):
+        self._send_spymasters_intents(state=state)
         self._send_winner_text(state=state)
 
-    def _send_winner_text(self, state: GameState):
+    def _send_winner_text(self, state: ClassicGameState):
         winner = state.winner
-        player_won = winner.team_color == TeamColor.BLUE
+        if not winner:
+            raise ValueError("Winner is not set, cannot send winner text.")
+        player_won = winner.team == ClassicTeam.BLUE
         winning_emoji = "🎉" if player_won else "😭"
         reason_emoji = WIN_REASON_TO_EMOJI[winner.reason]
         status = "won" if player_won else "lose"
-        text = f"You {status}! {winning_emoji}\n{winner.team_color} team won: {winner.reason.value} {reason_emoji}"
+        text = f"You {status}! {winning_emoji}\n{winner.team} team won: {winner.reason.value} {reason_emoji}"
         self.send_text(text, put_log=True)
 
-    def _send_hinters_intents(self, state: GameState):
-        relevant_hints = [hint for hint in state.raw_hints if hint.for_words]
-        if not relevant_hints:
+    def _send_spymasters_intents(self, state: ClassicGameState):
+        relevant_clues = [clue for clue in state.clues if clue.for_words]
+        if not relevant_clues:
             return
-        intent_strings = [_hint_intent_string(hint) for hint in relevant_hints]
+        intent_strings = [_clue_intent_string(clue) for clue in relevant_clues]
         intent_string = "\n".join(intent_strings)
-        text = f"Hinters intents were:\n{intent_string}\n"
+        text = f"Spymasters intents were:\n{intent_string}\n"
         self.send_markdown(text)
 
-    def _next_move(self, state: GameState) -> GameState:
+    def _next_move(self, state: ClassicGameState) -> ClassicGameState:
         if not state or not self.config:
             raise NoneValueError("state is not set, cannot run next move.")
-        team_color = state.current_team_color.value.title()
-        if state.current_player_role == PlayerRole.HINTER:
+        team = state.current_team.value.title()
+        game_id = self.game_id
+        assert game_id
+        if state.current_player_role == PlayerRole.SPYMASTER:
             self.send_score(state=state)
-            self.send_text(f"{team_color} hinter is thinking... 🤔")
+            self.send_text(f"{team} spymaster is thinking... 🤔")
         if _should_skip_turn(current_player_role=state.current_player_role, config=self.config):
-            self.send_text(f"{team_color} guesser has skipped the turn.")
-            request = GuessRequest(game_id=self.game_id, card_index=PASS_GUESS)
-            response = self.api_client.guess(request=request)
-            return response.game_state
+            self.send_text(f"{team} operative has skipped the turn.")
+            guess_request = GuessRequest(game_id=game_id, card_index=PASS_GUESS)
+            guess_response = self.api_client.guess(request=guess_request)
+            return guess_response.game_state
         solver = self.config.solver
-        request = NextMoveRequest(game_id=self.game_id, solver=solver)
-        response = self.api_client.next_move(request=request)
-        if response.given_hint:
-            given_hint = response.given_hint
-            text = f"{team_color} hinter says '*{given_hint.word}*' with *{given_hint.card_amount}* card(s)."
+        next_move_request = NextMoveRequest(game_id=game_id, solver=solver)
+        next_move_response = self.api_client.next_move(request=next_move_request)
+        if next_move_response.given_clue:
+            given_clue = next_move_response.given_clue
+            text = f"{team} spymaster says '*{given_clue.word}*' with *{given_clue.card_amount}* card(s)."
             self.send_markdown(text, put_log=True)
-        if response.given_guess:
-            text = f"{team_color} guesser: " + get_given_guess_result_message_text(given_guess=response.given_guess)
+        if next_move_response.given_guess:
+            text = f"{team} operative: " + get_given_guess_result_message_text(
+                given_guess=next_move_response.given_guess
+            )
             self.send_markdown(text)
-        return response.game_state
+        return next_move_response.game_state
 
-    def send_score(self, state: GameState):
+    def send_score(self, state: ClassicGameState):
         score = state.score
         text = f"{BLUE_EMOJI}  *{score.blue.unrevealed}*  remaining card(s)  *{score.red.unrevealed}*  {RED_EMOJI}"
         self.send_markdown(text)
 
-    def send_board(self, state: GameState, message: Optional[str] = None):
-        board_to_send = state.board if state.is_game_over else state.board.censured
+    def send_board(self, state: ClassicGameState, message: Optional[str] = None):
+        board_to_send = state.board if state.is_game_over else state.board.censored
         table = board_to_send.as_table
         keyboard = build_board_keyboard(table, is_game_over=state.is_game_over)
         if message is None:
@@ -274,7 +280,7 @@ class EventHandler:
         text = self.send_markdown(message, reply_markup=keyboard)
         self.update_session(last_keyboard_message_id=text.message_id)
 
-    def _get_game_state(self, game_id: str) -> GameState:
+    def _get_game_state(self, game_id: str) -> ClassicGameState:
         request = GetGameStateRequest(game_id=game_id)
         return self.api_client.get_game_state(request=request).game_state
         # self.set_state(new_state=response.game_state)
@@ -331,7 +337,7 @@ class EventHandler:
             return False
         data = response.json()
         error_response = ErrorResponse(**data)
-        text = error_response.message
+        text = error_response.message or ""
         if error_response.details:
             text += f": {error_response.details}"
         self.send_text(text, put_log=True)
@@ -349,11 +355,15 @@ class EventHandler:
         self.send_text(f"🤬 {e.message}", put_log=True)
         return True
 
-    def parsed_board(self) -> Board:
+    def parsed_board(self) -> ClassicBoard:
         words = self.parsing_state.words
         card_colors = self.parsing_state.card_colors
-        cards = [Card(word=word, color=color) for word, color in zip(words, card_colors)]
-        return Board(language=self.parsing_state.language, cards=cards)
+        if not words or not card_colors or not self.parsing_state.language:
+            raise NoneValueError("Words, card colors or language are not set.")
+        if len(words) != len(card_colors):
+            raise ValueError("Words and card colors have different lengths.")
+        cards = [ClassicCard(word=word, color=color) for word, color in zip(words, card_colors)]
+        return ClassicBoard(language=self.parsing_state.language, cards=cards)
 
     def send_parsing_state(self):
         parsed_board = self.parsed_board()
@@ -367,8 +377,8 @@ Click on any card to fix it. When you are done, click /done."""
         self.update_session(last_keyboard_message_id=text.message_id)
 
 
-def _get_color_stats(board: Board) -> Dict[CardColor, int]:
-    stats: Dict[CardColor, int] = defaultdict(int)
+def _get_color_stats(board: ClassicBoard) -> Dict[ClassicColor | None, int]:
+    stats: Dict[ClassicColor | None, int] = defaultdict(int)
     for card in board.cards:
         stats[card.color] += 1
     stats = dict(sorted(stats.items(), key=lambda item: item[1], reverse=True))
@@ -376,7 +386,7 @@ def _get_color_stats(board: Board) -> Dict[CardColor, int]:
 
 
 def _should_skip_turn(current_player_role: PlayerRole, config: GameConfig) -> bool:
-    if current_player_role != PlayerRole.GUESSER:
+    if current_player_role != PlayerRole.OPERATIVE:
         return False
     pass_probability = config.difficulty.pass_probability
     dice = random()
@@ -388,7 +398,7 @@ def build_board_keyboard(table: BeautifulTable, is_game_over: bool) -> ReplyKeyb
     for row in table.rows:
         row_keyboard = []
         for card in row:
-            card: Card  # type: ignore
+            card: ClassicCard  # type: ignore
             if is_game_over:
                 content = f"{card.color.emoji} {card.word}"
             else:
@@ -399,5 +409,5 @@ def build_board_keyboard(table: BeautifulTable, is_game_over: bool) -> ReplyKeyb
     return ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
 
 
-def _hint_intent_string(hint: Hint) -> str:
-    return f"'*{hint.word}*' for {hint.for_words}"
+def _clue_intent_string(clue: Clue) -> str:
+    return f"'*{clue.word}*' for {clue.for_words}"
