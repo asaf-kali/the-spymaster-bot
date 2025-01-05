@@ -71,7 +71,7 @@ check-isort:
 	isort --check .
 
 check-mypy:
-	mypy .
+	mypy app/
 
 lint: format
 	pre-commit run --all-files

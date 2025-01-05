@@ -9,21 +9,20 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 # Core
-python = "^3.8"
-codenames = "^4.0.3"
+python = "^3.12"
+codenames = "^5.3"
 the-spymaster-util = { version = "~3.2", extras = ["all"] }
-the-spymaster-api = "^2.1"
+the-spymaster-api = "^3.0"
 # Telegram bot
 python-telegram-bot = "^13.11"
 # Models
-pydantic = "^1.9"
+pydantic = "^2.10"
 pynamodb = "^5.4.1"
 # Utils
 requests = "^2.26.0"
 cachetools = "^4.2.2"
-urllib3 = "<2.0" # Specified due to dependency resolution issue
 # Monitor
-sentry-sdk = "^1.19.1"
+sentry-sdk = "^1.19"
 
 [tool.poetry.group.security.dependencies]
 tornado = "^6.3.3"
@@ -35,12 +34,12 @@ freezegun = "^1.2.1"
 coverage = "^6.3.2"
 
 [tool.poetry.group.lint.dependencies]
-ruff = "^0.7.1"
-black = "^24.3"
-isort = "^5.11.4"
-mypy = "^0.991"
-types-requests = "^2.28.11.8"
-types-cachetools = "^5.2.1"
+ruff = ">=0.7"
+black = ">=24.3"
+isort = ">=5.11"
+mypy = ">=0.991"
+types-requests = ">=2.28.11.8"
+types-cachetools = ">=5.2.1"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^2.17"
@@ -76,6 +75,4 @@ profile = "black"
 skip = ["__init__.py", "tf/", ".deployment/"]
 
 [tool.mypy]
-ignore_missing_imports = true
-explicit_package_bases = true
 exclude = ["local/", "tf/", "dist/", "build/", ".deployment/"]

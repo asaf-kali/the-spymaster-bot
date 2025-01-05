@@ -10,10 +10,10 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-      - name: Set up python 3.11
+      - name: Set up python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Init local development environment
         run: |
           make install-ci
@@ -80,10 +80,10 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-      - name: Set up python 3.11
+      - name: Set up python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           make install-ci
@@ -99,10 +99,10 @@ jobs:
 #    steps:
 #      - name: Checkout repo
 #        uses: actions/checkout@v4
-#      - name: Set up python 3.11
+#      - name: Set up python 3.12
 #        uses: actions/setup-python@v4
 #        with:
-#          python-version: "3.11"
+#          python-version: "3.12"
 #      - name: Install dependencies
 #        run: |
 #          make install-ci
@@ -148,10 +148,10 @@ jobs:
           repository: asaf-kali/the-spymaster-automation
           token: ${{ secrets.AUTOMATION_REPO_PAT }}
           path: automation
-      - name: Set up python 3.11
+      - name: Set up python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install CI dependencies
         run: cd automation; make install-ci
       - name: Install dependencies

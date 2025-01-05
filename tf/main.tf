@@ -48,7 +48,7 @@ locals {
   project_name    = "the-spymaster-bot"
   service_name    = "${local.project_name}-${local.env}"
   aws_account_id  = data.aws_caller_identity.current.account_id
-  python_version = "3.11"
+  python_version = "3.12"
   # Paths
   tf_root = abspath(path.module)
   project_root = abspath("${path.module}/../")
