@@ -21,8 +21,9 @@ from bot.models import (
     Session,
 )
 from codenames.classic.board import ClassicBoard
-from codenames.classic.color import ClassicColor, ClassicTeam
+from codenames.classic.color import ClassicColor
 from codenames.classic.state import ClassicGameState
+from codenames.classic.team import ClassicTeam
 from codenames.classic.types import ClassicCard
 from codenames.generic.move import PASS_GUESS, Clue
 from codenames.generic.player import PlayerRole

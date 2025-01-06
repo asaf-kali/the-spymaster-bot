@@ -1,8 +1,8 @@
 from typing import List
 
 import sentry_sdk
-from codenames.classic.color import ClassicTeam
 from codenames.classic.state import ClassicGameState
+from codenames.classic.team import ClassicTeam
 from codenames.generic.move import GivenGuess
 from codenames.generic.player import PlayerRole
 from the_spymaster_util.logger import get_logger

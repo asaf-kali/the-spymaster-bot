@@ -291,13 +291,13 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "codenames"
-version = "5.3.0"
+version = "5.5.0"
 description = "Codenames board game logic implementation in python."
 optional = false
 python-versions = "<4.0,>=3.12"
 files = [
-    {file = "codenames-5.3.0-py3-none-any.whl", hash = "sha256:5eeb9fc8b435560465edbaa4a18cc38d181e666c76e398e8e87f1c885b03bf21"},
-    {file = "codenames-5.3.0.tar.gz", hash = "sha256:9ba01bdcf5814d5e22c34372fe38e339b07526e1978e26911d9400ced4dcfb84"},
+    {file = "codenames-5.5.0-py3-none-any.whl", hash = "sha256:1c7ccbbc8a3d6b3610ac466c13950db13783a141654b46445c8d00351e76ae12"},
+    {file = "codenames-5.5.0.tar.gz", hash = "sha256:2d53a2e942fa6e58b144ae813aceacbc033d34c555584c566de25de15659cf93"},
 ]
 
 [package.dependencies]
@@ -1102,17 +1102,17 @@ files = [
 
 [[package]]
 name = "the-spymaster-api"
-version = "3.0.1"
+version = "3.0.4"
 description = "Python client implementation for The Spymaster HTTP backend."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "the_spymaster_api-3.0.1-py3-none-any.whl", hash = "sha256:cf3e77f954c3f334750925a85fbbb8c76aca94c65ef6a65ba023afc20cd0a9dc"},
-    {file = "the_spymaster_api-3.0.1.tar.gz", hash = "sha256:2b16655b8decf8dd43f89303b1721975b6e622142fd4a4fef7c55635e827da3b"},
+    {file = "the_spymaster_api-3.0.4-py3-none-any.whl", hash = "sha256:7b7fc1b702816d7c1dcf96b4c2ec6ad2384a2e84a8279b57f49b32ce51644a76"},
+    {file = "the_spymaster_api-3.0.4.tar.gz", hash = "sha256:4c50af62add08aa3af859b5cf1f2afd6146723f7de09024b7b273e0f29472dc5"},
 ]
 
 [package.dependencies]
-codenames = ">=5.0,<6.0"
+codenames = ">=5.4,<6.0"
 pydantic = ">=2.0,<3.0"
 requests = ">=2.28,<3.0"
 the-spymaster-solvers-api = ">=3.0,<4.0"
@@ -1120,17 +1120,17 @@ the-spymaster-util = {version = ">=3.2,<4.0", extras = ["clients"]}
 
 [[package]]
 name = "the-spymaster-solvers-api"
-version = "3.0.2"
+version = "3.0.3"
 description = "Python client implementation for The Spymaster Solvers HTTP backend."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "the_spymaster_solvers_api-3.0.2-py3-none-any.whl", hash = "sha256:f620d1365dc23c13828b8aae50642d2d044eb9034724a7b9fed340b21e54f6b0"},
-    {file = "the_spymaster_solvers_api-3.0.2.tar.gz", hash = "sha256:2c4ee2578958822ed36e0649249082309926f564a5930f84b100480ddf0793a8"},
+    {file = "the_spymaster_solvers_api-3.0.3-py3-none-any.whl", hash = "sha256:adf1e17c5e2e7fd28cc548fd6837f1cb19fd0eb6dc6fd156f803b372efad3b38"},
+    {file = "the_spymaster_solvers_api-3.0.3.tar.gz", hash = "sha256:e1fd5959783e6f00596c5f0a5c01d47ac909bb57b053583bb8df5777e6587c33"},
 ]
 
 [package.dependencies]
-codenames = ">=5.2,<6.0"
+codenames = ">=5.4,<6.0"
 pydantic = ">=2.8,<3.0"
 requests = ">=2.28,<3.0"
 the-spymaster-util = {version = ">=3.2,<4.0", extras = ["clients"]}
@@ -1314,4 +1314,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "48c45af1982aaa3a1be574a3687cb0d35e4db451d447bd96c1eb8432e6c37f2a"
+content-hash = "4c3566279a3f36ce1a259a392bebfab9f132b3510e8de2520b1e01363ee97203"

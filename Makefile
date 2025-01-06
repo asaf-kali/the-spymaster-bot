@@ -51,7 +51,7 @@ cover:
 	export TELEGRAM_TOKEN="123:ABC"; \
 	coverage run -m $(PYTHON_TEST_COMMAND)
 	coverage html
-	xdg-open htmlcov/index.html &
+	xdg-open htmlcov/index.html > /dev/null 2>&1 &
 	$(DEL_COMMAND) .coverage*
 
 # Lint

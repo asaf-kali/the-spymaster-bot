@@ -1,7 +1,8 @@
 from enum import IntEnum
 from typing import List, Optional
 
-from codenames.classic.color import ClassicColor, ClassicTeam
+from codenames.classic.color import ClassicColor
+from codenames.classic.team import ClassicTeam
 from codenames.classic.winner import WinningReason
 from codenames.generic.move import PASS_GUESS, QUIT_GAME
 from pydantic import BaseModel
