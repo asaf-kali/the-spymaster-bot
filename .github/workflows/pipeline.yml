@@ -57,6 +57,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
       - uses: ./.github/actions/lint-install
+      - name: Install dependencies
+        run: |
+          make install-dev SYNC=""
       - name: Run mypy
         run: |
           make check-mypy

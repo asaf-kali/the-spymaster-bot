@@ -30,6 +30,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.10"
     - name: Set env vars
       run: |
           echo "AWS_ACCESS_KEY_ID=${{ inputs.aws_access_key_id }}" >> $GITHUB_ENV
