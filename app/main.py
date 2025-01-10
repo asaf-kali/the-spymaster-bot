@@ -16,24 +16,6 @@ def main():
     bot.poll()
 
 
-def example_event():
-    from lambda_handler import handle
-
-    telegram_update = {
-        "update_id": 617241338,
-        "message": {
-            "message_id": 2611,
-            "from": {"id": 1362351931, "is_bot": False, "first_name": "𝒦𝒶𝓁𝒾", "language_code": "en"},
-            "chat": {"id": 1362351931, "first_name": "𝒦𝒶𝓁𝒾", "type": "private"},
-            "date": 1655500031,
-            "text": "/start",
-            "entities": [{"offset": 0, "length": 6, "type": "bot_command"}],
-        },
-    }
-    event = {"body": json.dumps(telegram_update)}
-    handle(event)
-
-
 def example_warmup():
     from lambda_handler import handle
 
