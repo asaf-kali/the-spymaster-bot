@@ -253,11 +253,11 @@ class EventHandler:
         if _should_skip_turn(current_player_role=state.current_player_role, config=self.config):
             self.send_text(f"{team} operative has skipped the turn.")
             guess_request = GuessRequest(game_id=game_id, card_index=PASS_GUESS)
-            guess_response = self.api_client.guess(request=guess_request)
+            guess_response = self.api_client.classic.guess(request=guess_request)
             return guess_response.game_state
         solver = self.config.solver
         next_move_request = NextMoveRequest(game_id=game_id, solver=solver)
-        next_move_response = self.api_client.next_move(request=next_move_request)
+        next_move_response = self.api_client.classic.next_move(request=next_move_request)
         if next_move_response.given_clue:
             given_clue = next_move_response.given_clue
             text = f"{team} spymaster says '*{given_clue.word}*' with *{given_clue.card_amount}* card(s)."
@@ -287,7 +287,7 @@ class EventHandler:
 
     def _get_game_state(self, game_id: str) -> ClassicGameState:
         request = GetGameStateRequest(game_id=game_id)
-        return self.api_client.get_game_state(request=request).game_state
+        return self.api_client.classic.get_game_state(request=request).game_state
         # self.set_state(new_state=response.game_state)
 
     def on_error(self, error: Exception):
