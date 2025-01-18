@@ -10,17 +10,17 @@ readme = "README.md"
 [tool.poetry.dependencies]
 # Core
 python = "^3.12"
-codenames = "^5.4.2"
-the-spymaster-util = { version = "~3.2", extras = ["all"] }
-the-spymaster-api = "^3.0"
+codenames = "^5.4"
+the-spymaster-util = { version = "~4.0", extras = ["all"] }
+the-spymaster-api = "^3.1"
 # Telegram bot
 python-telegram-bot = "^13.11"
 # Models
 pydantic = "^2.10"
-pynamodb = "^5.4.1"
+pynamodb = "^5.4"
 # Utils
-requests = "^2.26.0"
-cachetools = "^4.2.2"
+requests = "^2.26"
+cachetools = "^4.2"
 urllib3 = "<2.0" # Specified due to telegram package issue
 # Monitor
 sentry-sdk = ">=2.8"

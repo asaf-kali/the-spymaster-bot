@@ -7,7 +7,7 @@ from bot.handlers.other.help import HelpMessageHandler
 from bot.models import COMMAND_TO_INDEX
 from codenames.classic.board import Board
 from the_spymaster_api.structs import GuessRequest
-from the_spymaster_api.structs.classic.responses import GuessResponse
+from the_spymaster_api.structs.classic.responses import ClassicGuessResponse
 from the_spymaster_util.logger import get_logger
 
 log = get_logger(__name__)
@@ -44,10 +44,10 @@ class ProcessMessageHandler(EventHandler):
             self.send_markdown(text)
         return self.fast_forward(response.game_state)
 
-    def _guess(self, card_index: int) -> GuessResponse:
+    def _guess(self, card_index: int) -> ClassicGuessResponse:
         assert self.game_id
         request = GuessRequest(game_id=self.game_id, card_index=card_index)
-        return self.api_client.guess(request)
+        return self.api_client.classic.guess(request)
 
 
 def _get_card_index(board: Board, text: str) -> int:

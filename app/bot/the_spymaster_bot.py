@@ -41,8 +41,8 @@ log = get_logger(__name__)
 
 
 class TheSpymasterBot:
-    def __init__(self, telegram_token: str, base_url: str, dynamo_persistence: bool = False):
-        self.api_client = TheSpymasterClient(base_url=base_url)
+    def __init__(self, telegram_token: str, server_host: str, dynamo_persistence: bool = False):
+        self.api_client = TheSpymasterClient(server_host=server_host)
         persistence = DynamoPersistence() if dynamo_persistence else DictPersistence()
         self.updater = Updater(token=telegram_token, persistence=persistence)
         self._construct_updater()

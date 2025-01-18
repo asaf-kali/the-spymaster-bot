@@ -105,32 +105,32 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.35.96"
+version = "1.36.2"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.35.96-py3-none-any.whl", hash = "sha256:e6acb2380791b13d8fd55062d9bbc6e27c3ddb3e73cff71c4ca02e6743780c67"},
-    {file = "boto3-1.35.96.tar.gz", hash = "sha256:bace02ef2181d176cedc1f8f90c95c301bb7c555db124cf80bc193cbb52a7c64"},
+    {file = "boto3-1.36.2-py3-none-any.whl", hash = "sha256:76cfc9a705be46e8d22607efacc8d688c064f923d785a01c00b28e9a96425d1a"},
+    {file = "boto3-1.36.2.tar.gz", hash = "sha256:fde1c29996b77274a60b7bc9f741525afa6267bb1716eb644a764fb7c124a0d2"},
 ]
 
 [package.dependencies]
-botocore = ">=1.35.96,<1.36.0"
+botocore = ">=1.36.2,<1.37.0"
 jmespath = ">=0.7.1,<2.0.0"
-s3transfer = ">=0.10.0,<0.11.0"
+s3transfer = ">=0.11.0,<0.12.0"
 
 [package.extras]
 crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.35.96"
+version = "1.36.2"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.35.96-py3-none-any.whl", hash = "sha256:b5f4cf11372aeccf87bb0b6148a020212c4c42fb5bcdebb6590bb10f6612b98e"},
-    {file = "botocore-1.35.96.tar.gz", hash = "sha256:385fd406ed14bdd624e082d3e15dd6575d490d5d7374fb02f0a798c3ca9ea802"},
+    {file = "botocore-1.36.2-py3-none-any.whl", hash = "sha256:bc3b7e3b573a48af2bd7116b80fe24f9a335b0b67314dcb2697a327d009abf29"},
+    {file = "botocore-1.36.2.tar.gz", hash = "sha256:a1fe6610983f0214b0c7655fe6990b6a731746baf305b182976fc7b568fc3cb0"},
 ]
 
 [package.dependencies]
@@ -139,7 +139,7 @@ python-dateutil = ">=2.1,<3.0.0"
 urllib3 = {version = ">=1.25.4,<2.2.0 || >2.2.0,<3", markers = "python_version >= \"3.10\""}
 
 [package.extras]
-crt = ["awscrt (==0.22.0)"]
+crt = ["awscrt (==0.23.4)"]
 
 [[package]]
 name = "cachetools"
@@ -291,13 +291,13 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "codenames"
-version = "5.5.1"
+version = "5.5.2"
 description = "Codenames board game logic implementation in python."
 optional = false
 python-versions = "<4.0,>=3.12"
 files = [
-    {file = "codenames-5.5.1-py3-none-any.whl", hash = "sha256:bc2f654b9e096653ed23d21167d7a15691553743bb3da5e63fb7d6ad12c19e3d"},
-    {file = "codenames-5.5.1.tar.gz", hash = "sha256:ef1e895b9d44fc7874802f6d90547508aef0e94b78f593f1516d72a3c6ad2e12"},
+    {file = "codenames-5.5.2-py3-none-any.whl", hash = "sha256:d9e76091eb45e3f97ec27580b27b17488d84f8aa7d16e5d3c2bdec6f72486959"},
+    {file = "codenames-5.5.2.tar.gz", hash = "sha256:8132f977343ff2c6753a3872a9277a1dd3da9946ef114c407183e1d5e3b59a52"},
 ]
 
 [package.dependencies]
@@ -973,57 +973,57 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "ruff"
-version = "0.9.0"
+version = "0.9.2"
 description = "An extremely fast Python linter and code formatter, written in Rust."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "ruff-0.9.0-py3-none-linux_armv6l.whl", hash = "sha256:949b3513f931741e006cf267bf89611edff04e1f012013424022add3ce78f319"},
-    {file = "ruff-0.9.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:99fbcb8c7fe94ae1e462ab2a1ef17cb20b25fb6438b9f198b1bcf5207a0a7916"},
-    {file = "ruff-0.9.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:0b022afd8eb0fcfce1e0adec84322abf4d6ce3cd285b3b99c4f17aae7decf749"},
-    {file = "ruff-0.9.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:336567ce92c9ca8ec62780d07b5fa11fbc881dc7bb40958f93a7d621e7ab4589"},
-    {file = "ruff-0.9.0-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:d338336c44bda602dc8e8766836ac0441e5b0dfeac3af1bd311a97ebaf087a75"},
-    {file = "ruff-0.9.0-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:d9b3ececf523d733e90b540e7afcc0494189e8999847f8855747acd5a9a8c45f"},
-    {file = "ruff-0.9.0-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:a11c0872a31232e473e2e0e2107f3d294dbadd2f83fb281c3eb1c22a24866924"},
-    {file = "ruff-0.9.0-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:b5fd06220c17a9cc0dc7fc6552f2ac4db74e8e8bff9c401d160ac59d00566f54"},
-    {file = "ruff-0.9.0-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:0457e775c74bf3976243f910805242b7dcd389e1d440deccbd1194ca17a5728c"},
-    {file = "ruff-0.9.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:05415599bbcb318f730ea1b46a39e4fbf71f6a63fdbfa1dda92efb55f19d7ecf"},
-    {file = "ruff-0.9.0-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:fbf9864b009e43cfc1c8bed1a6a4c529156913105780af4141ca4342148517f5"},
-    {file = "ruff-0.9.0-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:37b3da222b12e2bb2ce628e02586ab4846b1ed7f31f42a5a0683b213453b2d49"},
-    {file = "ruff-0.9.0-py3-none-musllinux_1_2_i686.whl", hash = "sha256:733c0fcf2eb0c90055100b4ed1af9c9d87305b901a8feb6a0451fa53ed88199d"},
-    {file = "ruff-0.9.0-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:8221a454bfe5ccdf8017512fd6bb60e6ec30f9ea252b8a80e5b73619f6c3cefd"},
-    {file = "ruff-0.9.0-py3-none-win32.whl", hash = "sha256:d345f2178afd192c7991ddee59155c58145e12ad81310b509bd2e25c5b0247b3"},
-    {file = "ruff-0.9.0-py3-none-win_amd64.whl", hash = "sha256:0cbc0905d94d21305872f7f8224e30f4bbcd532bc21b2225b2446d8fc7220d19"},
-    {file = "ruff-0.9.0-py3-none-win_arm64.whl", hash = "sha256:7b1148771c6ca88f820d761350a053a5794bc58e0867739ea93eb5e41ad978cd"},
-    {file = "ruff-0.9.0.tar.gz", hash = "sha256:143f68fa5560ecf10fc49878b73cee3eab98b777fcf43b0e62d43d42f5ef9d8b"},
+    {file = "ruff-0.9.2-py3-none-linux_armv6l.whl", hash = "sha256:80605a039ba1454d002b32139e4970becf84b5fee3a3c3bf1c2af6f61a784347"},
+    {file = "ruff-0.9.2-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:b9aab82bb20afd5f596527045c01e6ae25a718ff1784cb92947bff1f83068b00"},
+    {file = "ruff-0.9.2-py3-none-macosx_11_0_arm64.whl", hash = "sha256:fbd337bac1cfa96be615f6efcd4bc4d077edbc127ef30e2b8ba2a27e18c054d4"},
+    {file = "ruff-0.9.2-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:82b35259b0cbf8daa22a498018e300b9bb0174c2bbb7bcba593935158a78054d"},
+    {file = "ruff-0.9.2-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:8b6a9701d1e371bf41dca22015c3f89769da7576884d2add7317ec1ec8cb9c3c"},
+    {file = "ruff-0.9.2-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:9cc53e68b3c5ae41e8faf83a3b89f4a5d7b2cb666dff4b366bb86ed2a85b481f"},
+    {file = "ruff-0.9.2-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:8efd9da7a1ee314b910da155ca7e8953094a7c10d0c0a39bfde3fcfd2a015684"},
+    {file = "ruff-0.9.2-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:3292c5a22ea9a5f9a185e2d131dc7f98f8534a32fb6d2ee7b9944569239c648d"},
+    {file = "ruff-0.9.2-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:1a605fdcf6e8b2d39f9436d343d1f0ff70c365a1e681546de0104bef81ce88df"},
+    {file = "ruff-0.9.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c547f7f256aa366834829a08375c297fa63386cbe5f1459efaf174086b564247"},
+    {file = "ruff-0.9.2-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:d18bba3d3353ed916e882521bc3e0af403949dbada344c20c16ea78f47af965e"},
+    {file = "ruff-0.9.2-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:b338edc4610142355ccf6b87bd356729b62bf1bc152a2fad5b0c7dc04af77bfe"},
+    {file = "ruff-0.9.2-py3-none-musllinux_1_2_i686.whl", hash = "sha256:492a5e44ad9b22a0ea98cf72e40305cbdaf27fac0d927f8bc9e1df316dcc96eb"},
+    {file = "ruff-0.9.2-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:af1e9e9fe7b1f767264d26b1075ac4ad831c7db976911fa362d09b2d0356426a"},
+    {file = "ruff-0.9.2-py3-none-win32.whl", hash = "sha256:71cbe22e178c5da20e1514e1e01029c73dc09288a8028a5d3446e6bba87a5145"},
+    {file = "ruff-0.9.2-py3-none-win_amd64.whl", hash = "sha256:c5e1d6abc798419cf46eed03f54f2e0c3adb1ad4b801119dedf23fcaf69b55b5"},
+    {file = "ruff-0.9.2-py3-none-win_arm64.whl", hash = "sha256:a1b63fa24149918f8b37cef2ee6fff81f24f0d74b6f0bdc37bc3e1f2143e41c6"},
+    {file = "ruff-0.9.2.tar.gz", hash = "sha256:b5eceb334d55fae5f316f783437392642ae18e16dcf4f1858d55d3c2a0f8f5d0"},
 ]
 
 [[package]]
 name = "s3transfer"
-version = "0.10.4"
+version = "0.11.1"
 description = "An Amazon S3 Transfer Manager"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "s3transfer-0.10.4-py3-none-any.whl", hash = "sha256:244a76a24355363a68164241438de1b72f8781664920260c48465896b712a41e"},
-    {file = "s3transfer-0.10.4.tar.gz", hash = "sha256:29edc09801743c21eb5ecbc617a152df41d3c287f67b615f73e5f750583666a7"},
+    {file = "s3transfer-0.11.1-py3-none-any.whl", hash = "sha256:8fa0aa48177be1f3425176dfe1ab85dcd3d962df603c3dbfc585e6bf857ef0ff"},
+    {file = "s3transfer-0.11.1.tar.gz", hash = "sha256:3f25c900a367c8b7f7d8f9c34edc87e300bde424f779dc9f0a8ae4f9df9264f6"},
 ]
 
 [package.dependencies]
-botocore = ">=1.33.2,<2.0a.0"
+botocore = ">=1.36.0,<2.0a.0"
 
 [package.extras]
-crt = ["botocore[crt] (>=1.33.2,<2.0a.0)"]
+crt = ["botocore[crt] (>=1.36.0,<2.0a.0)"]
 
 [[package]]
 name = "sentry-sdk"
-version = "2.19.2"
+version = "2.20.0"
 description = "Python client for Sentry (https://sentry.io)"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "sentry_sdk-2.19.2-py2.py3-none-any.whl", hash = "sha256:ebdc08228b4d131128e568d696c210d846e5b9d70aa0327dec6b1272d9d40b84"},
-    {file = "sentry_sdk-2.19.2.tar.gz", hash = "sha256:467df6e126ba242d39952375dd816fbee0f217d119bf454a8ce74cf1e7909e8d"},
+    {file = "sentry_sdk-2.20.0-py2.py3-none-any.whl", hash = "sha256:c359a1edf950eb5e80cffd7d9111f3dbeef57994cb4415df37d39fda2cf22364"},
+    {file = "sentry_sdk-2.20.0.tar.gz", hash = "sha256:afa82713a92facf847df3c6f63cec71eb488d826a50965def3d7722aa6f0fdab"},
 ]
 
 [package.dependencies]
@@ -1068,6 +1068,7 @@ sqlalchemy = ["sqlalchemy (>=1.2)"]
 starlette = ["starlette (>=0.19.1)"]
 starlite = ["starlite (>=1.48)"]
 tornado = ["tornado (>=6)"]
+unleash = ["UnleashClient (>=6.0.1)"]
 
 [[package]]
 name = "setuptools"
@@ -1102,13 +1103,13 @@ files = [
 
 [[package]]
 name = "the-spymaster-api"
-version = "3.0.5"
+version = "3.1.1"
 description = "Python client implementation for The Spymaster HTTP backend."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "the_spymaster_api-3.0.5-py3-none-any.whl", hash = "sha256:813c02f30a35b0fd50285514bb260bd379630dc50c65ae5e99c369975e649b77"},
-    {file = "the_spymaster_api-3.0.5.tar.gz", hash = "sha256:126eb943031eb7e8c954677a0e91ee469d79b03eabe8e6076485be4cebf2d7c2"},
+    {file = "the_spymaster_api-3.1.1-py3-none-any.whl", hash = "sha256:cbe333d897fe7516d82036218ec84d999364b769cbaa8fe1af577dc46b19a985"},
+    {file = "the_spymaster_api-3.1.1.tar.gz", hash = "sha256:281ac4181e4a276a884877cd9ed3ebbad3a21e9191a53380dc54c915c5d2b544"},
 ]
 
 [package.dependencies]
@@ -1116,46 +1117,46 @@ codenames = ">=5.4,<6.0"
 pydantic = ">=2.0,<3.0"
 requests = ">=2.28,<3.0"
 the-spymaster-solvers-api = ">=3.0,<4.0"
-the-spymaster-util = {version = ">=3.2,<4.0", extras = ["clients"]}
+the-spymaster-util = {version = ">=4.0,<5.0", extras = ["clients"]}
 
 [[package]]
 name = "the-spymaster-solvers-api"
-version = "3.0.3"
+version = "3.1.0"
 description = "Python client implementation for The Spymaster Solvers HTTP backend."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "the_spymaster_solvers_api-3.0.3-py3-none-any.whl", hash = "sha256:adf1e17c5e2e7fd28cc548fd6837f1cb19fd0eb6dc6fd156f803b372efad3b38"},
-    {file = "the_spymaster_solvers_api-3.0.3.tar.gz", hash = "sha256:e1fd5959783e6f00596c5f0a5c01d47ac909bb57b053583bb8df5777e6587c33"},
+    {file = "the_spymaster_solvers_api-3.1.0-py3-none-any.whl", hash = "sha256:91fb3425c278e8c019f8d05ad781c6f335406e83c93bd3d331324cc1387a5608"},
+    {file = "the_spymaster_solvers_api-3.1.0.tar.gz", hash = "sha256:8513eec95489cf39999895d64a83ddbfa229d9f192e41305efd1784a03d82c2d"},
 ]
 
 [package.dependencies]
 codenames = ">=5.4,<6.0"
 pydantic = ">=2.8,<3.0"
 requests = ">=2.28,<3.0"
-the-spymaster-util = {version = ">=3.2,<4.0", extras = ["clients"]}
+the-spymaster-util = {version = ">=4.0,<5.0", extras = ["clients"]}
 
 [[package]]
 name = "the-spymaster-util"
-version = "3.2.4"
+version = "4.0.0"
 description = "Common utilities and infra for The Spymaster game."
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "the_spymaster_util-3.2.4-py3-none-any.whl", hash = "sha256:d5b65c998113a48a2670b185efa58d53e0f39718ed52935cb79f1d78db721506"},
-    {file = "the_spymaster_util-3.2.4.tar.gz", hash = "sha256:1c6576ac296ba09d0a5aca4e7b83cde8dea9bcdbb30dd5542570012f440dd99b"},
+    {file = "the_spymaster_util-4.0.0-py3-none-any.whl", hash = "sha256:87c8bec578cc1482815f3b329a94eb17ffe3175d5325e52a5584c4b30921a429"},
+    {file = "the_spymaster_util-4.0.0.tar.gz", hash = "sha256:e2dd3ca83bc838c896ad702fea4adc2fb47c6fe00549dcc8c4782ceaa1910e1e"},
 ]
 
 [package.dependencies]
-boto3 = {version = ">=1.24.6,<2.0.0", optional = true, markers = "extra == \"config\" or extra == \"all\""}
+boto3 = {version = ">=1.24,<2.0", optional = true, markers = "extra == \"config\" or extra == \"all\""}
 dynaconf = {version = ">=3.1,<4.0", optional = true, markers = "extra == \"config\" or extra == \"all\""}
-requests = {version = ">=2.28,<3.0", optional = true, markers = "extra == \"clients\" or extra == \"all\""}
+requests = {version = ">=2.32,<3.0", optional = true, markers = "extra == \"clients\" or extra == \"all\""}
 ulid-py = {version = ">=1.1,<2.0", optional = true, markers = "extra == \"logging\" or extra == \"all\""}
 
 [package.extras]
-all = ["boto3 (>=1.24.6,<2.0.0)", "dynaconf (>=3.1,<4.0)", "requests (>=2.28,<3.0)", "ulid-py (>=1.1,<2.0)"]
-clients = ["requests (>=2.28,<3.0)"]
-config = ["boto3 (>=1.24.6,<2.0.0)", "dynaconf (>=3.1,<4.0)"]
+all = ["boto3 (>=1.24,<2.0)", "dynaconf (>=3.1,<4.0)", "requests (>=2.32,<3.0)", "ulid-py (>=1.1,<2.0)"]
+clients = ["requests (>=2.32,<3.0)"]
+config = ["boto3 (>=1.24,<2.0)", "dynaconf (>=3.1,<4.0)"]
 logging = ["ulid-py (>=1.1,<2.0)"]
 
 [[package]]
@@ -1282,13 +1283,13 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "virtualenv"
-version = "20.28.1"
+version = "20.29.1"
 description = "Virtual Python Environment builder"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "virtualenv-20.28.1-py3-none-any.whl", hash = "sha256:412773c85d4dab0409b83ec36f7a6499e72eaf08c80e81e9576bca61831c71cb"},
-    {file = "virtualenv-20.28.1.tar.gz", hash = "sha256:5d34ab240fdb5d21549b76f9e8ff3af28252f5499fb6d6f031adac4e5a8c5329"},
+    {file = "virtualenv-20.29.1-py3-none-any.whl", hash = "sha256:4e4cb403c0b0da39e13b46b1b2476e505cb0046b25f242bee80f62bf990b2779"},
+    {file = "virtualenv-20.29.1.tar.gz", hash = "sha256:b8b8970138d32fb606192cb97f6cd4bb644fa486be9308fb9b63f81091b5dc35"},
 ]
 
 [package.dependencies]
@@ -1314,4 +1315,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "4c3566279a3f36ce1a259a392bebfab9f132b3510e8de2520b1e01363ee97203"
+content-hash = "a508ec96eaf51206c01445a34647905202121cf63fe659d5f236760caae0b31f"
