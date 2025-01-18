@@ -14,7 +14,7 @@ class StartEventHandler(EventHandler):
         game_config = self.config or GameConfig()
         language = SupportedLanguage(game_config.language)
         request = ClassicStartGameRequest(language=language, first_team=game_config.first_team)
-        response = self.api_client.classic.start_classic_game(request)
+        response = self.api_client.classic.start_game(request)
         log.update_context(game_id=response.game_id)
         log.debug("Game starting", extra={"game_id": response.game_id, "game_config": game_config.dict()})
         session = Session(game_id=response.game_id, config=game_config)
