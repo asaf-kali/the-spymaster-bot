@@ -222,7 +222,7 @@ class EventHandler:
         if not result:
             raise ValueError("Winner is not set, cannot send winner text.")
         winning_emoji = "🎉" if result.win else "😭"
-        status = "won" if result.win else "lose"
+        status = "won" if result.win else "lost"
         text = f"You {status}! {winning_emoji} {result.reason}"
         self.send_text(text, put_log=True)
 
