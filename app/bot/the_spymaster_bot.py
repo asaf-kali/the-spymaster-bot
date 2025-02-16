@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional, Type
+from typing import Any, Callable, Type
 
 from bot.handlers.custom.config_difficulty import ConfigDifficultyHandler
 from bot.handlers.custom.config_language import ConfigLanguageHandler
@@ -61,11 +61,11 @@ class TheSpymasterBot:
         parsed_update = self.parse_update(update)
         return self.dispatcher.process_update(parsed_update)
 
-    def handle_warmup(self) -> Dict[str, float]:
+    def handle_warmup(self) -> dict[str, float]:
         task_results = handle_warmup(self)
         return {task.name: task.duration for task in task_results}
 
-    def parse_update(self, update: dict) -> Optional[Update]:
+    def parse_update(self, update: dict) -> Update | None:
         return Update.de_json(update, bot=self.updater.bot)  # type: ignore
 
     def _construct_updater(self):

@@ -1,6 +1,5 @@
 import logging
 from logging.config import dictConfig
-from typing import List, Optional
 
 from the_spymaster_util.config import LazyConfig
 from the_spymaster_util.logger import get_dict_config, get_logger
@@ -9,7 +8,7 @@ log = logging.getLogger(__name__)
 
 
 class Config(LazyConfig):
-    def load(self, extra_files: Optional[List[str]] = None):
+    def load(self, extra_files: list[str] | None = None):
         super().load(extra_files)
         parameters = [f"{self.service_prefix}-telegram-token", f"{self.service_prefix}-sentry-dsn"]
         if self.should_load_ssm_parameters:
@@ -57,7 +56,7 @@ class Config(LazyConfig):
         return self.get("SHOULD_LOAD_SSM_PARAMETERS")
 
 
-def configure_logging(config: Optional[Config] = None):
+def configure_logging(config: Config | None = None):
     loggers = {
         "bot": {
             "handlers": ["console_out", "console_err"],

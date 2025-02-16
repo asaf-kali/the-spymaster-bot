@@ -1,6 +1,6 @@
 from collections import defaultdict
 from random import random
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Type
+from typing import TYPE_CHECKING, Any, Callable, Type
 
 import sentry_sdk
 from beautifultable import BeautifulTable
@@ -59,8 +59,8 @@ class EventHandler:
         bot: "TheSpymasterBot",
         update: Update,
         context: CallbackContext,
-        chat_id: Optional[int],
-        session: Optional[Session],
+        chat_id: int | None,
+        session: Session | None,
     ):
         self.bot = bot
         self.update = update
@@ -73,33 +73,33 @@ class EventHandler:
         return self.bot.api_client
 
     @property
-    def user(self) -> Optional[TelegramUser]:
+    def user(self) -> TelegramUser | None:
         return self.update.effective_user
 
     @property
-    def user_id(self) -> Optional[int]:
+    def user_id(self) -> int | None:
         return self.user.id if self.user else None
 
     @property
-    def username(self) -> Optional[str]:
+    def username(self) -> str | None:
         if not self.user:
             return None
         return self.user.username
 
     @property
-    def user_full_name(self) -> Optional[str]:
+    def user_full_name(self) -> str | None:
         if not self.user:
             return None
         return self.user.full_name
 
     @property
-    def game_id(self) -> Optional[str]:
+    def game_id(self) -> str | None:
         if not self.session:
             return None
         return self.session.game_id
 
     @property
-    def config(self) -> Optional[GameConfig]:
+    def config(self) -> GameConfig | None:
         if not self.session:
             return None
         return self.session.config
@@ -138,10 +138,10 @@ class EventHandler:
 
         return callback
 
-    def set_session(self, session: Optional[Session]) -> Optional[Session]:
+    def set_session(self, session: Session | None) -> Session | None:
         if not self.chat_id:
             raise NoneValueError("chat_id is not set, cannot set session.")
-        chat_data = session.dict() if session else None
+        chat_data = session.model_dump() if session else None
         self.session = session
         self.bot.dispatcher.chat_data[self.chat_id] = chat_data
         return session
@@ -207,7 +207,7 @@ class EventHandler:
             return None
         return BotState.PLAYING
 
-    def remove_keyboard(self, last_keyboard_message_id: Optional[int]):
+    def remove_keyboard(self, last_keyboard_message_id: int | None):
         if last_keyboard_message_id is None:
             return
         log.debug("Removing keyboard")
@@ -274,7 +274,7 @@ class EventHandler:
         text = f"{BLUE_EMOJI}  *{score.blue.unrevealed}*  remaining card(s)  *{score.red.unrevealed}*  {RED_EMOJI}"
         self.send_markdown(text)
 
-    def send_board(self, state: ClassicGameState, message: Optional[str] = None):
+    def send_board(self, state: ClassicGameState, message: str | None = None):
         board_to_send = state.board if state.is_game_over else state.board.censored
         table = board_to_send.as_table
         keyboard = build_board_keyboard(table, is_game_over=state.is_game_over)
@@ -382,8 +382,8 @@ Click on any card to fix it. When you are done, click /done."""
         self.update_session(last_keyboard_message_id=text.message_id)
 
 
-def _get_color_stats(board: ClassicBoard) -> Dict[ClassicColor | None, int]:
-    stats: Dict[ClassicColor | None, int] = defaultdict(int)
+def _get_color_stats(board: ClassicBoard) -> dict[ClassicColor | None, int]:
+    stats: dict[ClassicColor | None, int] = defaultdict(int)
     for card in board.cards:
         stats[card.color] += 1
     stats = dict(sorted(stats.items(), key=lambda item: item[1], reverse=True))

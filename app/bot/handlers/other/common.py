@@ -1,5 +1,3 @@
-from typing import List
-
 import sentry_sdk
 from codenames.classic.state import ClassicGameState
 from codenames.classic.team import ClassicTeam
@@ -23,7 +21,7 @@ def get_given_guess_result_message_text(given_guess: GivenGuess) -> str:
     return f"ClassicCard '*{card.word}*' is {card.color.emoji}, {result}"
 
 
-def title_list(strings: List[str]) -> List[str]:
+def title_list(strings: list[str]) -> list[str]:
     return [s.title() for s in strings]
 
 

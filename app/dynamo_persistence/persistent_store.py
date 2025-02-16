@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional, Tuple
+from typing import Any
 
 from dynamo_persistence.persistent_item import PersistentItem
 from pynamodb.exceptions import DoesNotExist as PynamoDoesNotExist
@@ -7,7 +7,7 @@ from the_spymaster_util.measure_time import MeasureTime
 
 log = logging.getLogger(__name__)
 
-ConversationKey = Tuple[int, ...]
+ConversationKey = tuple[int, ...]
 
 SEC_TO_MS = 1000
 
@@ -47,7 +47,7 @@ class DynamoPersistentStore:
     def clear_cache(self):
         self._cache.clear()
 
-    def _read(self, key: Any) -> Optional[Any]:
+    def _read(self, key: Any) -> Any | None:
         item_id = self.get_item_id(key=key)
         log.debug("Reading from Dynamo", extra={"item_id": item_id})
         with MeasureTime() as mt:

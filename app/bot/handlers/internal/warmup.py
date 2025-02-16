@@ -3,7 +3,7 @@ import time
 from concurrent.futures.thread import ThreadPoolExecutor
 from dataclasses import dataclass
 from functools import wraps
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING
 
 import requests
 from bot.config import get_config
@@ -24,7 +24,7 @@ class WarmupTaskResult:
     duration: float
 
 
-WarmupResult = Dict[str, str]
+WarmupResult = dict[str, str]
 
 
 class WarmupHandler(EventHandler):
@@ -36,14 +36,14 @@ class WarmupHandler(EventHandler):
         results = handle_warmup(self.bot)
         self._send_results(results)
 
-    def _send_results(self, results: List[WarmupTaskResult]):
+    def _send_results(self, results: list[WarmupTaskResult]):
         message = "Warmup complete. Results:\n"
         for result in results:
             message += f"\n🐇 *{result.name}*: {result.message} in `{result.duration}` sec"
         self.send_markdown(message)
 
 
-def handle_warmup(bot: "TheSpymasterBot") -> List[WarmupTaskResult]:
+def handle_warmup(bot: "TheSpymasterBot") -> list[WarmupTaskResult]:
     worker = ThreadPoolExecutor(max_workers=5)
     tasks = [
         worker.submit(load_solvers_models, bot),
@@ -82,7 +82,7 @@ def load_parser_languages(bot: "TheSpymasterBot") -> str:
     return f"Loaded `{len(languages)}` languages"
 
 
-def _send_load_languages_request() -> List[str]:
+def _send_load_languages_request() -> list[str]:
     env_config = get_config()
     url = f"{env_config.base_parser_url}/load-languages"
     payload = {"languages": ["heb", "eng"]}
