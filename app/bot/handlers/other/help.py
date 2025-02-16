@@ -17,7 +17,7 @@ In development: 👨🏻‍💻
 How to play:
 You are the blue operative. The bot will play all other roles. \
 When the blue spymaster sends a hint, you can reply with a card index (1-25), \
-or just click the word on the keyboard. \
-Use '-pass' and '-quit' to pass the turn and quit the game.
+or just click the word on the keyboard. \n\
+Use `-pass` and `-quit` to pass the turn and quit the game.
 """
         self.send_markdown(text)

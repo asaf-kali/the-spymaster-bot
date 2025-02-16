@@ -11,6 +11,7 @@ from bot.handlers.other.common import (
 )
 from bot.models import (
     COMMAND_TO_INDEX,
+    GAME_RESULT_TO_EMOJI,
     BadMessageError,
     BotState,
     GameConfig,
@@ -214,16 +215,17 @@ class EventHandler:
         self.update_session(last_keyboard_message_id=None)
 
     def send_game_summary(self, state: MiniGameState):
-        self._send_spymasters_intents(state=state)
         self._send_winner_text(state=state)
+        self._send_spymasters_intents(state=state)
 
     def _send_winner_text(self, state: MiniGameState):
         result = state.game_result
         if not result:
             raise ValueError("Winner is not set, cannot send winner text.")
         winning_emoji = "🎉" if result.win else "😭"
+        reason_emoji = GAME_RESULT_TO_EMOJI.get(result)
         status = "won" if result.win else "lost"
-        text = f"You {status}! {winning_emoji} {result.reason}"
+        text = f"You {status}! {winning_emoji}\n{result.reason} {reason_emoji}"
         self.send_text(text, put_log=True)
 
     def _send_spymasters_intents(self, state: MiniGameState):
@@ -232,7 +234,7 @@ class EventHandler:
             return
         intent_strings = [_clue_intent_string(clue) for clue in relevant_clues]
         intent_string = "\n".join(intent_strings)
-        text = f"Spymasters intents were:\n{intent_string}\n"
+        text = f"The Spymaster's intents were:\n{intent_string}\n"
         self.send_markdown(text)
 
     def _next_move(self, state: MiniGameState) -> MiniGameState:
@@ -242,10 +244,10 @@ class EventHandler:
         game_id = self.game_id
         assert game_id
         if state.current_player_role == PlayerRole.SPYMASTER:
-            self.send_score(state=state)
-            self.send_text(f"{team} spymaster is thinking... 🤔")
+            # self.send_score(state=state)
+            self.send_text("The Spymaster is thinking... 🤔")
         if _should_skip_turn(current_player_role=state.current_player_role, config=self.config):
-            self.send_text(f"{team} operative has skipped the turn.")
+            self.send_text("You skipped the turn.")
             guess_request = GuessRequest(game_id=game_id, card_index=PASS_GUESS)
             guess_response = self.api_client.mini.guess(request=guess_request)
             return guess_response.game_state
@@ -254,7 +256,7 @@ class EventHandler:
         next_move_response = self.api_client.mini.next_move(request=next_move_request)
         if next_move_response.given_clue:
             given_clue = next_move_response.given_clue
-            text = f"{team} spymaster says '*{given_clue.word}*' with *{given_clue.card_amount}* card(s)."
+            text = f"The Spymaster says '*{given_clue.word}*' with *{given_clue.card_amount}* card(s)."
             self.send_markdown(text, put_log=True)
         if next_move_response.given_guess:
             text = f"{team} operative: " + get_given_guess_result_message_text(
@@ -274,7 +276,11 @@ class EventHandler:
         keyboard = build_board_keyboard(table, is_game_over=state.is_game_over)
         if message is None:
             message = "Game over!" if state.is_game_over else "Pick your guess!"
-        message += f"\nTurns left: *{state.timer_tokens}*\nMistakes left: *{state.allowed_mistakes}*"
+        message += (
+            f"\n❓️ Remaining cards: *{state.score.main.unrevealed}*"
+            f"\n⏳️ Turns left: *{state.timer_tokens}*"
+            f"\n💥 Mistakes left: *{state.allowed_mistakes}*"
+        )
         # if state.left_guesses == 1:
         #     message += " (bonus round)"
         text = self.send_markdown(message, reply_markup=keyboard)

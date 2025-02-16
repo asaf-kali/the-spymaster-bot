@@ -3,6 +3,13 @@ from enum import IntEnum
 from codenames.classic.color import ClassicColor
 from codenames.classic.winner import WinningReason
 from codenames.duet.card import DuetColor
+from codenames.duet.score import (
+    ASSASSIN_HIT,
+    GAME_QUIT,
+    MISTAKE_LIMIT_REACHED,
+    TARGET_REACHED,
+    TIMER_TOKENS_DEPLETED,
+)
 from codenames.generic.move import PASS_GUESS, QUIT_GAME
 from pydantic import BaseModel
 from the_spymaster_solvers_api.structs import APIModelIdentifier, Difficulty, Solver
@@ -14,6 +21,13 @@ WIN_REASON_TO_EMOJI = {
     WinningReason.TARGET_SCORE_REACHED: "🤓",
     WinningReason.OPPONENT_HIT_ASSASSIN: "😵",
     WinningReason.OPPONENT_QUIT: "🥴",
+}
+GAME_RESULT_TO_EMOJI = {
+    TARGET_REACHED: "🤓",
+    ASSASSIN_HIT: "😵",
+    GAME_QUIT: "🥴",
+    TIMER_TOKENS_DEPLETED: "😴",
+    MISTAKE_LIMIT_REACHED: "💥",
 }
 COMMAND_TO_INDEX = {"-pass": PASS_GUESS, "-quit": QUIT_GAME}
 AVAILABLE_MODELS = [
