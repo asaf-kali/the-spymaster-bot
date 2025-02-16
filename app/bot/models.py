@@ -1,7 +1,6 @@
 from enum import IntEnum
 
 from codenames.classic.color import ClassicColor
-from codenames.classic.team import ClassicTeam
 from codenames.classic.winner import WinningReason
 from codenames.duet.card import DuetColor
 from codenames.generic.move import PASS_GUESS, QUIT_GAME
@@ -56,7 +55,6 @@ class GameConfig(BaseModel):  # Move to backend api?
     difficulty: Difficulty = Difficulty.EASY
     solver: Solver = Solver.NAIVE
     model_identifier: APIModelIdentifier | None = None
-    first_team: ClassicTeam | None = ClassicTeam.BLUE
 
     class Config:
         frozen = True
@@ -64,7 +62,7 @@ class GameConfig(BaseModel):  # Move to backend api?
 
 class ParsingState(BaseModel):
     language: str | None = None
-    card_colors: list[ClassicColor] | None = None
+    card_colors: list[DuetColor] | None = None
     words: list[str] | None = None
     fix_index: int | None = None
 

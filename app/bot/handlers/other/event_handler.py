@@ -7,26 +7,22 @@ from beautifultable import BeautifulTable
 from bot.handlers.other.common import (
     enrich_sentry_context,
     get_given_guess_result_message_text,
-    is_blue_operative_turn,
+    is_operative_turn,
 )
 from bot.models import (
-    BLUE_EMOJI,
     COMMAND_TO_INDEX,
-    RED_EMOJI,
-    WIN_REASON_TO_EMOJI,
     BadMessageError,
     BotState,
     GameConfig,
     ParsingState,
     Session,
 )
-from codenames.classic.board import ClassicBoard
-from codenames.classic.color import ClassicColor
-from codenames.classic.state import ClassicGameState
-from codenames.classic.team import ClassicTeam
-from codenames.classic.types import ClassicCard
+from codenames.duet.board import DuetBoard
+from codenames.duet.card import DuetColor
+from codenames.duet.types import DuetCard
 from codenames.generic.move import PASS_GUESS, Clue
 from codenames.generic.player import PlayerRole
+from codenames.mini.state import MiniGameState
 from requests import HTTPError
 from telegram import Message, ReplyKeyboardMarkup, Update
 from telegram import User as TelegramUser
@@ -152,7 +148,7 @@ class EventHandler:
     def update_session(self, **kwargs) -> Session:
         if self.session is None:
             raise NoneValueError("session is not set, cannot update session.")
-        new_session = self.session.copy(update=kwargs)
+        new_session = self.session.model_copy(update=kwargs)
         self.set_session(new_session)
         return new_session
 
@@ -160,14 +156,14 @@ class EventHandler:
         old_config = self.config
         if not old_config:
             raise NoneValueError("session is not set, cannot update game config.")
-        new_config = old_config.copy(update=kwargs)
+        new_config = old_config.model_copy(update=kwargs)
         return self.update_session(config=new_config)
 
     def update_parsing_state(self, **kwargs) -> ParsingState:
         old_parsing_state = self.parsing_state
         if not old_parsing_state:
             raise NoneValueError("parsing state is not set, cannot update parsing state.")
-        new_parsing_state = old_parsing_state.copy(update=kwargs)
+        new_parsing_state = old_parsing_state.model_copy(update=kwargs)
         self.update_session(parsing_state=new_parsing_state)
         return new_parsing_state
 
@@ -191,10 +187,10 @@ class EventHandler:
     def send_markdown(self, text: str, **kwargs) -> Message:
         return self.send_text(text=text, parse_mode="Markdown", **kwargs)
 
-    def fast_forward(self, state: ClassicGameState):
+    def fast_forward(self, state: MiniGameState):
         if not state:
             raise NoneValueError("state is not set, cannot fast forward.")
-        while not state.is_game_over and not is_blue_operative_turn(state=state):
+        while not state.is_game_over and not is_operative_turn(state=state):
             state = self._next_move(state=state)
         self.send_board(state=state)
         if state.is_game_over:
@@ -217,22 +213,20 @@ class EventHandler:
             pass
         self.update_session(last_keyboard_message_id=None)
 
-    def send_game_summary(self, state: ClassicGameState):
+    def send_game_summary(self, state: MiniGameState):
         self._send_spymasters_intents(state=state)
         self._send_winner_text(state=state)
 
-    def _send_winner_text(self, state: ClassicGameState):
-        winner = state.winner
-        if not winner:
+    def _send_winner_text(self, state: MiniGameState):
+        result = state.game_result
+        if not result:
             raise ValueError("Winner is not set, cannot send winner text.")
-        player_won = winner.team == ClassicTeam.BLUE
-        winning_emoji = "🎉" if player_won else "😭"
-        reason_emoji = WIN_REASON_TO_EMOJI[winner.reason]
-        status = "won" if player_won else "lose"
-        text = f"You {status}! {winning_emoji}\n{winner.team} team won: {winner.reason.value} {reason_emoji}"
+        winning_emoji = "🎉" if result.win else "😭"
+        status = "won" if result.win else "lose"
+        text = f"You {status}! {winning_emoji} {result.reason}"
         self.send_text(text, put_log=True)
 
-    def _send_spymasters_intents(self, state: ClassicGameState):
+    def _send_spymasters_intents(self, state: MiniGameState):
         relevant_clues = [clue for clue in state.clues if clue.for_words]
         if not relevant_clues:
             return
@@ -241,7 +235,7 @@ class EventHandler:
         text = f"Spymasters intents were:\n{intent_string}\n"
         self.send_markdown(text)
 
-    def _next_move(self, state: ClassicGameState) -> ClassicGameState:
+    def _next_move(self, state: MiniGameState) -> MiniGameState:
         if not state or not self.config:
             raise NoneValueError("state is not set, cannot run next move.")
         team = state.current_team.value.title()
@@ -253,11 +247,11 @@ class EventHandler:
         if _should_skip_turn(current_player_role=state.current_player_role, config=self.config):
             self.send_text(f"{team} operative has skipped the turn.")
             guess_request = GuessRequest(game_id=game_id, card_index=PASS_GUESS)
-            guess_response = self.api_client.classic.guess(request=guess_request)
+            guess_response = self.api_client.mini.guess(request=guess_request)
             return guess_response.game_state
         solver = self.config.solver
         next_move_request = NextMoveRequest(game_id=game_id, solver=solver)
-        next_move_response = self.api_client.classic.next_move(request=next_move_request)
+        next_move_response = self.api_client.mini.next_move(request=next_move_request)
         if next_move_response.given_clue:
             given_clue = next_move_response.given_clue
             text = f"{team} spymaster says '*{given_clue.word}*' with *{given_clue.card_amount}* card(s)."
@@ -269,25 +263,26 @@ class EventHandler:
             self.send_markdown(text)
         return next_move_response.game_state
 
-    def send_score(self, state: ClassicGameState):
-        score = state.score
-        text = f"{BLUE_EMOJI}  *{score.blue.unrevealed}*  remaining card(s)  *{score.red.unrevealed}*  {RED_EMOJI}"
+    def send_score(self, state: MiniGameState):
+        score = state.score.main
+        text = f"*{score.unrevealed}* remaining card(s)"
         self.send_markdown(text)
 
-    def send_board(self, state: ClassicGameState, message: str | None = None):
+    def send_board(self, state: MiniGameState, message: str | None = None):
         board_to_send = state.board if state.is_game_over else state.board.censored
         table = board_to_send.as_table
         keyboard = build_board_keyboard(table, is_game_over=state.is_game_over)
         if message is None:
             message = "Game over!" if state.is_game_over else "Pick your guess!"
-        if state.left_guesses == 1:
-            message += " (bonus round)"
+        message += f"\nTurns left: *{state.timer_tokens}*\nMistakes left: *{state.allowed_mistakes}*"
+        # if state.left_guesses == 1:
+        #     message += " (bonus round)"
         text = self.send_markdown(message, reply_markup=keyboard)
         self.update_session(last_keyboard_message_id=text.message_id)
 
-    def _get_game_state(self, game_id: str) -> ClassicGameState:
+    def _get_game_state(self, game_id: str) -> MiniGameState:
         request = GetGameStateRequest(game_id=game_id)
-        return self.api_client.classic.get_game_state(request=request).game_state
+        return self.api_client.mini.get_game_state(request=request).game_state
         # self.set_state(new_state=response.game_state)
 
     def on_error(self, error: Exception):
@@ -360,15 +355,15 @@ class EventHandler:
         self.send_text(f"🤬 {e.message}", put_log=True)
         return True
 
-    def parsed_board(self) -> ClassicBoard:
+    def parsed_board(self) -> DuetBoard:
         words = self.parsing_state.words
         card_colors = self.parsing_state.card_colors
         if not words or not card_colors or not self.parsing_state.language:
             raise NoneValueError("Words, card colors or language are not set.")
         if len(words) != len(card_colors):
             raise ValueError("Words and card colors have different lengths.")
-        cards = [ClassicCard(word=word, color=color) for word, color in zip(words, card_colors)]
-        return ClassicBoard(language=self.parsing_state.language, cards=cards)
+        cards = [DuetCard(word=word, color=color) for word, color in zip(words, card_colors)]
+        return DuetBoard(language=self.parsing_state.language, cards=cards)
 
     def send_parsing_state(self):
         parsed_board = self.parsed_board()
@@ -382,8 +377,8 @@ Click on any card to fix it. When you are done, click /done."""
         self.update_session(last_keyboard_message_id=text.message_id)
 
 
-def _get_color_stats(board: ClassicBoard) -> dict[ClassicColor | None, int]:
-    stats: dict[ClassicColor | None, int] = defaultdict(int)
+def _get_color_stats(board: DuetBoard) -> dict[DuetColor | None, int]:
+    stats: dict[DuetColor | None, int] = defaultdict(int)
     for card in board.cards:
         stats[card.color] += 1
     stats = dict(sorted(stats.items(), key=lambda item: item[1], reverse=True))
@@ -403,7 +398,7 @@ def build_board_keyboard(table: BeautifulTable, is_game_over: bool) -> ReplyKeyb
     for row in table.rows:
         row_keyboard = []
         for card in row:
-            card: ClassicCard  # type: ignore
+            card: DuetCard  # type: ignore[no-redef]
             if is_game_over:
                 content = f"{card.color.emoji} {card.word}"
             else:

@@ -1103,13 +1103,13 @@ files = [
 
 [[package]]
 name = "the-spymaster-api"
-version = "3.1.1"
+version = "3.2.1"
 description = "Python client implementation for The Spymaster HTTP backend."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "the_spymaster_api-3.1.1-py3-none-any.whl", hash = "sha256:cbe333d897fe7516d82036218ec84d999364b769cbaa8fe1af577dc46b19a985"},
-    {file = "the_spymaster_api-3.1.1.tar.gz", hash = "sha256:281ac4181e4a276a884877cd9ed3ebbad3a21e9191a53380dc54c915c5d2b544"},
+    {file = "the_spymaster_api-3.2.1-py3-none-any.whl", hash = "sha256:108a9a07adfc7c6cfcf1019388c8602d803eb890e37910047cfa89b2d325b41f"},
+    {file = "the_spymaster_api-3.2.1.tar.gz", hash = "sha256:4f5f291efd7656b8a32ed15a5f1d54fb52fb1dc35ec48601d693c03ced90a26b"},
 ]
 
 [package.dependencies]
@@ -1315,4 +1315,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "a508ec96eaf51206c01445a34647905202121cf63fe659d5f236760caae0b31f"
+content-hash = "a9f8add6b7b101a14f4d2b30b53a07580015515e9de65e60949981affd2e649e"
