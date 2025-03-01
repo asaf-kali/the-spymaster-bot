@@ -1,32 +1,29 @@
 from collections import defaultdict
 from random import random
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Type
+from typing import TYPE_CHECKING, Any, Callable, Type
 
 import sentry_sdk
 from beautifultable import BeautifulTable
 from bot.handlers.other.common import (
     enrich_sentry_context,
     get_given_guess_result_message_text,
-    is_blue_operative_turn,
+    is_operative_turn,
 )
 from bot.models import (
-    BLUE_EMOJI,
     COMMAND_TO_INDEX,
-    RED_EMOJI,
-    WIN_REASON_TO_EMOJI,
+    GAME_RESULT_TO_EMOJI,
     BadMessageError,
     BotState,
     GameConfig,
     ParsingState,
     Session,
 )
-from codenames.classic.board import ClassicBoard
-from codenames.classic.color import ClassicColor
-from codenames.classic.state import ClassicGameState
-from codenames.classic.team import ClassicTeam
-from codenames.classic.types import ClassicCard
+from codenames.duet.board import DuetBoard
+from codenames.duet.card import DuetColor
+from codenames.duet.types import DuetCard
 from codenames.generic.move import PASS_GUESS, Clue
 from codenames.generic.player import PlayerRole
+from codenames.mini.state import MiniGameState
 from requests import HTTPError
 from telegram import Message, ReplyKeyboardMarkup, Update
 from telegram import User as TelegramUser
@@ -59,8 +56,8 @@ class EventHandler:
         bot: "TheSpymasterBot",
         update: Update,
         context: CallbackContext,
-        chat_id: Optional[int],
-        session: Optional[Session],
+        chat_id: int | None,
+        session: Session | None,
     ):
         self.bot = bot
         self.update = update
@@ -73,33 +70,33 @@ class EventHandler:
         return self.bot.api_client
 
     @property
-    def user(self) -> Optional[TelegramUser]:
+    def user(self) -> TelegramUser | None:
         return self.update.effective_user
 
     @property
-    def user_id(self) -> Optional[int]:
+    def user_id(self) -> int | None:
         return self.user.id if self.user else None
 
     @property
-    def username(self) -> Optional[str]:
+    def username(self) -> str | None:
         if not self.user:
             return None
         return self.user.username
 
     @property
-    def user_full_name(self) -> Optional[str]:
+    def user_full_name(self) -> str | None:
         if not self.user:
             return None
         return self.user.full_name
 
     @property
-    def game_id(self) -> Optional[str]:
+    def game_id(self) -> str | None:
         if not self.session:
             return None
         return self.session.game_id
 
     @property
-    def config(self) -> Optional[GameConfig]:
+    def config(self) -> GameConfig | None:
         if not self.session:
             return None
         return self.session.config
@@ -138,10 +135,10 @@ class EventHandler:
 
         return callback
 
-    def set_session(self, session: Optional[Session]) -> Optional[Session]:
+    def set_session(self, session: Session | None) -> Session | None:
         if not self.chat_id:
             raise NoneValueError("chat_id is not set, cannot set session.")
-        chat_data = session.dict() if session else None
+        chat_data = session.model_dump() if session else None
         self.session = session
         self.bot.dispatcher.chat_data[self.chat_id] = chat_data
         return session
@@ -152,7 +149,7 @@ class EventHandler:
     def update_session(self, **kwargs) -> Session:
         if self.session is None:
             raise NoneValueError("session is not set, cannot update session.")
-        new_session = self.session.copy(update=kwargs)
+        new_session = self.session.model_copy(update=kwargs)
         self.set_session(new_session)
         return new_session
 
@@ -160,14 +157,14 @@ class EventHandler:
         old_config = self.config
         if not old_config:
             raise NoneValueError("session is not set, cannot update game config.")
-        new_config = old_config.copy(update=kwargs)
+        new_config = old_config.model_copy(update=kwargs)
         return self.update_session(config=new_config)
 
     def update_parsing_state(self, **kwargs) -> ParsingState:
         old_parsing_state = self.parsing_state
         if not old_parsing_state:
             raise NoneValueError("parsing state is not set, cannot update parsing state.")
-        new_parsing_state = old_parsing_state.copy(update=kwargs)
+        new_parsing_state = old_parsing_state.model_copy(update=kwargs)
         self.update_session(parsing_state=new_parsing_state)
         return new_parsing_state
 
@@ -191,10 +188,10 @@ class EventHandler:
     def send_markdown(self, text: str, **kwargs) -> Message:
         return self.send_text(text=text, parse_mode="Markdown", **kwargs)
 
-    def fast_forward(self, state: ClassicGameState):
+    def fast_forward(self, state: MiniGameState):
         if not state:
             raise NoneValueError("state is not set, cannot fast forward.")
-        while not state.is_game_over and not is_blue_operative_turn(state=state):
+        while not state.is_game_over and not is_operative_turn(state=state):
             state = self._next_move(state=state)
         self.send_board(state=state)
         if state.is_game_over:
@@ -207,7 +204,7 @@ class EventHandler:
             return None
         return BotState.PLAYING
 
-    def remove_keyboard(self, last_keyboard_message_id: Optional[int]):
+    def remove_keyboard(self, last_keyboard_message_id: int | None):
         if last_keyboard_message_id is None:
             return
         log.debug("Removing keyboard")
@@ -217,50 +214,49 @@ class EventHandler:
             pass
         self.update_session(last_keyboard_message_id=None)
 
-    def send_game_summary(self, state: ClassicGameState):
+    def send_game_summary(self, state: MiniGameState):
+        self._send_result_text(state=state)
         self._send_spymasters_intents(state=state)
-        self._send_winner_text(state=state)
 
-    def _send_winner_text(self, state: ClassicGameState):
-        winner = state.winner
-        if not winner:
+    def _send_result_text(self, state: MiniGameState):
+        result = state.game_result
+        if not result:
             raise ValueError("Winner is not set, cannot send winner text.")
-        player_won = winner.team == ClassicTeam.BLUE
-        winning_emoji = "🎉" if player_won else "😭"
-        reason_emoji = WIN_REASON_TO_EMOJI[winner.reason]
-        status = "won" if player_won else "lose"
-        text = f"You {status}! {winning_emoji}\n{winner.team} team won: {winner.reason.value} {reason_emoji}"
+        winning_emoji = "🎉" if result.win else "😭"
+        reason_emoji = GAME_RESULT_TO_EMOJI.get(result)
+        status = "won" if result.win else "lost"
+        text = f"You {status}! {winning_emoji}\n{result.reason} {reason_emoji}"
         self.send_text(text, put_log=True)
 
-    def _send_spymasters_intents(self, state: ClassicGameState):
+    def _send_spymasters_intents(self, state: MiniGameState):
         relevant_clues = [clue for clue in state.clues if clue.for_words]
         if not relevant_clues:
             return
         intent_strings = [_clue_intent_string(clue) for clue in relevant_clues]
         intent_string = "\n".join(intent_strings)
-        text = f"Spymasters intents were:\n{intent_string}\n"
+        text = f"The Spymaster's intents were:\n{intent_string}\n"
         self.send_markdown(text)
 
-    def _next_move(self, state: ClassicGameState) -> ClassicGameState:
+    def _next_move(self, state: MiniGameState) -> MiniGameState:
         if not state or not self.config:
             raise NoneValueError("state is not set, cannot run next move.")
         team = state.current_team.value.title()
         game_id = self.game_id
         assert game_id
         if state.current_player_role == PlayerRole.SPYMASTER:
-            self.send_score(state=state)
-            self.send_text(f"{team} spymaster is thinking... 🤔")
+            # self.send_score(state=state)
+            self.send_text("The Spymaster is thinking... 🤔")
         if _should_skip_turn(current_player_role=state.current_player_role, config=self.config):
-            self.send_text(f"{team} operative has skipped the turn.")
+            self.send_text("You skipped the turn.")
             guess_request = GuessRequest(game_id=game_id, card_index=PASS_GUESS)
-            guess_response = self.api_client.classic.guess(request=guess_request)
+            guess_response = self.api_client.mini.guess(request=guess_request)
             return guess_response.game_state
         solver = self.config.solver
         next_move_request = NextMoveRequest(game_id=game_id, solver=solver)
-        next_move_response = self.api_client.classic.next_move(request=next_move_request)
+        next_move_response = self.api_client.mini.next_move(request=next_move_request)
         if next_move_response.given_clue:
             given_clue = next_move_response.given_clue
-            text = f"{team} spymaster says '*{given_clue.word}*' with *{given_clue.card_amount}* card(s)."
+            text = f"The Spymaster says '*{given_clue.word}*' with *{given_clue.card_amount}* card(s)."
             self.send_markdown(text, put_log=True)
         if next_move_response.given_guess:
             text = f"{team} operative: " + get_given_guess_result_message_text(
@@ -269,25 +265,22 @@ class EventHandler:
             self.send_markdown(text)
         return next_move_response.game_state
 
-    def send_score(self, state: ClassicGameState):
-        score = state.score
-        text = f"{BLUE_EMOJI}  *{score.blue.unrevealed}*  remaining card(s)  *{score.red.unrevealed}*  {RED_EMOJI}"
+    def send_score(self, state: MiniGameState):
+        score = state.score.main
+        text = f"*{score.unrevealed}* remaining card(s)"
         self.send_markdown(text)
 
-    def send_board(self, state: ClassicGameState, message: Optional[str] = None):
+    def send_board(self, state: MiniGameState, message: str | None = None):
         board_to_send = state.board if state.is_game_over else state.board.censored
         table = board_to_send.as_table
         keyboard = build_board_keyboard(table, is_game_over=state.is_game_over)
-        if message is None:
-            message = "Game over!" if state.is_game_over else "Pick your guess!"
-        if state.left_guesses == 1:
-            message += " (bonus round)"
-        text = self.send_markdown(message, reply_markup=keyboard)
+        full_message = _build_full_message(state=state, message=message)
+        text = self.send_markdown(full_message, reply_markup=keyboard)
         self.update_session(last_keyboard_message_id=text.message_id)
 
-    def _get_game_state(self, game_id: str) -> ClassicGameState:
+    def _get_game_state(self, game_id: str) -> MiniGameState:
         request = GetGameStateRequest(game_id=game_id)
-        return self.api_client.classic.get_game_state(request=request).game_state
+        return self.api_client.mini.get_game_state(request=request).game_state
         # self.set_state(new_state=response.game_state)
 
     def on_error(self, error: Exception):
@@ -360,15 +353,15 @@ class EventHandler:
         self.send_text(f"🤬 {e.message}", put_log=True)
         return True
 
-    def parsed_board(self) -> ClassicBoard:
+    def parsed_board(self) -> DuetBoard:
         words = self.parsing_state.words
         card_colors = self.parsing_state.card_colors
         if not words or not card_colors or not self.parsing_state.language:
             raise NoneValueError("Words, card colors or language are not set.")
         if len(words) != len(card_colors):
             raise ValueError("Words and card colors have different lengths.")
-        cards = [ClassicCard(word=word, color=color) for word, color in zip(words, card_colors)]
-        return ClassicBoard(language=self.parsing_state.language, cards=cards)
+        cards = [DuetCard(word=word, color=color) for word, color in zip(words, card_colors)]
+        return DuetBoard(language=self.parsing_state.language, cards=cards)
 
     def send_parsing_state(self):
         parsed_board = self.parsed_board()
@@ -382,8 +375,35 @@ Click on any card to fix it. When you are done, click /done."""
         self.update_session(last_keyboard_message_id=text.message_id)
 
 
-def _get_color_stats(board: ClassicBoard) -> Dict[ClassicColor | None, int]:
-    stats: Dict[ClassicColor | None, int] = defaultdict(int)
+def _build_full_message(state: MiniGameState, message: str | None = None) -> str:
+    if state.is_sudden_death:
+        message = (
+            "You ran out of time! 😱\n"
+            "Entering sudden death mode: The Spymaster will not give any more clues, "
+            "and you may keep guessing until you win or lose. Good luck! 🍀"
+        )
+    if message is None:
+        message = "Game over!" if state.is_game_over else "Pick your guess!"
+    turns_left = _get_turns_left_for_ui(state.timer_tokens)
+    message += (
+        f"\n❓️ Remaining cards: *{state.score.main.unrevealed}*"
+        f"\n⏳️ Turns left: *{turns_left}*"
+        f"\n💥 Mistakes left: *{state.allowed_mistakes}*"
+    )
+    return message
+
+
+def _get_turns_left_for_ui(timer_tokens: int) -> str:
+    if timer_tokens > 0:
+        return str(timer_tokens)
+    if timer_tokens == 0:
+        return "0 (sudden death)"
+    # Otherwise we lost, so we don't have any turns left
+    return "0"
+
+
+def _get_color_stats(board: DuetBoard) -> dict[DuetColor | None, int]:
+    stats: dict[DuetColor | None, int] = defaultdict(int)
     for card in board.cards:
         stats[card.color] += 1
     stats = dict(sorted(stats.items(), key=lambda item: item[1], reverse=True))
@@ -403,7 +423,7 @@ def build_board_keyboard(table: BeautifulTable, is_game_over: bool) -> ReplyKeyb
     for row in table.rows:
         row_keyboard = []
         for card in row:
-            card: ClassicCard  # type: ignore
+            card: DuetCard  # type: ignore[no-redef]
             if is_game_over:
                 content = f"{card.color.emoji} {card.word}"
             else:

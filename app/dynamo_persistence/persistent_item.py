@@ -1,5 +1,5 @@
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from bot.config import get_config
 from pynamodb.attributes import JSONAttribute, NumberAttribute, UnicodeAttribute
@@ -21,9 +21,9 @@ class PersistentItem(Model):
 
     def save(
         self,
-        condition: Optional[Condition] = None,
+        condition: Condition | None = None,
         settings: OperationSettings = OperationSettings.default,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         self.updated_at = float(time.time())
         return super().save(condition=condition, settings=settings, **kwargs)

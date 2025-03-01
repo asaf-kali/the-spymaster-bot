@@ -1,5 +1,4 @@
 import logging
-from typing import Dict, Optional
 
 from dynamo_persistence.persistent_store import ConversationKey
 from dynamo_persistence.telegram_stores import (
@@ -29,7 +28,7 @@ class DynamoPersistence(BasePersistence):
             store_bot_data=store_bot_data,
             store_callback_data=store_callback_data,
         )
-        self.conversation_store_dict: Dict[str, DynamoStoredConversation] = {}
+        self.conversation_store_dict: dict[str, DynamoStoredConversation] = {}
         if store_user_data:
             self.user_data_store = DynamoStoredUserData()
         if store_chat_data:
@@ -51,10 +50,10 @@ class DynamoPersistence(BasePersistence):
     def get_bot_data(self) -> BD:  # type: ignore
         raise NotImplementedError
 
-    def get_callback_data(self) -> Optional[CDCData]:
+    def get_callback_data(self) -> CDCData | None:
         raise NotImplementedError
 
-    def update_conversation(self, name: str, key: ConversationKey, new_state: Optional[object]) -> None:
+    def update_conversation(self, name: str, key: ConversationKey, new_state: object | None) -> None:
         conversation_store = self.get_conversations(name=name)
         conversation_store.set(key=key, data=new_state, commit=True)
 

@@ -1,19 +1,33 @@
 from enum import IntEnum
-from typing import List, Optional
 
 from codenames.classic.color import ClassicColor
-from codenames.classic.team import ClassicTeam
 from codenames.classic.winner import WinningReason
+from codenames.duet.card import DuetColor
+from codenames.duet.score import (
+    ASSASSIN_HIT,
+    GAME_QUIT,
+    MISTAKE_LIMIT_REACHED,
+    TARGET_REACHED,
+    TIMER_TOKENS_DEPLETED,
+)
 from codenames.generic.move import PASS_GUESS, QUIT_GAME
 from pydantic import BaseModel
 from the_spymaster_solvers_api.structs import APIModelIdentifier, Difficulty, Solver
 
 BLUE_EMOJI = ClassicColor.BLUE.emoji
 RED_EMOJI = ClassicColor.RED.emoji
+GREEN_EMOJI = DuetColor.GREEN.emoji
 WIN_REASON_TO_EMOJI = {
     WinningReason.TARGET_SCORE_REACHED: "🤓",
     WinningReason.OPPONENT_HIT_ASSASSIN: "😵",
     WinningReason.OPPONENT_QUIT: "🥴",
+}
+GAME_RESULT_TO_EMOJI = {
+    TARGET_REACHED: "🤓",
+    ASSASSIN_HIT: "😵",
+    GAME_QUIT: "🥴",
+    TIMER_TOKENS_DEPLETED: "😴",
+    MISTAKE_LIMIT_REACHED: "💥",
 }
 COMMAND_TO_INDEX = {"-pass": PASS_GUESS, "-quit": QUIT_GAME}
 AVAILABLE_MODELS = [
@@ -54,25 +68,24 @@ class GameConfig(BaseModel):  # Move to backend api?
     language: str = "english"
     difficulty: Difficulty = Difficulty.EASY
     solver: Solver = Solver.NAIVE
-    model_identifier: Optional[APIModelIdentifier] = None
-    first_team: Optional[ClassicTeam] = ClassicTeam.BLUE
+    model_identifier: APIModelIdentifier | None = None
 
     class Config:
         frozen = True
 
 
 class ParsingState(BaseModel):
-    language: Optional[str] = None
-    card_colors: Optional[List[ClassicColor]] = None
-    words: Optional[List[str]] = None
-    fix_index: Optional[int] = None
+    language: str | None = None
+    card_colors: list[DuetColor] | None = None
+    words: list[str] | None = None
+    fix_index: int | None = None
 
 
 class Session(BaseModel):
-    game_id: Optional[str] = None
-    config: Optional[GameConfig] = None
-    parsing_state: Optional[ParsingState] = None
-    last_keyboard_message_id: Optional[int] = None
+    game_id: str | None = None
+    config: GameConfig | None = None
+    parsing_state: ParsingState | None = None
+    last_keyboard_message_id: int | None = None
 
     class Config:
         frozen = True
