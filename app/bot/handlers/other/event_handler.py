@@ -215,10 +215,10 @@ class EventHandler:
         self.update_session(last_keyboard_message_id=None)
 
     def send_game_summary(self, state: MiniGameState):
-        self._send_winner_text(state=state)
+        self._send_result_text(state=state)
         self._send_spymasters_intents(state=state)
 
-    def _send_winner_text(self, state: MiniGameState):
+    def _send_result_text(self, state: MiniGameState):
         result = state.game_result
         if not result:
             raise ValueError("Winner is not set, cannot send winner text.")
@@ -274,16 +274,8 @@ class EventHandler:
         board_to_send = state.board if state.is_game_over else state.board.censored
         table = board_to_send.as_table
         keyboard = build_board_keyboard(table, is_game_over=state.is_game_over)
-        if message is None:
-            message = "Game over!" if state.is_game_over else "Pick your guess!"
-        message += (
-            f"\n❓️ Remaining cards: *{state.score.main.unrevealed}*"
-            f"\n⏳️ Turns left: *{state.timer_tokens}*"
-            f"\n💥 Mistakes left: *{state.allowed_mistakes}*"
-        )
-        # if state.left_guesses == 1:
-        #     message += " (bonus round)"
-        text = self.send_markdown(message, reply_markup=keyboard)
+        full_message = _build_full_message(state=state, message=message)
+        text = self.send_markdown(full_message, reply_markup=keyboard)
         self.update_session(last_keyboard_message_id=text.message_id)
 
     def _get_game_state(self, game_id: str) -> MiniGameState:
@@ -381,6 +373,33 @@ Color stats: {color_stats_str}
 Click on any card to fix it. When you are done, click /done."""
         text = self.send_markdown(text=message, reply_markup=keyboard)
         self.update_session(last_keyboard_message_id=text.message_id)
+
+
+def _build_full_message(state: MiniGameState, message: str | None = None) -> str:
+    if state.is_sudden_death:
+        message = (
+            "You ran out of time! 😱\n"
+            "Entering sudden death mode: The Spymaster will not give any more clues, "
+            "and you may keep guessing until you win or lose. Good luck! 🍀"
+        )
+    if message is None:
+        message = "Game over!" if state.is_game_over else "Pick your guess!"
+    turns_left = _get_turns_left_for_ui(state.timer_tokens)
+    message += (
+        f"\n❓️ Remaining cards: *{state.score.main.unrevealed}*"
+        f"\n⏳️ Turns left: *{turns_left}*"
+        f"\n💥 Mistakes left: *{state.allowed_mistakes}*"
+    )
+    return message
+
+
+def _get_turns_left_for_ui(timer_tokens: int) -> str:
+    if timer_tokens > 0:
+        return str(timer_tokens)
+    if timer_tokens == 0:
+        return "0 (sudden death)"
+    # Otherwise we lost, so we don't have any turns left
+    return "0"
 
 
 def _get_color_stats(board: DuetBoard) -> dict[DuetColor | None, int]:
