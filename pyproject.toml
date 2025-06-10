@@ -19,7 +19,7 @@ python-telegram-bot = "^13.11"
 pydantic = "^2.10"
 pynamodb = "^5.4"
 # Utils
-requests = "^2.26"
+requests = "^2.32"
 cachetools = "^4.2"
 urllib3 = "<2.0" # Specified due to telegram package issue
 # Monitor
